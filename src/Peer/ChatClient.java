@@ -71,6 +71,7 @@ public class ChatClient extends AbstractClient {
                 } else {
                     switch (messageType) {
                         case MESSAGE_TYPE_WELCOME:
+                            System.out.println("Received welcome message from client #" + receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt());
                             knownClients.add(receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt());
                             break;
                         case MESSAGE_TYPE_CREATE_ROOM:
