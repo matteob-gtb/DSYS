@@ -1,4 +1,4 @@
-package Peer;
+package Messages;
 
 import java.util.ArrayList;
 import java.util.List;

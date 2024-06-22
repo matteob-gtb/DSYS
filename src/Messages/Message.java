@@ -1,4 +1,4 @@
-package Peer;
+package Messages;
 
 public class Message {
 
