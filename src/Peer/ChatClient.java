@@ -59,8 +59,6 @@ public class ChatClient extends AbstractClient {
                 socket.receive(recv);
                 receivedMessage = new String(recv.getData(), 0, recv.getLength());
                 receivedJson = JsonParser.parseString(receivedMessage).getAsJsonObject();
-                System.out.println("Received welcome message from client #" + receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt());
-                System.out.println("Received JSON: " + receivedJson.toString());
 
                 int messageType = receivedJson.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
 
@@ -69,6 +67,7 @@ public class ChatClient extends AbstractClient {
                 } else {
                     switch (messageType) {
                         case MESSAGE_TYPE_WELCOME:
+                            System.out.println("Received welcome message from client #" + receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt());
                             knownClients.add(receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt());
                             break;
                         case MESSAGE_TYPE_CREATE_ROOM:
