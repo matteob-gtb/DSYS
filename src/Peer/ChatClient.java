@@ -43,28 +43,48 @@ public class ChatClient extends AbstractClient {
     }
 
     public void stayIdleAndReceive() throws IOException {
+
+        System.out.println("Client #" + this.CLIENT_ID + " listening for messages... ");
+
         byte[] buf = new byte[RCV_BUFFER_SIZE];
         while (true) {
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             socket.receive(recv);
             System.out.println("Client [" + this.CLIENT_ID + "] received a message ");
-            String receivedMessage = new String(recv.getData(), 0, recv.getLength());
+            String receivedMessage;
+            boolean stopReceiving = false;
+            JsonObject receivedJson;
+            while (!stopReceiving) {
+                 recv = new DatagramPacket(buf, buf.length);
+                socket.receive(recv);
+                System.out.println("Client [" + this.CLIENT_ID + "] received a message ");
+                receivedMessage = new String(recv.getData(), 0, recv.getLength());
+                // Parse string to JSON object
+                receivedJson = JsonParser.parseString(receivedMessage).getAsJsonObject();
+                // Print the received JSON object
+                System.out.println("Received JSON: " + receivedJson.toString());
 
-            JsonObject receivedJson = JsonParser.parseString(receivedMessage).getAsJsonObject();
-            int messageType = receivedJson.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
+                int messageType = receivedJson.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
 
-            switch (messageType) {
-                case MESSAGE_TYPE_HELLO:
-                    System.out.println("Client [" + this.CLIENT_ID + "] received a hello message, replying with WELCOME");
-                    //Reply with a WELCOME Message announcing the clients we know of
-                    JsonObject welcomeJSON = new JsonObject();
-                    welcomeJSON.addProperty(MESSAGE_PROPERTY_FIELD_CLIENTID, this.CLIENT_ID);
-                    welcomeJSON.addProperty(MESSAGE_PROPERTY_FIELD_KNOWNCLIENTS, this.knownClients.toString());
-                    sendMessage(welcomeJSON);
+                if (receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt() == (this.CLIENT_ID)) {
+                    continue;
+                } else {
+                    switch (messageType) {
+                        case MESSAGE_TYPE_WELCOME:
+                            knownClients.add(receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt());
+                            break;
+                        case MESSAGE_TYPE_CREATE_ROOM:
+                            System.out.println("Received a new room");
+                            break;
+                        default:
+                            break;
+                    }
+
+
+                }
+
+
             }
-
-            if (receivedJson.get(MESSAGE_TYPE_FIELD_NAME).getAsInt() == MESSAGE_TYPE_CREATE_ROOM)
-                break;
 
         }
 
@@ -80,42 +100,7 @@ public class ChatClient extends AbstractClient {
         messageObject.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_HELLO);
         sendMessage(messageObject);
 
-
-        boolean stopReceiving = false;
-        byte[] buf = new byte[1000];
-        JsonObject receivedJson;
-        String receivedMessage;
-        while (!stopReceiving) {
-            DatagramPacket recv = new DatagramPacket(buf, buf.length);
-            socket.receive(recv);
-            System.out.println("Client [" + this.CLIENT_ID + "] received a message ");
-            receivedMessage = new String(recv.getData(), 0, recv.getLength());
-            // Parse string to JSON object
-            receivedJson = JsonParser.parseString(receivedMessage).getAsJsonObject();
-            // Print the received JSON object
-            System.out.println("Received JSON: " + receivedJson.toString());
-
-            int messageType = receivedJson.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
-
-            if (receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt() == (this.CLIENT_ID)) {
-                continue;
-            } else {
-                switch (messageType) {
-                    case MESSAGE_TYPE_WELCOME:
-                        knownClients.add(receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt());
-                        break;
-                    case MESSAGE_TYPE_CREATE_ROOM:
-                        System.out.println("Received a new room");
-                        break;
-                    default:
-                        break;
-                }
-
-
-             }
-
-
-        }
+        return;
 
 
     }
