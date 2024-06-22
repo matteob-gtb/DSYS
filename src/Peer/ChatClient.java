@@ -23,6 +23,13 @@ everyone responds with HI, containing each their ID
 public class ChatClient {
     private static final int SOCKET_PORT_LOW = 2000, SOCKET_PORT_HIGH = 5000, GROUP_PORT = 5000;
     private static final int RCV_BUFFER_SIZE = 1024;
+    private static final int MESSAGE_TYPE_FIELD = 1;
+    private static final int MESSAGE_TYPE_CREATE_ROOM = 2;
+    private static final int MESSAGE_TYPE_JOIN = 3;
+    private static final int MESSAGE_TYPE_ANNOUNCE_LEAVE = 3;
+
+
+
     private static final String GROUPNAME = "228.5.6.254";
     private InetAddress group;
     private MulticastSocket socket;
@@ -58,6 +65,9 @@ public class ChatClient {
             socket.receive(recv);
             System.out.println("Client [" + this.CLIENT_ID + "] received a message ");
             String receivedMessage = new String(recv.getData(), 0, recv.getLength());
+
+            JsonObject receivedJson = JsonParser.parseString(receivedMessage).getAsJsonObject();
+            if(receivedJson.getAsNumber(MESSAGE_TYPE_FIELD) == CREATE_ROOM)
         }
 
 
