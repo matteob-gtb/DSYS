@@ -80,6 +80,7 @@ public class ChatClient extends AbstractClient {
         messageObject.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_HELLO);
         sendMessage(messageObject);
 
+        return;
 
         boolean stopReceiving = false;
         byte[] buf = new byte[1000];
