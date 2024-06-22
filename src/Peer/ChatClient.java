@@ -44,7 +44,7 @@ public class ChatClient extends AbstractClient {
 
     public void stayIdleAndReceive() throws IOException {
 
-        System.out.println("Client #" + this.CLIENT_ID + " listening for messages... ");
+        System.out.println("Client #" + this.CLIENT_ID + " listening for messages.... ");
 
         byte[] buf = new byte[RCV_BUFFER_SIZE];
         while (true) {
