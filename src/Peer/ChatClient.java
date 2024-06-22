@@ -44,10 +44,10 @@ public class ChatClient extends AbstractClient {
 
     public void stayIdleAndReceive() throws IOException {
 
-        System.out.println("Client #" + this.CLIENT_ID + " listening for messages.... ");
 
         byte[] buf = new byte[RCV_BUFFER_SIZE];
         while (true) {
+            System.out.println("Client #" + this.CLIENT_ID + " listening for messages.... ");
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             socket.receive(recv);
             System.out.println("Client [" + this.CLIENT_ID + "] received a message ");
