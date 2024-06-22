@@ -55,13 +55,11 @@ public class ChatClient extends AbstractClient {
             boolean stopReceiving = false;
             JsonObject receivedJson;
             while (!stopReceiving) {
-                 recv = new DatagramPacket(buf, buf.length);
+                recv = new DatagramPacket(buf, buf.length);
                 socket.receive(recv);
-                System.out.println("Received welcome message from client #" + receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt());
                 receivedMessage = new String(recv.getData(), 0, recv.getLength());
-                // Parse string to JSON object
                 receivedJson = JsonParser.parseString(receivedMessage).getAsJsonObject();
-                // Print the received JSON object
+                System.out.println("Received welcome message from client #" + receivedJson.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt());
                 System.out.println("Received JSON: " + receivedJson.toString());
 
                 int messageType = receivedJson.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
