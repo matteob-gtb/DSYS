@@ -38,7 +38,7 @@ public class ChatClient extends AbstractClient {
             }
         }
 
-        System.out.println("Client #" + this.CLIENT_ID + " online ");
+        System.out.println("Client #" + this.CLIENT_ID + " online, announcing self...");
 
     }
 
