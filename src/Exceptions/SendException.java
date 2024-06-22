@@ -1,4 +1,4 @@
-package Peer.Exceptions;
+package Exceptions;
 
 import java.io.IOException;
 
