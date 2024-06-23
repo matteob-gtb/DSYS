@@ -1,5 +1,7 @@
 package Messages;
 
+import Peer.AbstractClient;
+import Peer.ChatClient;
 import com.google.gson.JsonObject;
 
 import javax.imageio.IIOException;
@@ -37,15 +39,15 @@ public abstract class Middleware {
     protected MulticastSocket socket = null;
     protected InetAddress group;
     protected int CLIENT_ID;
+    protected AbstractClient client;
 
-    public Middleware(int CLIENT_ID) throws IOException {
+    public Middleware(AbstractClient client) throws IOException {
         this.queueThread = new QueueThread(this, CLIENT_ID);
+        this.client = client;
+        this.CLIENT_ID = client.getID();
         new Thread(queueThread).start();
-
     }
 
-
-    protected HashMap<Integer, ChatRoom> roomsMap;
 
     protected void enqueueMessage(JsonObject message) {
         try {
@@ -108,4 +110,7 @@ public abstract class Middleware {
     public abstract JsonObject getMessage(Optional<Integer> chatRoomID);
 
 
+    public AbstractClient getClient() {
+        return client;
+    }
 }

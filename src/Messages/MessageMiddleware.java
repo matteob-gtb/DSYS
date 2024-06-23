@@ -1,5 +1,7 @@
 package Messages;
 
+import Peer.AbstractClient;
+import Peer.ChatClient;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
@@ -9,8 +11,8 @@ import java.util.Optional;
 public class MessageMiddleware extends Middleware {
 
 
-    public MessageMiddleware(int CLIENT_ID) throws IOException {
-        super(CLIENT_ID);
+    public MessageMiddleware(AbstractClient client) throws IOException {
+        super(client);
     }
 
 
