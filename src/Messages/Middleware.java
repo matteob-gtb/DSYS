@@ -42,8 +42,8 @@ public abstract class Middleware {
     protected AbstractClient client;
 
     public Middleware(AbstractClient client) throws IOException {
-        this.queueThread = new QueueThread(this, CLIENT_ID);
         this.client = client;
+        this.queueThread = new QueueThread(this, CLIENT_ID);
         this.CLIENT_ID = client.getID();
         new Thread(queueThread).start();
     }
