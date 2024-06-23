@@ -36,10 +36,8 @@ public class QueueThread implements Runnable {
         while (!socketCreated) {
             try {
                 port = GROUP_PORT;
-                addr = new InetSocketAddress(group, port);
-                interfaceName = NetworkInterface.getByName("enp46s0");
                 socket = new MulticastSocket(port);
-                socket.joinGroup(addr,interfaceName);
+                socket.joinGroup(group);
                 socketCreated = true;
             } catch (SocketException e) {
                 System.out.println(e);
