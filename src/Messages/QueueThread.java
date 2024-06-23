@@ -7,10 +7,7 @@ import Peer.AbstractClient;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static java.lang.System.exit;
 import static java.lang.System.setErr;
@@ -63,8 +60,22 @@ public class QueueThread implements Runnable {
         boolean socketCreated = false;
         while (!socketCreated) {
             try {
+                String interfaceName = "eth0";
+                SocketAddress socketAddress = new InetSocketAddress(group, GROUP_PORT);
+                NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
+
+                Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+                while(interfaces.hasMoreElements()) {
+                    NetworkInterface netInt = interfaces.nextElement();
+                    Enumeration<InetAddress> inetAddresses = netInt.getInetAddresses();
+                    inetAddresses.asIterator().forEachRemaining(c-> System.out.println(c.getHostAddress()));
+                }
+
+
+
                 socket = new MulticastSocket(GROUP_PORT);
-                socket.joinGroup(group);
+                //socket.joinGroup(group);
+                socket.joinGroup(socketAddress, networkInterface);
                 socketCreated = true;
             } catch (SocketException e) {
                 exit(1);
