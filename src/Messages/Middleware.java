@@ -68,7 +68,7 @@ public abstract class Middleware {
     protected Optional<JsonObject> getFirstOutgoingMessages() {
         try {
             lock.lock();
-            if (outGoingMessages.size() >= currMessageIndex)
+            if (outGoingMessages.size() <= currMessageIndex)
                 return Optional.empty();
             currMessageIndex++;
             return Optional.of(outGoingMessages.get(currMessageIndex - 1));

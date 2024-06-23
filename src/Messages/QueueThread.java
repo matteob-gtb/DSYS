@@ -10,10 +10,10 @@ import com.google.gson.JsonSyntaxException;
 import javax.swing.plaf.synth.SynthUI;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.locks.Lock;
 
-import static utils.Constants.GROUPNAME;
-import static utils.Constants.GROUP_PORT;
+import static utils.Constants.*;
 
 public class QueueThread implements Runnable {
     private static final int SOCKET_TIMEOUT = 1000;
@@ -31,7 +31,7 @@ public class QueueThread implements Runnable {
         boolean socketCreated = false;
         while (!socketCreated) {
             try {
-                socket = new MulticastSocket(GROUP_PORT);
+                socket = new MulticastSocket(new Random().nextInt(SOCKET_PORT_LOW,SOCKET_PORT_HIGH));
                 socket.joinGroup(group);
                 socketCreated = true;
             } catch (SocketException e) {
@@ -62,8 +62,7 @@ public class QueueThread implements Runnable {
                     System.out.println("Sending message...");
                     outgoingMessage = nextMessage.get();
                     String pureJSON = outgoingMessage.toString();
-                    buffer = new byte[1024];
-                    packet = new DatagramPacket(buffer, buffer.length, this.group, GROUP_PORT);
+                    packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), this.group, GROUP_PORT);
                     socket.send(packet);
                     nextMessage = middleware.getFirstOutgoingMessages();
                 }
@@ -72,12 +71,12 @@ public class QueueThread implements Runnable {
                 try {
                     // Receive the datagram packet
                     socket.receive(packet);
-
                     String jsonString = new String(packet.getData(), 0, packet.getLength());
-
+                    System.out.println(jsonString);
                     JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
                     System.out.println("Thread received an inbound message");
                     // TODO MESSAGE HANDLING LOGIC
+                    int messageType = jsonObject.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
 
 
                 } catch (SocketTimeoutException e) {

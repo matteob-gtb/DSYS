@@ -11,9 +11,13 @@ public class Constants {
     public static final int MESSAGE_TYPE_HELLO = 1;
     public static final int MESSAGE_TYPE_WELCOME = 2;
 
+    //causally ordered
+    public static final int MESSAGE_TYPE_ROOM_MESSAGE = 16;
     public static final int MESSAGE_TYPE_CREATE_ROOM = 3;
     public static final int MESSAGE_TYPE_JOIN_ROOM = 4;
     public static final int MESSAGE_TYPE_ANNOUNCE_LEAVE = 5;
+
+
 
     public static final String GROUPNAME = "228.5.6.254";
 }
