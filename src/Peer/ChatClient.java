@@ -27,8 +27,6 @@ public class ChatClient extends AbstractClient {
         Random generator = new Random();
         this.CLIENT_ID = generator.nextInt(0, 6000);
         this.messageMiddleware = new MessageMiddleware(CLIENT_ID);
-
-
     }
 
 

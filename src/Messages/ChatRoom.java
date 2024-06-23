@@ -12,4 +12,7 @@ public class ChatRoom {
     public ChatRoom(int chatID) {
         this.chatID = chatID;
     }
+
+    public int getMessageCount() { return messageList.size(); }
+
 }
