@@ -40,7 +40,6 @@ public class QueueThread implements Runnable {
     }
 
 
-
     private JsonObject prepareWelcomeMessage() {
         JsonObject welcomeMessage = client.getBaseMessageStub();
         welcomeMessage.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_WELCOME);
@@ -63,15 +62,20 @@ public class QueueThread implements Runnable {
                 String interfaceName = "eth0";
                 SocketAddress socketAddress = new InetSocketAddress(group, GROUP_PORT);
                 NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
-
+                boolean found = false;
                 Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-                while(interfaces.hasMoreElements()) {
+                while (interfaces.hasMoreElements() || !found) {
                     NetworkInterface netInt = interfaces.nextElement();
                     Enumeration<InetAddress> inetAddresses = netInt.getInetAddresses();
-                    inetAddresses.asIterator().forEachRemaining(c-> System.out.println(c.getHostAddress()));
+                    for (Iterator<InetAddress> it = inetAddresses.asIterator(); it.hasNext(); ) {
+                        InetAddress address = it.next();
+                        if (address instanceof Inet4Address && netInt.supportsMulticast()) {
+                            networkInterface = NetworkInterface.getByInetAddress(address);
+                            System.out.println("Selected interface: " + networkInterface.getName());
+                            found = true;
+                        }
+                    }
                 }
-
-
 
                 socket = new MulticastSocket(GROUP_PORT);
                 //socket.joinGroup(group);
@@ -119,7 +123,7 @@ public class QueueThread implements Runnable {
                             || sender == this.client.getID())
                         continue;
 
-                 switch (messageType) {
+                    switch (messageType) {
                         //Actionable messages
                         case MESSAGE_TYPE_HELLO -> {
                             client.print("Received an hello from " + sender + " replying with WELCOME");
@@ -147,7 +151,7 @@ public class QueueThread implements Runnable {
 
 
                 } catch (SocketTimeoutException e) {
-                     //System.out.println("Socket timed out " + System.currentTimeMillis());
+                    //System.out.println("Socket timed out " + System.currentTimeMillis());
                 } catch (IOException e) {
                     System.out.println(e);
                 }
