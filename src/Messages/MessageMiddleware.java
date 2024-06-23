@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.net.MulticastSocket;
 import java.util.Optional;
 
-public class MessageMiddleware extends Middleware {
+public class  MessageMiddleware extends Middleware {
 
 
     public MessageMiddleware(AbstractClient client) throws IOException {

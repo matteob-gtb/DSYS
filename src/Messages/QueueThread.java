@@ -131,22 +131,29 @@ public class QueueThread implements Runnable {
                             sendMessage(welcome);
                         }
                         case MESSAGE_TYPE_WELCOME -> {
-                            int clientID = jsonInboundMessage.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt();
                             client.print("Received a WELCOME from #" + sender);
-                            client.print("Added client " + clientID + " to the list of known clients");
-                            onlineClients.add(clientID);
+                            client.print("Added client " + sender + " to the list of known clients");
+                            onlineClients.add(sender);
+                        }
+                        case MESSAGE_TYPE_JOIN_ROOM_ACK -> { //sent only to who created the room
+                            int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+                            middleware.addParticipantToRoom(chatRoomID,sender);
                         }
                         case MESSAGE_TYPE_CREATE_ROOM -> {
                             client.print("Client " + sender + " created a new room");
+                            int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                             String outcome = client.askUserCommand("Do you want to join [y/n]?", "y", "n");
                             if (outcome.equalsIgnoreCase("y")) {
                                 JsonObject message = client.getBaseMessageStub();
-                                message.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_JOIN_ROOM_ACK);
+                                message.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_JOIN_ROOM_ACK);
                                 message.addProperty(MESSAGE_INTENDED_RECIPIENT, sender);
+                                sendMessage(message);
+                                ChatRoom room = new ChatRoom(roomID);
                                 //SEND JOIN ROOM
-                            } else {
-
                             }
+                        }
+                        case ROOM_MESSAGE -> {
+
                         }
                     }
 

@@ -1,6 +1,7 @@
 package Peer;
 
 
+import Messages.ChatRoom;
 import Messages.MessageMiddleware;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -9,6 +10,9 @@ import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.Semaphore;
@@ -27,6 +31,8 @@ public class ChatClient extends AbstractClient {
     //Avoid overlapping messages
     private final Semaphore consoleSemaphore = new Semaphore(1);
     private boolean messageWaitingForReply = false;
+    private final SecureRandom random = new SecureRandom();
+    private ChatRoom currentRoom = null;
 
 
     public String askUserCommand(String commandPrompt, String... choices) {
@@ -68,13 +74,7 @@ public class ChatClient extends AbstractClient {
     }
 
 
-    /**
-     * @throws IOException
-     */
-    @Override
-    public void stayIdleAndReceive() throws IOException {
 
-    }
 
     //block until received from all or timer expires
     public void announceSelf() throws IOException {
@@ -107,16 +107,38 @@ public class ChatClient extends AbstractClient {
                     break;
                 case "1":
                     print("Command 'Join Room' received.");
+                    int roomID = -1;
+                    while (true) {
+                        print("Enter the room ID or q to exit this prompt");
+                        String nextLine = br.readLine().trim();
+                        if (nextLine.contains("q")) break;
+                        try {
+                            roomID = Integer.parseInt(nextLine);
+                        } catch (Exception e) {
 
+                        }
+                        Optional<ChatRoom> room = messageMiddleware.getChatRoom(roomID);
+                        if (room.isEmpty())
+                            print("Room not found.");
+                        else {
+                            currentRoom = room.get();
+                            print("Joining Chat #" + currentRoom.getChatID());
+                            break;
+                        }
+
+                    }
                     // Add logic to send message
                     break;
                 case "2":
                     print("Command 'Create room' received.");
                     JsonObject outgoingMessage = getBaseMessageStub();
                     outgoingMessage.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_CREATE_ROOM);
-                    JsonArray recipientsArray = new JsonArray(knownClients.size());
-                    knownClients.forEach(recipientsArray::add);
+                    JsonArray recipientsArray = new JsonArray(messageMiddleware.getOnlineClients().size());
+                    messageMiddleware.getOnlineClients().forEach(recipientsArray::add);
                     outgoingMessage.add(MESSAGE_INTENDED_RECIPIENTS, recipientsArray);
+                    ChatRoom room = new ChatRoom(random.nextInt(0, 999999));
+                    messageMiddleware.registerRoom(room);
+                    currentRoom = room;
                     messageMiddleware.sendMessage(outgoingMessage);
                     break;
                 case "3":
@@ -131,7 +153,7 @@ public class ChatClient extends AbstractClient {
                     print("Command 'List Online Peers' received.");
                     messageMiddleware.getOnlineClients().forEach(System.out::println);
                     break;
-                case "6":
+                case "7":
                     System.exit(0);
                     break;
                 default:
@@ -142,18 +164,23 @@ public class ChatClient extends AbstractClient {
     }
 
     private void printAvailableCommands() {
-        print("""
-                Available commands:
-                0. Spam garbage
-                1. Join Room
-                2. Create Room
-                3. Delete Room
-                4. Leave Room
-                5. List Online Peers
-                6. Discover Online Peers
-                7. Quit Application
-                Enter command:
-                Listening on port:\s""" + GROUP_PORT);
+        if (currentRoom == null)
+            print("""
+                    Available commands:
+                    0. Spam garbage
+                    1. Join Room
+                    2. Create Room
+                    3. Delete Room
+                    4. Leave Room
+                    5. List Online Peers
+                    6. Discover Online Peers
+                    7. Quit Application
+                    Enter command:  """ );
+        else {
+            print("Current participants " + Arrays.toString(currentRoom.getParticipants()));
+            print("""
+                    Type a message and hit Enter to send it in the current room #""" + currentRoom.getChatID());
+        }
 
     }
 }

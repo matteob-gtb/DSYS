@@ -14,10 +14,6 @@ import static utils.Constants.MESSAGE_PROPERTY_FIELD_CLIENTID;
 
 public abstract class AbstractClient {
 
-    protected InetAddress group;
-    protected MulticastSocket socket;
-    protected ArrayList<Integer> knownClients = new ArrayList<>();
-
     protected int CLIENT_ID;
 
     public int getID(){
@@ -26,12 +22,7 @@ public abstract class AbstractClient {
 
     protected MessageMiddleware messageMiddleware = null;
 
-
-    public abstract void stayIdleAndReceive() throws IOException;
-
     public abstract void announceSelf() throws IOException;
-
-    public abstract void createRoom() throws IOException;
 
     public abstract void print(String queueThreadBootstrapped);
 

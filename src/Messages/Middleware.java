@@ -11,20 +11,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import utils.Constants;
-
-import static utils.Constants.GROUPNAME;
-import static utils.Constants.GROUP_PORT;
 
 public abstract class Middleware {
     final Lock lock = new ReentrantLock();
@@ -33,7 +25,7 @@ public abstract class Middleware {
 
     protected ArrayList<JsonObject> incomingMessages = new ArrayList<>();
     protected ArrayList<JsonObject> outGoingMessages = new ArrayList<>();
-    protected HashMap<Integer, ChatRoom> chatRooms = new HashMap<>();
+    protected ConcurrentHashMap<Integer, ChatRoom> chatRooms = new ConcurrentHashMap<>();
 
     protected QueueThread queueThread;
     protected ArrayList<Integer> knownClients;
@@ -41,6 +33,18 @@ public abstract class Middleware {
     protected InetAddress group;
     protected int CLIENT_ID;
     protected AbstractClient client;
+
+
+    public void addParticipantToRoom(int chatID,int clientID){
+        if (!chatRooms.containsKey(chatID))
+            throw new RuntimeException("Chat room with id " + chatID + " does not exist");
+        chatRooms.get(chatID).addParticipant(clientID);
+    }
+
+    public Optional<ChatRoom> getChatRoom(int chatID){
+        if(!chatRooms.containsKey(chatID)) return Optional.empty();
+        return Optional.of(chatRooms.get(chatID));
+    }
 
     public Middleware(AbstractClient client) throws IOException {
         this.client = client;
@@ -83,6 +87,10 @@ public abstract class Middleware {
         }
     }
 
+    public void registerRoom(ChatRoom room) {
+        chatRooms.put(room.getChatID(),room);
+        room.addParticipant(this.CLIENT_ID);
+    }
 
     public void sendMessage(JsonObject msgObject) {
         lock.lock();
