@@ -15,7 +15,7 @@ import static utils.Constants.*;
 
 public class QueueThread implements Runnable {
 
-    private static final int SOCKET_TIMEOUT = 10000;
+    private static final int SOCKET_TIMEOUT = 100;
     private MulticastSocket socket;
     private final Middleware middleware;
     private InetAddress group;
