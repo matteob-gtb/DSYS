@@ -106,7 +106,7 @@ public class QueueThread implements Runnable {
                     JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                     int messageType = jsonInboundMessage.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
                     int sender = jsonInboundMessage.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt();
-
+                    System.out.println("Received Message: " + jsonInboundMessage.toString());
                     if ((jsonInboundMessage.has(MESSAGE_INTENDED_RECIPIENT) &&
                             jsonInboundMessage.get(MESSAGE_INTENDED_RECIPIENT).getAsInt() != this.client.getID())
                             || sender == this.client.getID())
