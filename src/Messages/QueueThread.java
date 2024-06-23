@@ -62,8 +62,7 @@ public class QueueThread implements Runnable {
         boolean socketCreated = false;
         while (!socketCreated) {
             try {
-                port = GROUP_PORT;
-                socket = new MulticastSocket(port);
+                socket = new MulticastSocket(GROUP_PORT);
                 socket.joinGroup(group);
                 socketCreated = true;
             } catch (SocketException e) {
