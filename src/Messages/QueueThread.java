@@ -22,7 +22,7 @@ public class QueueThread implements Runnable {
     private InetAddress group;
     private ArrayList<Integer> knownClients;
     private int CLIENT_ID;
-
+    private int port = -1;
     public QueueThread(Middleware mid, int CLIENT_ID) throws IOException {
         this.group = InetAddress.getByName(GROUPNAME);
         this.knownClients = new ArrayList<>();
@@ -31,7 +31,8 @@ public class QueueThread implements Runnable {
         boolean socketCreated = false;
         while (!socketCreated) {
             try {
-                socket = new MulticastSocket(new Random().nextInt(SOCKET_PORT_LOW,SOCKET_PORT_HIGH));
+                port = new Random().nextInt(SOCKET_PORT_LOW,SOCKET_PORT_HIGH);
+                socket = new MulticastSocket(port);
                 socket.joinGroup(group);
                 socketCreated = true;
             } catch (SocketException e) {
@@ -62,7 +63,7 @@ public class QueueThread implements Runnable {
                     System.out.println("Sending message...");
                     outgoingMessage = nextMessage.get();
                     String pureJSON = outgoingMessage.toString();
-                    packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), this.group, GROUP_PORT);
+                    packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), this.group, this.port);
                     socket.send(packet);
                     nextMessage = middleware.getFirstOutgoingMessages();
                 }
