@@ -15,7 +15,7 @@ import static utils.Constants.*;
 
 public class QueueThread implements Runnable {
 
-    private static final int SOCKET_TIMEOUT = 1000;
+    private static final int SOCKET_TIMEOUT = 10000;
     private MulticastSocket socket;
     private final Middleware middleware;
     private InetAddress group;
@@ -64,7 +64,7 @@ public class QueueThread implements Runnable {
                 NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
                 boolean found = false;
                 Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-                while (interfaces.hasMoreElements() || !found) {
+                while (interfaces.hasMoreElements() && !found) {
                     NetworkInterface netInt = interfaces.nextElement();
                     Enumeration<InetAddress> inetAddresses = netInt.getInetAddresses();
                     for (Iterator<InetAddress> it = inetAddresses.asIterator(); it.hasNext(); ) {
@@ -73,6 +73,7 @@ public class QueueThread implements Runnable {
                             networkInterface = NetworkInterface.getByInetAddress(address);
                             System.out.println("Selected interface: " + networkInterface.getName());
                             found = true;
+                            break;
                         }
                     }
                 }
