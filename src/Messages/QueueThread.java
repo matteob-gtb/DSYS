@@ -24,7 +24,6 @@ public class QueueThread implements Runnable {
     private InetAddress group;
     private ArrayList<Integer> knownClients;
     private int CLIENT_ID;
-    private int port = -1;
     private SocketAddress addr;
     private NetworkInterface interfaceName;
     private Set<Integer> onlineClients = new TreeSet<Integer>();
@@ -38,7 +37,7 @@ public class QueueThread implements Runnable {
         if (!outgoingMessage.has(MESSAGE_PROPERTY_FIELD_CLIENTID) || !outgoingMessage.has(MESSAGE_TYPE_FIELD_NAME))
             throw new RuntimeException("Badly Formatted Message");
         String pureJSON = outgoingMessage.toString();
-        DatagramPacket packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), this.group, this.port);
+        DatagramPacket packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), this.group, GROUP_PORT);
         socket.send(packet);
     }
 
@@ -72,8 +71,6 @@ public class QueueThread implements Runnable {
             }
         }
 
-        // System.out.println("Client #" + this.CLIENT_ID + " online, announcing self...");
-        this.socket = socket;
         this.middleware = mid;
     }
 
@@ -106,11 +103,11 @@ public class QueueThread implements Runnable {
                     JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                     int messageType = jsonInboundMessage.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
                     int sender = jsonInboundMessage.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt();
-                    System.out.println("Received Message: " + jsonInboundMessage.toString());
-                    if ((jsonInboundMessage.has(MESSAGE_INTENDED_RECIPIENT) &&
+                     if ((jsonInboundMessage.has(MESSAGE_INTENDED_RECIPIENT) &&
                             jsonInboundMessage.get(MESSAGE_INTENDED_RECIPIENT).getAsInt() != this.client.getID())
                             || sender == this.client.getID())
                         continue;
+                    System.out.println("Received Message: " + jsonInboundMessage.toString());
 
                  switch (messageType) {
                         //Actionable messages
@@ -140,7 +137,7 @@ public class QueueThread implements Runnable {
 
 
                 } catch (SocketTimeoutException e) {
-                    // System.out.println("Socket timed out " + System.currentTimeMillis());
+                     System.out.println("Socket timed out " + System.currentTimeMillis());
                 } catch (IOException e) {
                     System.out.println(e);
                 }
