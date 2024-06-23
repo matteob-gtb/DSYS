@@ -37,6 +37,7 @@ public class QueueThread implements Runnable {
         if (!outgoingMessage.has(MESSAGE_PROPERTY_FIELD_CLIENTID) || !outgoingMessage.has(MESSAGE_TYPE_FIELD_NAME))
             throw new RuntimeException("Badly Formatted Message");
         String pureJSON = outgoingMessage.toString();
+        System.out.println("Sending MESSAGE " + pureJSON);
         DatagramPacket packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), this.group, GROUP_PORT);
         socket.send(packet);
     }
@@ -136,7 +137,7 @@ public class QueueThread implements Runnable {
 
 
                 } catch (SocketTimeoutException e) {
-                     System.out.println("Socket timed out " + System.currentTimeMillis());
+                     //System.out.println("Socket timed out " + System.currentTimeMillis());
                 } catch (IOException e) {
                     System.out.println(e);
                 }
