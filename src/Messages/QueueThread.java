@@ -24,6 +24,8 @@ public class QueueThread implements Runnable {
     private ArrayList<Integer> knownClients;
     private int CLIENT_ID;
     private int port = -1;
+    private SocketAddress addr;
+    private NetworkInterface interfaceName;
 
     public QueueThread(Middleware mid, int CLIENT_ID) throws IOException {
         this.group = InetAddress.getByName(GROUPNAME);
@@ -33,9 +35,11 @@ public class QueueThread implements Runnable {
         boolean socketCreated = false;
         while (!socketCreated) {
             try {
-                port = new Random().nextInt(SOCKET_PORT_LOW, SOCKET_PORT_HIGH);
+                port = GROUP_PORT;
+                addr = new InetSocketAddress(group, port);
+                interfaceName = NetworkInterface.getByName("enp46s0");
                 socket = new MulticastSocket(port);
-                socket.joinGroup(group);
+                socket.joinGroup(addr,interfaceName);
                 socketCreated = true;
             } catch (SocketException e) {
                 System.out.println(e);
@@ -86,9 +90,9 @@ public class QueueThread implements Runnable {
 
 
                 } catch (SocketTimeoutException e) {
-                    System.out.println("Socket timed out");
+                    System.out.println("Socket timed out " + System.currentTimeMillis());
                 } catch (IOException e) {
-
+                    System.out.println(e);
                 }
 
 
