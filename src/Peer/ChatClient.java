@@ -37,9 +37,10 @@ public class ChatClient extends AbstractClient {
                 String response = reader.readLine().trim();
                 for (String choice : choices)
                     if (response.equalsIgnoreCase(choice)) {
-                        System.out.println("You chose : " + response );
+                        System.out.println("You chose : " + response);
                         return choice;
-                    }            }
+                    }
+            }
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
         } catch (IOException e) {
@@ -97,6 +98,13 @@ public class ChatClient extends AbstractClient {
             printAvailableCommands();
             command = br.readLine().trim();
             switch (command.toLowerCase()) {
+                case "0":
+                    print("Command 'Spam' received.");
+                    JsonObject msg = getBaseMessageStub();
+                    msg.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_WELCOME);
+                    messageMiddleware.sendMessage(msg);
+                    // Add logic to send message
+                    break;
                 case "1":
                     print("Command 'Join Room' received.");
 
@@ -136,6 +144,7 @@ public class ChatClient extends AbstractClient {
     private void printAvailableCommands() {
         print("""
                 Available commands:
+                0. Spam garbage
                 1. Join Room
                 2. Create Room
                 3. Delete Room
