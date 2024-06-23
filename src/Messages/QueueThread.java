@@ -3,6 +3,7 @@ package Messages;
 import java.io.IOException;
 import java.net.*;
 
+import Exceptions.SendException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -23,6 +24,7 @@ public class QueueThread implements Runnable {
     private ArrayList<Integer> knownClients;
     private int CLIENT_ID;
     private int port = -1;
+
     public QueueThread(Middleware mid, int CLIENT_ID) throws IOException {
         this.group = InetAddress.getByName(GROUPNAME);
         this.knownClients = new ArrayList<>();
@@ -31,7 +33,7 @@ public class QueueThread implements Runnable {
         boolean socketCreated = false;
         while (!socketCreated) {
             try {
-                port = new Random().nextInt(SOCKET_PORT_LOW,SOCKET_PORT_HIGH);
+                port = new Random().nextInt(SOCKET_PORT_LOW, SOCKET_PORT_HIGH);
                 socket = new MulticastSocket(port);
                 socket.joinGroup(group);
                 socketCreated = true;
@@ -60,11 +62,11 @@ public class QueueThread implements Runnable {
             try {
                 nextMessage = middleware.getFirstOutgoingMessages();
                 while (nextMessage.isPresent()) {
-                    System.out.println("Sending message...");
                     outgoingMessage = nextMessage.get();
                     String pureJSON = outgoingMessage.toString();
                     packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), this.group, this.port);
                     socket.send(packet);
+                    System.out.println("Sent message: " + pureJSON);
                     nextMessage = middleware.getFirstOutgoingMessages();
                 }
 
@@ -73,11 +75,13 @@ public class QueueThread implements Runnable {
                     // Receive the datagram packet
                     socket.receive(packet);
                     String jsonString = new String(packet.getData(), 0, packet.getLength());
-                    System.out.println(jsonString);
                     JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+                    int messageType = jsonObject.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
+                    int sender = jsonObject.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt();
+                    if (sender == this.CLIENT_ID) continue;
+                    System.out.println(jsonString);
                     System.out.println("Thread received an inbound message");
                     // TODO MESSAGE HANDLING LOGIC
-                    int messageType = jsonObject.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
 
 
                 } catch (SocketTimeoutException e) {
