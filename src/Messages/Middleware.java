@@ -14,6 +14,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -48,6 +49,9 @@ public abstract class Middleware {
         new Thread(queueThread).start();
     }
 
+    public Set<Integer> getOnlineClients(){
+        return queueThread.getOnlineClients();
+    }
 
     protected void enqueueMessage(JsonObject message) {
         try {

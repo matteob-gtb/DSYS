@@ -49,6 +49,9 @@ public class QueueThread implements Runnable {
         return welcomeMessage;
     }
 
+    public Set<Integer> getOnlineClients() {
+        return onlineClients;
+    }
 
     public QueueThread(Middleware mid, int CLIENT_ID) throws IOException {
         this.group = InetAddress.getByName(GROUPNAME);

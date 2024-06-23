@@ -88,10 +88,6 @@ public class ChatClient extends AbstractClient {
 
     }
 
-    public void joinRoomResponse(int roomID) throws IOException {
-        //Send Message CreateRoom
-
-    }
 
     public void mainLoop() throws IOException {
         String command;
@@ -123,7 +119,10 @@ public class ChatClient extends AbstractClient {
                     // Add logic to delete room
                     break;
                 case "5":
-                    print("Command 'Quit' received.");
+                    print("Command 'List Online Peers' received.");
+                    messageMiddleware.getOnlineClients().forEach(System.out::println);
+                    break;
+                case "6":
                     System.exit(0);
                     break;
                 default:
