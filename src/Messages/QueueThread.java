@@ -31,10 +31,10 @@ public class QueueThread implements Runnable {
     Sanity check
      */
     private void sendMessage(JsonObject outgoingMessage) throws IOException {
-        if (!outgoingMessage.has(MESSAGE_PROPERTY_FIELD_CLIENTID) || !outgoingMessage.has(MESSAGE_TYPE_FIELD_NAME))
+        if (!outgoingMessage.has(MESSAGE_PROPERTY_FIELD_CLIENTID) || !outgoingMessage.has(MESSAGE_TYPE_FIELD_NAME)) {
             throw new RuntimeException("Badly Formatted Message");
+        }
         String pureJSON = outgoingMessage.toString();
-        System.out.println("Sending MESSAGE " + pureJSON);
         DatagramPacket packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), this.group, GROUP_PORT);
         socket.send(packet);
     }
@@ -113,12 +113,10 @@ public class QueueThread implements Runnable {
                 socket.setSoTimeout(SOCKET_TIMEOUT);
                 try {
                     socket.receive(packet);
-                    System.out.println("Received message: " + new String(packet.getData()));
                     String jsonString = new String(packet.getData(), 0, packet.getLength());
                     JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                     int messageType = jsonInboundMessage.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
                     int sender = jsonInboundMessage.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt();
-                    System.out.println("Message type: " + messageType);
                     if ((jsonInboundMessage.has(MESSAGE_INTENDED_RECIPIENT) &&
                             jsonInboundMessage.get(MESSAGE_INTENDED_RECIPIENT).getAsInt() != this.client.getID())
                             || sender == this.client.getID())
@@ -128,13 +126,14 @@ public class QueueThread implements Runnable {
                         //Actionable messages
                         case MESSAGE_TYPE_HELLO -> {
                             client.print("Received an hello from " + sender + " replying with WELCOME");
+                            onlineClients.add(sender);
                             JsonObject welcome = prepareWelcomeMessage();
                             sendMessage(welcome);
                         }
                         case MESSAGE_TYPE_WELCOME -> {
                             int clientID = jsonInboundMessage.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt();
                             client.print("Added client " + clientID + " to the list of known clients");
-                            knownClients.add(clientID);
+                            onlineClients.add(clientID);
                         }
                         case MESSAGE_TYPE_CREATE_ROOM -> {
                             client.print("Client " + sender + " created a new room");
