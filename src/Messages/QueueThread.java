@@ -10,8 +10,10 @@ import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static java.lang.System.exit;
+import static java.lang.System.setErr;
 import static utils.Constants.*;
 
 public class QueueThread implements Runnable {
@@ -25,7 +27,7 @@ public class QueueThread implements Runnable {
     private int port = -1;
     private SocketAddress addr;
     private NetworkInterface interfaceName;
-    private Set<Integer> onlineClients;
+    private Set<Integer> onlineClients = new TreeSet<Integer>();
     private final AbstractClient client;
 
     /*
@@ -110,13 +112,10 @@ public class QueueThread implements Runnable {
                             || sender == this.client.getID())
                         continue;
 
-                    System.out.println(jsonString);
-                    System.out.println("Thread received an inbound message");
-                    // TODO MESSAGE HANDLING LOGIC
-
-                    switch (messageType) {
+                 switch (messageType) {
                         //Actionable messages
                         case MESSAGE_TYPE_HELLO -> {
+                            client.print("Received an hello from " + sender + " replying with WELCOME");
                             JsonObject welcome = prepareWelcomeMessage();
                             sendMessage(welcome);
                         }
