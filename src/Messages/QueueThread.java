@@ -97,7 +97,7 @@ public class QueueThread implements Runnable {
                 socket.setSoTimeout(SOCKET_TIMEOUT);
                 try {
                     socket.receive(packet);
-                    //System.out.println("Received message: " + new String(packet.getData()));
+                    System.out.println("Received message: " + new String(packet.getData()));
                     String jsonString = new String(packet.getData(), 0, packet.getLength());
                     JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                     int messageType = jsonInboundMessage.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
