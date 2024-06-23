@@ -132,6 +132,7 @@ public class QueueThread implements Runnable {
                         }
                         case MESSAGE_TYPE_WELCOME -> {
                             int clientID = jsonInboundMessage.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt();
+                            client.print("Received a WELCOME from #" + sender);
                             client.print("Added client " + clientID + " to the list of known clients");
                             onlineClients.add(clientID);
                         }
