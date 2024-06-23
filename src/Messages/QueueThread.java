@@ -74,6 +74,7 @@ public class QueueThread implements Runnable {
                 try {
                     // Receive the datagram packet
                     socket.receive(packet);
+                    System.out.println("Received message: " + new String(packet.getData()));
                     String jsonString = new String(packet.getData(), 0, packet.getLength());
                     JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
                     int messageType = jsonObject.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
