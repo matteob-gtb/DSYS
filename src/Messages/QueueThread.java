@@ -43,7 +43,7 @@ public class QueueThread implements Runnable {
 
 
     private JsonObject prepareWelcomeMessage() {
-        JsonObject welcomeMessage = getBaseMessageStub();
+        JsonObject welcomeMessage = client.getBaseMessageStub();
         welcomeMessage.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_WELCOME);
         //TODO ADD KNOWN CLIENTS
         return welcomeMessage;
@@ -126,7 +126,7 @@ public class QueueThread implements Runnable {
                             client.print("Client " + sender + " created a new room");
                             String outcome = client.askUserCommand("Do you want to join [y/n]?", "y", "n");
                             if (outcome.equalsIgnoreCase("y")) {
-                                JsonObject message = getBaseMessageStub();
+                                JsonObject message = client.getBaseMessageStub();
                                 message.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_JOIN_ROOM_ACK);
                                 message.addProperty(MESSAGE_INTENDED_RECIPIENT, sender);
                                 //SEND JOIN ROOM
