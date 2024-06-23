@@ -91,7 +91,6 @@ public class QueueThread implements Runnable {
                 while (nextMessage.isPresent()) {
                     outgoingMessage = nextMessage.get();
                     sendMessage(outgoingMessage);
-                    //System.out.println("Sent message: " + pureJSON);
                     nextMessage = middleware.getFirstOutgoingMessages();
                 }
 
@@ -103,11 +102,11 @@ public class QueueThread implements Runnable {
                     JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                     int messageType = jsonInboundMessage.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
                     int sender = jsonInboundMessage.get(MESSAGE_PROPERTY_FIELD_CLIENTID).getAsInt();
-                     if ((jsonInboundMessage.has(MESSAGE_INTENDED_RECIPIENT) &&
+                    System.out.println("Message type: " + messageType);
+                    if ((jsonInboundMessage.has(MESSAGE_INTENDED_RECIPIENT) &&
                             jsonInboundMessage.get(MESSAGE_INTENDED_RECIPIENT).getAsInt() != this.client.getID())
                             || sender == this.client.getID())
                         continue;
-                    System.out.println("Received Message: " + jsonInboundMessage.toString());
 
                  switch (messageType) {
                         //Actionable messages
