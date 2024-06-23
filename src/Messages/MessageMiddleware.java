@@ -17,10 +17,7 @@ public class MessageMiddleware extends Middleware {
     /**
      * @param msgObject
      */
-    @Override
-    public void sendMessage(JsonObject msgObject) {
 
-    }
 
     /**
      * @param chatRoomID

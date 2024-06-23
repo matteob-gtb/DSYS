@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Random;
+
 import utils.Constants;
 
 import static utils.Constants.*;
@@ -45,7 +46,6 @@ public class ChatClient extends AbstractClient {
         messageObject.addProperty(MESSAGE_PROPERTY_FIELD_CLIENTID, this.CLIENT_ID);
         messageObject.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_HELLO);
         messageMiddleware.sendMessage(messageObject);
-
 
     }
 

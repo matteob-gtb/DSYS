@@ -57,9 +57,11 @@ public class QueueThread implements Runnable {
         JsonObject outgoingMessage;
         while (true) {
             try {
+                nextMessage = middleware.getFirstOutgoingMessages();
                 while (nextMessage.isPresent()) {
+                    System.out.println("Sending message...");
                     outgoingMessage = nextMessage.get();
-                    String pureJSON = outgoingMessage.getAsString();
+                    String pureJSON = outgoingMessage.toString();
                     buffer = new byte[1024];
                     packet = new DatagramPacket(buffer, buffer.length, this.group, GROUP_PORT);
                     socket.send(packet);

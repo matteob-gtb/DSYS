@@ -26,6 +26,8 @@ import static utils.Constants.GROUP_PORT;
 public abstract class Middleware {
     final Lock lock = new ReentrantLock();
 
+    private int currMessageIndex = 0;
+
     protected ArrayList<JsonObject> incomingMessages = new ArrayList<>();
     protected ArrayList<JsonObject> outGoingMessages = new ArrayList<>();
     protected HashMap<Integer, ChatRoom> chatRooms = new HashMap<>();
@@ -38,7 +40,8 @@ public abstract class Middleware {
 
     public Middleware(int CLIENT_ID) throws IOException {
         this.queueThread = new QueueThread(this, CLIENT_ID);
-        queueThread.run();
+        new Thread(queueThread).start();
+
     }
 
 
@@ -65,9 +68,10 @@ public abstract class Middleware {
     protected Optional<JsonObject> getFirstOutgoingMessages() {
         try {
             lock.lock();
-            if (outGoingMessages.isEmpty())
+            if (outGoingMessages.size() >= currMessageIndex)
                 return Optional.empty();
-            return Optional.of(outGoingMessages.getFirst());
+            currMessageIndex++;
+            return Optional.of(outGoingMessages.get(currMessageIndex - 1));
         } finally {
             lock.unlock();
         }
@@ -77,6 +81,7 @@ public abstract class Middleware {
     public void sendMessage(JsonObject msgObject) {
         lock.lock();
         try {
+            System.out.println("Enqueued message");
             outGoingMessages.add(msgObject);
         } finally {
             lock.unlock();
