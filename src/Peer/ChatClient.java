@@ -80,6 +80,7 @@ public class ChatClient extends AbstractClient {
         JsonObject messageObject = new JsonObject();
         messageObject.addProperty(MESSAGE_PROPERTY_FIELD_CLIENTID, this.CLIENT_ID);
         messageObject.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_HELLO);
+        print("Client #" + this.CLIENT_ID + " online, sent HELLO");
         messageMiddleware.sendMessage(messageObject);
     }
 

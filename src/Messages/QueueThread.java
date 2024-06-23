@@ -83,7 +83,7 @@ public class QueueThread implements Runnable {
      */
     @Override
     public void run() {
-        client.print("QueueThread bootstrapped");
+        //client.print("QueueThread bootstrapped");
         byte[] buffer = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         Optional<JsonObject> nextMessage = Optional.empty();

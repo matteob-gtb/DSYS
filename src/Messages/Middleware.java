@@ -87,7 +87,6 @@ public abstract class Middleware {
     public void sendMessage(JsonObject msgObject) {
         lock.lock();
         try {
-            System.out.println("Enqueued message");
             outGoingMessages.add(msgObject);
         } finally {
             lock.unlock();
