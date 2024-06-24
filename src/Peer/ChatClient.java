@@ -114,11 +114,12 @@ public class ChatClient extends AbstractClient {
                     command = reader.readLine().trim();
                     System.out.println("Command: " + command);
                     Optional<JsonObject> eventOutcome = Optional.empty();
-                    if (currentEvent != null && currentEvent.isActionable()) {
+                    if (currentEvent.isActionable()) {
                         while (eventOutcome.isEmpty())
                             eventOutcome = currentEvent.executeEvent(command);
                         if (currentEvent.isActionable())
                             messageMiddleware.sendMessage(eventOutcome.get());
+                        command = "x";
                     }
                     currentEvent = null;
                     waitingForInput = false;
@@ -126,6 +127,9 @@ public class ChatClient extends AbstractClient {
                 Thread.sleep(15);
             }
             switch (command.toLowerCase()) {
+                case "x":
+                    //Event executed, ignore previous value
+                    break;
                 case "0":
                     print("Command 'List Commands' received.");
                     printAvailableCommands();
