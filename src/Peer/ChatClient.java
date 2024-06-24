@@ -31,7 +31,10 @@ public class ChatClient extends AbstractClient {
     private boolean messageWaitingForReply = false;
     private final SecureRandom random = new SecureRandom();
     private ChatRoom currentRoom = null;
-    private List<Event> eventsToProcess = Collections.synchronizedList(new ArrayList<Event>());
+
+
+
+
 
     public String askUserCommand(String commandPrompt, String defaultChoice, String... choices) {
         try {
