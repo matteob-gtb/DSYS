@@ -143,7 +143,6 @@ public class QueueThread implements Runnable {
                             middleware.addParticipantToRoom(chatRoomID, sender);
                         }
                         case MESSAGE_TYPE_CREATE_ROOM -> {
-                            client.print("Client " + sender + " created a new room");
                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
 
                             AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(roomID, sender, client.getBaseMessageStub(), "y", "n");
