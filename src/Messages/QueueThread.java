@@ -128,7 +128,7 @@ public class QueueThread implements Runnable {
                     switch (messageType) {
                         //Actionable messages
                         case MESSAGE_TYPE_HELLO -> {
-                            client.print("Received an hello from " + sender + " replying with WELCOME");
+                            client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                             onlineClients.add(sender);
                             JsonObject welcome = prepareWelcomeMessage();
                             sendMessage(welcome);
@@ -136,6 +136,7 @@ public class QueueThread implements Runnable {
                         case MESSAGE_TYPE_WELCOME -> {
                             String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
                             client.addEvent(new GenericNotifyEvent(prompt));
+                            System.out.println("Added event");
                             onlineClients.add(sender);
                         }
                         case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
