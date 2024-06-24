@@ -50,7 +50,6 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
         //Send Message
         msg.addProperty(MESSAGE_INTENDED_RECIPIENT, this.sender);
         msg.addProperty(ROOM_ID_PROPERTY_NAME, this.roomID);
-
         return Optional.of(msg);
     }
 }

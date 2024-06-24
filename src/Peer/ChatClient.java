@@ -199,7 +199,6 @@ public class ChatClient extends AbstractClient {
                     print("Invalid Command");
                     break;
             }
-            System.out.println("here");
         }
     }
 

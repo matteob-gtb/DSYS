@@ -140,10 +140,11 @@ public class QueueThread implements Runnable {
                         }
                         case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
                             int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+                            client.addEvent(new GenericNotifyEvent("Client #" + sender+ " agreed to participate in the chat room"));
                             middleware.addParticipantToRoom(chatRoomID, sender);
                         }
                         case MESSAGE_TYPE_CREATE_ROOM -> {
-                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+                            int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                             AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(roomID, sender, client.getBaseMessageStub(), "y", "n");
                             client.addEvent(eventToProcess);
                             System.out.println(client.eventsToProcess.size());
