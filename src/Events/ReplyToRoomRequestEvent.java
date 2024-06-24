@@ -1,5 +1,6 @@
 package Events;
 
+import Messages.Message;
 import com.google.gson.JsonObject;
 
 import java.util.Arrays;
@@ -9,14 +10,15 @@ import static utils.Constants.*;
 
 public class ReplyToRoomRequestEvent extends AbstractEvent {
 
-    private final int roomID, sender;
+    private final int clientID, roomID, recipientID;
     private final String[] acceptableOutcomes;
     private final JsonObject msg;
 
-    public ReplyToRoomRequestEvent(int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
+    public ReplyToRoomRequestEvent(int clientID, int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
         super(true);
+        this.clientID = clientID;
         this.roomID = roomID;
-        this.sender = sender;
+        this.recipientID = sender;
         this.msg = prepackagedMessage;
         this.acceptableOutcomes = acceptableOutcomes;
     }
@@ -26,7 +28,7 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
      */
 
     public String eventPrompt() {
-        return "Client #" + this.sender + " asked to join room #" + this.roomID + "\nDo you want to join [y/n]?";
+        return "Client #" + this.recipientID + " asked to join room #" + this.roomID + "\nDo you want to join [y/n]?";
     }
 
     /**
@@ -39,17 +41,23 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
     }
 
     @Override
-    public Optional<JsonObject> executeEvent(String command) {
+    public Optional<Message> executeEvent(String command) {
         Optional<String> foundMatch = Arrays.stream(acceptableOutcomes).filter(x -> x.contains(command)).findFirst();
         if (foundMatch.isEmpty())
             return Optional.empty();
+        int type = -1;
         if (command.equals("y"))
-            msg.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_JOIN_ROOM_ACCEPT);
+            type = MESSAGE_TYPE_JOIN_ROOM_ACCEPT;
         else
-            msg.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_JOIN_ROOM_REFUSE);
-        //Send Message
-        msg.addProperty(MESSAGE_INTENDED_RECIPIENT, this.sender);
-        msg.addProperty(ROOM_ID_PROPERTY_NAME, this.roomID);
+            type = MESSAGE_TYPE_JOIN_ROOM_REFUSE;
+        Message msg = new Message(
+                this.clientID,
+                type,
+                this.roomID,
+                this.recipientID,
+                null
+        );
+
         return Optional.of(msg);
     }
 }

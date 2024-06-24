@@ -1,8 +1,6 @@
 package Peer;
 
 import Events.AbstractEvent;
-import Events.Event;
-import Messages.MessageMiddleware;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
@@ -24,7 +22,6 @@ public abstract class AbstractClient {
     public void addEvent(AbstractEvent event) {
         eventsToProcess.add(event);
     }
-    protected MessageMiddleware messageMiddleware = null;
 
     public abstract void announceSelf() throws IOException;
 

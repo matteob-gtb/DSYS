@@ -2,9 +2,7 @@ package Peer;
 
 
 import Events.AbstractEvent;
-import Messages.ChatRoom;
-import Messages.MessageMiddleware;
-import Messages.MyMulticastSocketWrapper;
+import Messages.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -13,14 +11,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
 
 import static utils.Constants.*;
-/*
-Clients send an HELLO message to discover peers on the same LAN
-everyone responds with HI, containing each their ID
- */
+
 
 
 public class ChatClient extends AbstractClient {
@@ -32,6 +29,7 @@ public class ChatClient extends AbstractClient {
     private final SecureRandom random = new SecureRandom();
     private ChatRoom currentRoom = null;
     private ArrayList<ChatRoom> rooms = new ArrayList<>();
+    private QueueManager queueManager;
 
     @Deprecated
     public String askUserCommand(String commandPrompt, String defaultChoice, String... choices) {
@@ -67,20 +65,30 @@ public class ChatClient extends AbstractClient {
         }
     }
 
-    public ChatClient() throws IOException {
+    public ChatClient() throws Exception {
         Random generator = new Random();
         this.CLIENT_ID = generator.nextInt(0, 6000);
-        this.messageMiddleware = new MessageMiddleware(this);
+        ChatRoom commonMulticast = new ChatRoom(DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
+        this.queueManager = new QueueThread(this,commonMulticast.getDedicatedRoomSocket());
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        executorService.execute(queueManager);
     }
 
 
     //block until received from all or timer expires
     public void announceSelf() throws IOException {
-        JsonObject messageObject = new JsonObject();
-        messageObject.addProperty(MESSAGE_PROPERTY_FIELD_CLIENTID, this.CLIENT_ID);
-        messageObject.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_HELLO);
-        print("Client #" + this.CLIENT_ID + " online, sent HELLO");
-        messageMiddleware.sendMulticastMessage(messageObject);
+        Message welcomeMessage = new Message(
+                this.CLIENT_ID,
+                MESSAGE_TYPE_HELLO,
+                DEFAULT_GROUP_ROOMID,
+                -1,
+                null
+        );
+//        JsonObject messageObject = new JsonObject();
+//        messageObject.addProperty(MESSAGE_PROPERTY_FIELD_CLIENTID, this.CLIENT_ID);
+//        messageObject.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_HELLO);
+//        print("Client #" + this.CLIENT_ID + " online, sent HELLO");
+        queueManager.sendMessage(welcomeMessage,null);
     }
 
     public void createRoom() throws IOException {
@@ -112,14 +120,15 @@ public class ChatClient extends AbstractClient {
                     waitingForInput = false;
                 }
                 if (currentEvent != null) {
-                    Optional<JsonObject> eventOutcome = Optional.empty();
+                    Optional<Message> eventOutcome = Optional.empty();
                     if (currentEvent.isActionable()) {
                         while (eventOutcome.isEmpty()) {
                             System.out.println(currentEvent.eventPrompt());
                             command = reader.readLine().trim();
                             eventOutcome = currentEvent.executeEvent(command);
                         }
-                        messageMiddleware.sendMulticastMessage(eventOutcome.get());
+                        //TODO  fix currentroom
+                        queueManager.sendMessage(eventOutcome.get(),currentRoom);
                         command = "x";
                         waitingForInput = false;
                     } System.out.println(currentEvent.eventPrompt());
@@ -151,7 +160,7 @@ public class ChatClient extends AbstractClient {
                         } catch (Exception e) {
 
                         }
-                        Optional<ChatRoom> room = messageMiddleware.getChatRoom(roomID);
+                        Optional<ChatRoom> room = queueManager.getChatRoom(roomID);
                         if (room.isEmpty())
                             print("Room not found.");
                         else {
@@ -167,10 +176,13 @@ public class ChatClient extends AbstractClient {
                     print("Command 'Create room' received.");
                     ChatRoom room = new ChatRoom(random.nextInt(0, 999999), MyMulticastSocketWrapper.getNewGroupName());
 
-                    JsonObject outgoingMessage = getJsonObject(room);
-                    messageMiddleware.registerRoom(room);
+                    Message outMsg = new Message(this.CLIENT_ID,MESSAGE_TYPE_CREATE_ROOM,room.getChatID(),-1,null);
+
+                    System.out.println(outMsg);
+
+                    queueManager.addRoom(room);
                     currentRoom = room;
-                    messageMiddleware.sendMulticastMessage(outgoingMessage);
+                    queueManager.sendMessage(outMsg,currentRoom);
                     print("Sent room creation request to online peers,waiting for responses...");
                     break;
                 case "3":
@@ -183,10 +195,10 @@ public class ChatClient extends AbstractClient {
                     break;
                 case "5":
                     print("Command 'List Online Peers' received.");
-                    if (messageMiddleware.getOnlineClients().isEmpty())
+                    if (queueManager.getOnlineClients().isEmpty())
                         print("No online peer detected yet");
                     else
-                        messageMiddleware.getOnlineClients().forEach(System.out::println);
+                        queueManager.getOnlineClients().forEach(System.out::println);
 
                     break;
                 case "7":
@@ -202,7 +214,7 @@ public class ChatClient extends AbstractClient {
     private JsonObject getJsonObject(ChatRoom room) {
         JsonObject outgoingMessage = getBaseMessageStub();
         outgoingMessage.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_CREATE_ROOM);
-        JsonArray recipientsArray = new JsonArray(messageMiddleware.getOnlineClients().size());
+        JsonArray recipientsArray = new JsonArray(queueManager.getOnlineClients().size());
         //messageMiddleware.getOnlineClients().forEach(recipientsArray::add);
         outgoingMessage.add(MESSAGE_INTENDED_RECIPIENTS, recipientsArray);
 

@@ -8,8 +8,12 @@ public class Message {
 
      ExclusionStrategy exclusionStrategy = new ExclusionStrategy() {
         public boolean shouldSkipField(FieldAttributes fieldAttributes) {
+            if (fieldAttributes.getName().equals("recipientID")) {
+                return recipientID != -1;
+            }
+
             if ("roomID".equals(fieldAttributes.getName())) {
-                return roomID == -1;
+                return roomID != -1;
             }
             return false;
         }
@@ -25,11 +29,14 @@ public class Message {
         return builder.create();
     }
 
+    public String toJSONString(){
+        return gson().toJson(this);
+    }
+
 
     private transient boolean isRoomMessage = false;
 
     private int messageType;
-
     private int senderID;
 
     //-1 if it's not meant to be a room message

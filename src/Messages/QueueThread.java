@@ -7,39 +7,61 @@ import Events.AbstractEvent;
 import Events.GenericNotifyEvent;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
+import Peer.ChatClient;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.util.*;
 
-import static java.lang.System.exit;
 import static utils.Constants.*;
 
-public class QueueThread implements Runnable {
+public class QueueThread implements QueueManager {
 
     private static final int SOCKET_TIMEOUT = 100;
-    private final Middleware middleware;
     private InetAddress group;
     private Set<Integer> onlineClients = new TreeSet<Integer>();
     private final AbstractClient client;
-    private List<ChatRoom> roomsList = Collections.synchronizedList(new ArrayList<>());
+    //private List<ChatRoom> roomsList = Collections.synchronizedList(new ArrayList<>());
+    private Map<Integer, ChatRoom> roomsMap = Collections.synchronizedMap(new HashMap<>());
+    private MyMulticastSocketWrapper commonMulticastChannel;
+    private MyMulticastSocketWrapper currentSocket = null;
+    private ChatRoom currentRoom = null;
+
+    private List<Integer> roomIDs = Collections.synchronizedList(new ArrayList<>());
+    private int currentIDIndex = 0;
 
 
-    public void addRoom(ChatRoom room) {
-        roomsList.add(room);
+    private void cycleRooms() {
+        currentRoom = roomsMap.get(roomIDs.get(currentIDIndex));
+        currentIDIndex = currentIDIndex + 1 == roomIDs.size() ? 0 : currentIDIndex + 1;
     }
 
-    /*
 
-    Sanity check
+    @Override
+    public void addRoom(ChatRoom room) {
+        if (roomsMap.containsKey(room.getChatID())) throw new RuntimeException("Duplicate chat room");
+        roomsMap.put(room.getChatID(), room);
+    }
+
+    /**
+     * @param m
+     * @param room
      */
-    private void sendMessage(JsonObject outgoingMessage) throws IOException {
-        if (!outgoingMessage.has(MESSAGE_PROPERTY_FIELD_CLIENTID) || !outgoingMessage.has(MESSAGE_TYPE_FIELD_NAME)) {
-            throw new RuntimeException("Badly Formatted Message");
+    @Override
+    public void sendMessage(Message m, ChatRoom room) {
+
+    }
+
+    public void sendMessage(Message m, int roomID) throws IOException {
+        String pureJSON = m.toString();
+        InetAddress destination = null;
+        synchronized (roomsMap) {
+            if (!roomsMap.containsKey(roomID))
+                throw new RuntimeException("No such room");
+            destination = roomsMap.get(roomID).getRoomAddress();
         }
-        String pureJSON = outgoingMessage.toString();
-        DatagramPacket packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), this.group, GROUP_PORT);
-        middleware.sendMulticastMessage(packet);
+        DatagramPacket packet = new DatagramPacket(pureJSON.getBytes(), pureJSON.length(), destination, GROUP_PORT);
+        currentSocket.sendPacket(pureJSON);
     }
 
 
@@ -49,14 +71,29 @@ public class QueueThread implements Runnable {
         return welcomeMessage;
     }
 
+    @Override
     public Set<Integer> getOnlineClients() {
         return onlineClients;
     }
 
-    public QueueThread(Middleware mid, int CLIENT_ID) throws IOException {
-        this.group = InetAddress.getByName(GROUPNAME);
-        this.client = mid.getClient();
-        this.middleware = mid;
+    /**
+     * @param roomID
+     * @return
+     */
+    @Override
+    public Optional<ChatRoom> getChatRoom(int roomID) {
+        return Optional.empty();
+    }
+
+    public void registerRoom(ChatRoom chatRoom) {
+        roomsMap.put(chatRoom.getChatID(), chatRoom);
+    }
+
+    public QueueThread(AbstractClient client, MyMulticastSocketWrapper commonMulticastChannel) throws IOException {
+        this.group = InetAddress.getByName(COMMON_GROUPNAME);
+        this.commonMulticastChannel = commonMulticastChannel;
+        currentSocket = this.commonMulticastChannel;
+        this.client = client;
     }
 
     /**
@@ -68,20 +105,15 @@ public class QueueThread implements Runnable {
         //client.print("QueueThread bootstrapped");
         byte[] buffer = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        Optional<JsonObject> nextMessage = Optional.empty();
+        Message nextMessage = null;
         JsonObject outgoingMessage;
         while (true) {
             try {
-                nextMessage = middleware.getFirstOutgoingMessages();
-                while (nextMessage.isPresent()) {
-                    outgoingMessage = nextMessage.get();
-                    sendMessage(outgoingMessage);
-                    nextMessage = middleware.getFirstOutgoingMessages();
-                }
+                cycleRooms();
+               //TODO send messages
 
-                genericCommsMulticast.setSoTimeout(SOCKET_TIMEOUT);
                 try {
-                    genericCommsMulticast.receive(packet);
+                    currentSocket.receive(packet);
                     String jsonString = new String(packet.getData(), 0, packet.getLength());
                     JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                     int messageType = jsonInboundMessage.get(MESSAGE_TYPE_FIELD_NAME).getAsInt();
@@ -111,33 +143,32 @@ public class QueueThread implements Runnable {
                         }
                         case MESSAGE_TYPE_CREATE_ROOM -> {
                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-                            AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(roomID, sender, client.getBaseMessageStub(), "y", "n");
+                            AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), roomID, sender, client.getBaseMessageStub(), "y", "n");
                             client.addEvent(eventToProcess);
                             System.out.println(client.eventsToProcess.size());
                         }
                         case ROOM_MESSAGE -> {
-                            int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+                            // int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
 
-                            if (middleware.getChatRoom(chatRoomID).isEmpty()){};
+
                         }
                         //append to relevant queue
                     }
 
 
+                } catch (SocketTimeoutException e) {
+                    //System.out.println("Socket timed out " + System.currentTimeMillis());
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
 
-            } catch (SocketTimeoutException e) {
-                //System.out.println("Socket timed out " + System.currentTimeMillis());
+
+            } catch (SocketException e) {
+                throw new RuntimeException(e);
             } catch (IOException e) {
+                System.out.println("Send failure");
                 System.out.println(e);
             }
-
-
-        } catch(SocketException e){
-            throw new RuntimeException(e);
-        } catch(IOException e){
-            System.out.println("Send failure");
-            System.out.println(e);
         }
     }
-}
 }

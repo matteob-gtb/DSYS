@@ -18,7 +18,13 @@ public class ChatRoom {
     private boolean connected = false;
 
 
+    public InetAddress getRoomAddress(){
+        return dedicatedRoomSocket.getMCastAddress();
+    }
 
+    public MyMulticastSocketWrapper getDedicatedRoomSocket() {
+        return dedicatedRoomSocket;
+    }
 
     public int getChatID() {
         return chatID;

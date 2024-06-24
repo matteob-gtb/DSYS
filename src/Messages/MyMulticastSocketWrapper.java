@@ -13,6 +13,11 @@ public class MyMulticastSocketWrapper {
     private MulticastSocket socket; //multicast or normal UDP
     private boolean connected = false;
     private static Set<String> usedGroupNames = new HashSet<>();
+
+    public InetAddress getMCastAddress() {
+        return roomGroup;
+    }
+
     private InetAddress roomGroup;
 
 
@@ -21,6 +26,10 @@ public class MyMulticastSocketWrapper {
         return "";
     }
 
+
+    public void receive(DatagramPacket packet) throws IOException {
+        socket.receive(packet);
+    }
 
     public void sendPacket(String message) throws IOException {
         DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(), this.roomGroup, GROUP_PORT);
