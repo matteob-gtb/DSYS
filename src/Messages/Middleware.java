@@ -1,19 +1,12 @@
 package Messages;
 
 import Peer.AbstractClient;
-import Peer.ChatClient;
 import com.google.gson.JsonObject;
 
-import javax.imageio.IIOException;
-import javax.swing.plaf.basic.BasicOptionPaneUI;
-import java.awt.desktop.QuitEvent;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -30,9 +23,6 @@ public abstract class Middleware {
     protected ConcurrentHashMap<Integer, ChatRoom> chatRooms = new ConcurrentHashMap<>();
 
     protected QueueThread queueThread;
-    protected ArrayList<Integer> knownClients;
-    protected MulticastSocket socket = null;
-    protected InetAddress group;
     protected int CLIENT_ID;
     protected AbstractClient client;
 
@@ -91,15 +81,31 @@ public abstract class Middleware {
 
     public void registerRoom(ChatRoom room) {
         chatRooms.put(room.getChatID(), room);
+        queueThread.addRoom(room);
         room.addParticipant(this.CLIENT_ID);
     }
 
+    public void sendMessageTo(JsonObject msgObject, InetAddress recipient) {
+        lock.lock();
+        try {
+            throw new UnsupportedOperationException();
+        } finally {
+            lock.unlock();
+        }
+    }
 
-
-    public void sendMessage(JsonObject msgObject) {
+    public void sendMulticastMessage(JsonObject msgObject) {
         lock.lock();
         try {
             outGoingMessages.add(msgObject);
+        } finally {
+            lock.unlock();
+        }
+    }
+    public void sendRoomMessage(JsonObject msgObject,ChatRoom roomID) {
+        lock.lock();
+        try {
+            throw new UnsupportedOperationException();
         } finally {
             lock.unlock();
         }
