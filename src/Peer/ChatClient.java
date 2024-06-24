@@ -134,9 +134,10 @@ public class ChatClient extends AbstractClient {
                     JsonObject outgoingMessage = getBaseMessageStub();
                     outgoingMessage.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_CREATE_ROOM);
                     JsonArray recipientsArray = new JsonArray(messageMiddleware.getOnlineClients().size());
-                    messageMiddleware.getOnlineClients().forEach(recipientsArray::add);
+                    //messageMiddleware.getOnlineClients().forEach(recipientsArray::add);
                     outgoingMessage.add(MESSAGE_INTENDED_RECIPIENTS, recipientsArray);
                     ChatRoom room = new ChatRoom(random.nextInt(0, 999999));
+                    outgoingMessage.add(ROOM_ID_PROPERTY_NAME,room.getChatID());
                     messageMiddleware.registerRoom(room);
                     currentRoom = room;
                     messageMiddleware.sendMessage(outgoingMessage);
