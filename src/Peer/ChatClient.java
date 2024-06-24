@@ -93,7 +93,7 @@ public class ChatClient extends AbstractClient {
 
     public void mainLoop() throws IOException {
         String command;
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        reader = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
             printAvailableCommands();
             command = br.readLine().trim();
@@ -137,7 +137,7 @@ public class ChatClient extends AbstractClient {
                     //messageMiddleware.getOnlineClients().forEach(recipientsArray::add);
                     outgoingMessage.add(MESSAGE_INTENDED_RECIPIENTS, recipientsArray);
                     ChatRoom room = new ChatRoom(random.nextInt(0, 999999));
-                    outgoingMessage.add(ROOM_ID_PROPERTY_NAME,room.getChatID());
+                    outgoingMessage.addProperty(ROOM_ID_PROPERTY_NAME,room.getChatID());
                     messageMiddleware.registerRoom(room);
                     currentRoom = room;
                     messageMiddleware.sendMessage(outgoingMessage);
