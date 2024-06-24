@@ -110,21 +110,20 @@ public class ChatClient extends AbstractClient {
                     waitingForInput = false;
                 }
                 if (currentEvent != null) {
-                    System.out.println(currentEvent.eventPrompt());
+                    Optional<JsonObject> eventOutcome = Optional.empty();
                     if (currentEvent.isActionable()) {
-                        command = reader.readLine().trim();
-                        System.out.println("Command: " + command);
-                        Optional<JsonObject> eventOutcome = Optional.empty();
-                        while (eventOutcome.isEmpty())
+                        while (eventOutcome.isEmpty()) {
+                            System.out.println(currentEvent.eventPrompt());
+                            command = reader.readLine().trim();
                             eventOutcome = currentEvent.executeEvent(command);
-                        if (currentEvent.isActionable())
-                            messageMiddleware.sendMessage(eventOutcome.get());
+                        }
+                        messageMiddleware.sendMessage(eventOutcome.get());
                         command = "x";
                         waitingForInput = false;
                     }
                     currentEvent = null;
                 }
-                Thread.sleep(15);
+                Thread.sleep(25);
             }
             switch (command.toLowerCase()) {
                 case "x":
