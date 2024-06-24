@@ -26,7 +26,7 @@ public abstract class AbstractClient {
 
     public abstract void print(String queueThreadBootstrapped);
 
-    public abstract String askUserCommand(String commandPrompt, String... choices);
+    public abstract String askUserCommand(String commandPrompt, String defaultC,String... choices);
 
     public JsonObject getBaseMessageStub() {
         JsonObject msg = new JsonObject();

@@ -142,7 +142,7 @@ public class QueueThread implements Runnable {
                         case MESSAGE_TYPE_CREATE_ROOM -> {
                             client.print("Client " + sender + " created a new room");
                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-                            String outcome = client.askUserCommand("Do you want to join [y/n]?", "y", "n");
+                            String outcome = client.askUserCommand("Do you want to join [y/n]?","n", "y", "n");
                             if (outcome.equalsIgnoreCase("y")) {
                                 client.print("Joining room #" + roomID);
                                 JsonObject message = client.getBaseMessageStub();
@@ -153,6 +153,8 @@ public class QueueThread implements Runnable {
                                 room.addParticipant(sender);
                                 middleware.registerRoom(room);
                                 //SEND JOIN ROOM
+                            } else {
+                                client.print("Refusing to join room " + roomID);
                             }
                         }
                         case ROOM_MESSAGE -> {

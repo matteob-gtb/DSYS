@@ -35,7 +35,7 @@ public class ChatClient extends AbstractClient {
     private ChatRoom currentRoom = null;
 
 
-    public String askUserCommand(String commandPrompt, String... choices) {
+    public String askUserCommand(String commandPrompt,String defaultChoice, String... choices) {
         try {
             consoleSemaphore.acquire();
             while (true) {
@@ -54,6 +54,7 @@ public class ChatClient extends AbstractClient {
         } finally {
             consoleSemaphore.release();
         }
+        return defaultChoice;
      }
 
     public void print(String message) {
