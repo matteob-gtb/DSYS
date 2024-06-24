@@ -144,11 +144,14 @@ public class QueueThread implements Runnable {
                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                             String outcome = client.askUserCommand("Do you want to join [y/n]?", "y", "n");
                             if (outcome.equalsIgnoreCase("y")) {
+                                client.print("Joining room #" + roomID);
                                 JsonObject message = client.getBaseMessageStub();
                                 message.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_JOIN_ROOM_ACK);
                                 message.addProperty(MESSAGE_INTENDED_RECIPIENT, sender);
                                 sendMessage(message);
                                 ChatRoom room = new ChatRoom(roomID);
+                                room.addParticipant(sender);
+                                middleware.registerRoom(room);
                                 //SEND JOIN ROOM
                             }
                         }

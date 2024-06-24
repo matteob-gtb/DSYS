@@ -41,6 +41,7 @@ public class ChatClient extends AbstractClient {
             while (true) {
                 System.out.println(commandPrompt);
                 String response = reader.readLine().trim();
+                System.out.println("Response line " + response);
                 for (String choice : choices)
                     if (response.equalsIgnoreCase(choice)) {
                         System.out.println("You chose : " + response);
@@ -53,8 +54,7 @@ public class ChatClient extends AbstractClient {
         } finally {
             consoleSemaphore.release();
         }
-        return null;
-    }
+     }
 
     public void print(String message) {
         try {
