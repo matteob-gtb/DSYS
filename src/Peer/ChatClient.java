@@ -7,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -97,6 +98,7 @@ public class ChatClient extends AbstractClient {
         printAvailableCommands();
         Event currentEvent = null;
         while (true) {
+            System.out.println("Top of the loop > " + eventsToProcess.size());
             if (!eventsToProcess.isEmpty())
                 currentEvent = eventsToProcess.remove(0);
             //poll and get not needed to be atomic, only 1 consumer and 1 producer
