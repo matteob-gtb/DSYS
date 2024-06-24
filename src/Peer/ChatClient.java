@@ -120,7 +120,7 @@ public class ChatClient extends AbstractClient {
                         messageMiddleware.sendMessage(eventOutcome.get());
                         command = "x";
                         waitingForInput = false;
-                    }
+                    } System.out.println(currentEvent.eventPrompt());
                     currentEvent = null;
                 }
                 Thread.sleep(25);
