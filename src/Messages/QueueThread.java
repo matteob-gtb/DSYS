@@ -3,9 +3,11 @@ package Messages;
 import java.io.IOException;
 import java.net.*;
 
+import Events.AbstractEvent;
+import Events.GenericNotifyEvent;
 import Peer.AbstractClient;
-import Peer.Event;
-import Peer.ReplyToRoomRequest;
+import Events.Event;
+import Events.ReplyToRoomRequestEvent;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -132,8 +134,8 @@ public class QueueThread implements Runnable {
                             sendMessage(welcome);
                         }
                         case MESSAGE_TYPE_WELCOME -> {
-                            client.print("Received a WELCOME from #" + sender);
-                            client.print("Added client " + sender + " to the list of known clients");
+                            String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
+                            client.addEvent(new GenericNotifyEvent(prompt));
                             onlineClients.add(sender);
                         }
                         case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
@@ -144,7 +146,7 @@ public class QueueThread implements Runnable {
                             client.print("Client " + sender + " created a new room");
                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
 
-                            Event eventToProcess = new ReplyToRoomRequest(roomID, sender, client.getBaseMessageStub(), "y", "n");
+                            AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(roomID, sender, client.getBaseMessageStub(), "y", "n");
                             client.addEvent(eventToProcess);
 
 //                            String outcome = client.askUserCommand("Do you want to join [y/n]?", "n", "y", "n");

@@ -1,4 +1,4 @@
-package Peer;
+package Events;
 
 import com.google.gson.JsonObject;
 
@@ -7,13 +7,14 @@ import java.util.Optional;
 
 import static utils.Constants.*;
 
-public class ReplyToRoomRequest implements Event {
+public class ReplyToRoomRequestEvent extends AbstractEvent {
 
     private final int roomID, sender;
     private final String[] acceptableOutcomes;
     private final JsonObject msg;
 
-    public ReplyToRoomRequest(int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
+    public ReplyToRoomRequestEvent(int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
+        super(true);
         this.roomID = roomID;
         this.sender = sender;
         this.msg = prepackagedMessage;
@@ -26,6 +27,15 @@ public class ReplyToRoomRequest implements Event {
 
     public String eventPrompt() {
         return "Client #" + this.sender + " asked to join room #" + this.roomID + "\nDo you want to join [y/n]?";
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void executeEvent() {
+        throw new UnsupportedOperationException("Not supported");
+
     }
 
     @Override

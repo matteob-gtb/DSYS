@@ -1,20 +1,18 @@
 package Peer;
 
 
+import Events.AbstractEvent;
 import Messages.ChatRoom;
 import Messages.MessageMiddleware;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.SynchronousQueue;
 
 
 import static utils.Constants.*;
@@ -32,9 +30,6 @@ public class ChatClient extends AbstractClient {
     private boolean messageWaitingForReply = false;
     private final SecureRandom random = new SecureRandom();
     private ChatRoom currentRoom = null;
-
-
-
 
 
     public String askUserCommand(String commandPrompt, String defaultChoice, String... choices) {
@@ -96,11 +91,11 @@ public class ChatClient extends AbstractClient {
         String command;
         reader = new BufferedReader(new InputStreamReader(System.in));
         printAvailableCommands();
-        Event currentEvent = null;
+        AbstractEvent currentEvent = null;
         while (true) {
             System.out.println("Top of the loop > " + eventsToProcess.size());
             if (!eventsToProcess.isEmpty())
-                currentEvent = eventsToProcess.remove(0);
+                currentEvent = eventsToProcess.removeFirst();
             //poll and get not needed to be atomic, only 1 consumer and 1 producer
 
             if (currentEvent != null)
@@ -110,11 +105,12 @@ public class ChatClient extends AbstractClient {
             consoleSemaphore.release();
             Optional<JsonObject> eventOutcome = Optional.empty();
 
-            if (currentEvent != null) {
+            if (currentEvent != null && currentEvent.isActionable()) {
                 while (eventOutcome.isEmpty())
                     eventOutcome = currentEvent.executeEvent(command);
-                messageMiddleware.sendMessage(eventOutcome.get());
-            }
+                if (currentEvent.isActionable())
+                    messageMiddleware.sendMessage(eventOutcome.get());
+            } else currentEvent = null;
 
 
             switch (command.toLowerCase()) {
