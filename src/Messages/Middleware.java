@@ -24,7 +24,9 @@ public abstract class Middleware {
     private int currMessageIndex = 0;
 
     protected ArrayList<JsonObject> incomingMessages = new ArrayList<>();
+
     protected ArrayList<JsonObject> outGoingMessages = new ArrayList<>();
+
     protected ConcurrentHashMap<Integer, ChatRoom> chatRooms = new ConcurrentHashMap<>();
 
     protected QueueThread queueThread;
@@ -91,6 +93,8 @@ public abstract class Middleware {
         chatRooms.put(room.getChatID(), room);
         room.addParticipant(this.CLIENT_ID);
     }
+
+
 
     public void sendMessage(JsonObject msgObject) {
         lock.lock();

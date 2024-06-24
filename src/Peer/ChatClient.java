@@ -11,11 +11,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.SynchronousQueue;
 
 
 import static utils.Constants.*;
@@ -33,9 +31,9 @@ public class ChatClient extends AbstractClient {
     private boolean messageWaitingForReply = false;
     private final SecureRandom random = new SecureRandom();
     private ChatRoom currentRoom = null;
+    private List<Event> eventsToProcess = Collections.synchronizedList(new ArrayList<Event>());
 
-
-    public String askUserCommand(String commandPrompt,String defaultChoice, String... choices) {
+    public String askUserCommand(String commandPrompt, String defaultChoice, String... choices) {
         try {
             consoleSemaphore.acquire();
             while (true) {
@@ -55,7 +53,7 @@ public class ChatClient extends AbstractClient {
             consoleSemaphore.release();
         }
         return defaultChoice;
-     }
+    }
 
     public void print(String message) {
         try {
@@ -90,12 +88,30 @@ public class ChatClient extends AbstractClient {
     }
 
 
-    public void mainLoop() throws IOException {
+    public void mainLoop() throws Exception {
         String command;
         reader = new BufferedReader(new InputStreamReader(System.in));
         printAvailableCommands();
+        Event currentEvent = null;
         while (true) {
+            if (!eventsToProcess.isEmpty())
+                currentEvent = eventsToProcess.remove(0);
+            //poll and get not needed to be atomic, only 1 consumer and 1 producer
+
+            if (currentEvent != null)
+                print(currentEvent.eventPrompt());
+            consoleSemaphore.acquire();
             command = reader.readLine().trim();
+            consoleSemaphore.release();
+            Optional<JsonObject> eventOutcome = Optional.empty();
+
+            if (currentEvent != null) {
+                while (eventOutcome.isEmpty())
+                    eventOutcome = currentEvent.executeEvent(command);
+                messageMiddleware.sendMessage(eventOutcome.get());
+            }
+
+
             switch (command.toLowerCase()) {
                 case "0":
                     print("Command 'List Commands' received.");
@@ -141,6 +157,7 @@ public class ChatClient extends AbstractClient {
                     messageMiddleware.registerRoom(room);
                     currentRoom = room;
                     messageMiddleware.sendMessage(outgoingMessage);
+                    print("Sent room creation request to online peers,waiting for responses...");
                     break;
                 case "3":
                     print("Command 'delete room' received.");

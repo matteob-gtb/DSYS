@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.net.*;
 
 import Peer.AbstractClient;
+import Peer.Event;
+import Peer.ReplyToRoomRequest;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.util.*;
 
 import static java.lang.System.exit;
-import static java.lang.System.setErr;
 import static utils.Constants.*;
 
 public class QueueThread implements Runnable {
@@ -135,18 +136,22 @@ public class QueueThread implements Runnable {
                             client.print("Added client " + sender + " to the list of known clients");
                             onlineClients.add(sender);
                         }
-                        case MESSAGE_TYPE_JOIN_ROOM_ACK -> { //sent only to who created the room
+                        case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
                             int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-                            middleware.addParticipantToRoom(chatRoomID,sender);
+                            middleware.addParticipantToRoom(chatRoomID, sender);
                         }
                         case MESSAGE_TYPE_CREATE_ROOM -> {
                             client.print("Client " + sender + " created a new room");
                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-                            String outcome = client.askUserCommand("Do you want to join [y/n]?","n", "y", "n");
+
+                            Event eventToProcess = new ReplyToRoomRequest(roomID, sender, client.getBaseMessageStub(), "y", "n");
+
+
+                            String outcome = client.askUserCommand("Do you want to join [y/n]?", "n", "y", "n");
                             if (outcome.equalsIgnoreCase("y")) {
                                 client.print("Joining room #" + roomID);
                                 JsonObject message = client.getBaseMessageStub();
-                                message.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_JOIN_ROOM_ACK);
+                                message.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_JOIN_ROOM_ACCEPT);
                                 message.addProperty(MESSAGE_INTENDED_RECIPIENT, sender);
                                 sendMessage(message);
                                 ChatRoom room = new ChatRoom(roomID);

@@ -16,7 +16,8 @@ public class Constants {
      //causally ordered
     public static final int MESSAGE_TYPE_ROOM_MESSAGE = 4;
     public static final int MESSAGE_TYPE_CREATE_ROOM = 5;
-    public static final int MESSAGE_TYPE_JOIN_ROOM_ACK = 6;
+    public static final int MESSAGE_TYPE_JOIN_ROOM_ACCEPT = 6;
+    public static final int MESSAGE_TYPE_JOIN_ROOM_REFUSE = 99;
     public static final int MESSAGE_TYPE_ANNOUNCE_LEAVE = 7;
     public static final int MESSAGE_TYPE_GENERIC_ACK = 15;
     public static final int ROOM_MESSAGE = 30;
