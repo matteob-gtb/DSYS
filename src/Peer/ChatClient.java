@@ -74,8 +74,6 @@ public class ChatClient extends AbstractClient {
     }
 
 
-
-
     //block until received from all or timer expires
     public void announceSelf() throws IOException {
         JsonObject messageObject = new JsonObject();
@@ -94,15 +92,16 @@ public class ChatClient extends AbstractClient {
     public void mainLoop() throws IOException {
         String command;
         reader = new BufferedReader(new InputStreamReader(System.in));
+        printAvailableCommands();
         while (true) {
-            printAvailableCommands();
-            command = br.readLine().trim();
+            command = reader.readLine().trim();
             switch (command.toLowerCase()) {
                 case "0":
-                    print("Command 'Spam' received.");
-                    JsonObject msg = getBaseMessageStub();
+                    print("Command 'List Commands' received.");
+                    printAvailableCommands();
+                    /*JsonObject msg = getBaseMessageStub();
                     msg.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_WELCOME);
-                    messageMiddleware.sendMessage(msg);
+                    messageMiddleware.sendMessage(msg);*/
                     // Add logic to send message
                     break;
                 case "1":
@@ -110,7 +109,7 @@ public class ChatClient extends AbstractClient {
                     int roomID = -1;
                     while (true) {
                         print("Enter the room ID or q to exit this prompt");
-                        String nextLine = br.readLine().trim();
+                        String nextLine = reader.readLine().trim();
                         if (nextLine.contains("q")) break;
                         try {
                             roomID = Integer.parseInt(nextLine);
@@ -137,7 +136,7 @@ public class ChatClient extends AbstractClient {
                     //messageMiddleware.getOnlineClients().forEach(recipientsArray::add);
                     outgoingMessage.add(MESSAGE_INTENDED_RECIPIENTS, recipientsArray);
                     ChatRoom room = new ChatRoom(random.nextInt(0, 999999));
-                    outgoingMessage.addProperty(ROOM_ID_PROPERTY_NAME,room.getChatID());
+                    outgoingMessage.addProperty(ROOM_ID_PROPERTY_NAME, room.getChatID());
                     messageMiddleware.registerRoom(room);
                     currentRoom = room;
                     messageMiddleware.sendMessage(outgoingMessage);
@@ -152,7 +151,11 @@ public class ChatClient extends AbstractClient {
                     break;
                 case "5":
                     print("Command 'List Online Peers' received.");
-                    messageMiddleware.getOnlineClients().forEach(System.out::println);
+                    if (messageMiddleware.getOnlineClients().isEmpty())
+                        print("No online peer detected yet");
+                    else
+                        messageMiddleware.getOnlineClients().forEach(System.out::println);
+
                     break;
                 case "7":
                     System.exit(0);
@@ -168,7 +171,7 @@ public class ChatClient extends AbstractClient {
         if (currentRoom == null)
             print("""
                     Available commands:
-                    0. Spam garbage
+                    0. List Commands
                     1. Join Room
                     2. Create Room
                     3. Delete Room
@@ -176,7 +179,7 @@ public class ChatClient extends AbstractClient {
                     5. List Online Peers
                     6. Discover Online Peers
                     7. Quit Application
-                    Enter command:  """ );
+                    Enter command:  """);
         else {
             print("Current participants " + Arrays.toString(currentRoom.getParticipants()));
             print("""
