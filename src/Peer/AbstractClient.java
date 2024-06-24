@@ -15,7 +15,8 @@ import static utils.Constants.MESSAGE_PROPERTY_FIELD_CLIENTID;
 public abstract class AbstractClient {
 
     protected int CLIENT_ID;
-    protected List<AbstractEvent> eventsToProcess = Collections.synchronizedList(new ArrayList<AbstractEvent>());
+    //TODO remove
+    public List<AbstractEvent> eventsToProcess = Collections.synchronizedList(new ArrayList<AbstractEvent>());
 
     public int getID(){
         return CLIENT_ID;

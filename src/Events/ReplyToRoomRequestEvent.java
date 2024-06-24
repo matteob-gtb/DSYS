@@ -49,6 +49,7 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
             msg.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_JOIN_ROOM_REFUSE);
         //Send Message
         msg.addProperty(MESSAGE_INTENDED_RECIPIENT, this.sender);
+        msg.addProperty(ROOM_ID_PROPERTY_NAME, this.roomID);
 
         return Optional.of(msg);
     }

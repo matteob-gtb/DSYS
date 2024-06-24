@@ -96,33 +96,33 @@ public class ChatClient extends AbstractClient {
         boolean waitingForInput = true;
         while (true) {
             waitingForInput = true;
-            //System.out.println("Top of the loop > " + eventsToProcess.size());
 
             //poll and get not needed to be atomic, only 1 consumer and 1 producer
             /*
-            * Busy wait not optimal --> can't block on buffered reader and still accept events
-            * as soon as they come, can't be interrupted
-            * */
+             * Busy wait not optimal --> can't block on buffered reader and still accept events
+             * as soon as they come, can't be interrupted
+             * */
             while (waitingForInput) {
                 if (!eventsToProcess.isEmpty())
                     currentEvent = eventsToProcess.removeFirst();
                 if (reader.ready()) {
                     command = reader.readLine().trim();
                     waitingForInput = false;
-                } else if (currentEvent != null) {
-                    print(currentEvent.eventPrompt());
-                    command = reader.readLine().trim();
-                    System.out.println("Command: " + command);
-                    Optional<JsonObject> eventOutcome = Optional.empty();
+                }
+                if (currentEvent != null) {
+                    System.out.println(currentEvent.eventPrompt());
                     if (currentEvent.isActionable()) {
+                        command = reader.readLine().trim();
+                        System.out.println("Command: " + command);
+                        Optional<JsonObject> eventOutcome = Optional.empty();
                         while (eventOutcome.isEmpty())
                             eventOutcome = currentEvent.executeEvent(command);
                         if (currentEvent.isActionable())
                             messageMiddleware.sendMessage(eventOutcome.get());
                         command = "x";
+                        waitingForInput = false;
                     }
                     currentEvent = null;
-                    waitingForInput = false;
                 }
                 Thread.sleep(15);
             }
@@ -199,6 +199,7 @@ public class ChatClient extends AbstractClient {
                     print("Invalid Command");
                     break;
             }
+            System.out.println("here");
         }
     }
 

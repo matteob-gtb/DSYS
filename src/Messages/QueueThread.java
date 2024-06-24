@@ -143,9 +143,10 @@ public class QueueThread implements Runnable {
                             middleware.addParticipantToRoom(chatRoomID, sender);
                         }
                         case MESSAGE_TYPE_CREATE_ROOM -> {
-                            int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                             AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(roomID, sender, client.getBaseMessageStub(), "y", "n");
                             client.addEvent(eventToProcess);
+                            System.out.println(client.eventsToProcess.size());
 
 //                            String outcome = client.askUserCommand("Do you want to join [y/n]?", "n", "y", "n");
 //                            if (outcome.equalsIgnoreCase("y")) {
