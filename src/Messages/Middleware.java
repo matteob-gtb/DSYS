@@ -35,14 +35,14 @@ public abstract class Middleware {
     protected AbstractClient client;
 
 
-    public void addParticipantToRoom(int chatID,int clientID){
+    public void addParticipantToRoom(int chatID, int clientID) {
         if (!chatRooms.containsKey(chatID))
             throw new RuntimeException("Chat room with id " + chatID + " does not exist");
         chatRooms.get(chatID).addParticipant(clientID);
     }
 
-    public Optional<ChatRoom> getChatRoom(int chatID){
-        if(!chatRooms.containsKey(chatID)) return Optional.empty();
+    public Optional<ChatRoom> getChatRoom(int chatID) {
+        if (!chatRooms.containsKey(chatID)) return Optional.empty();
         return Optional.of(chatRooms.get(chatID));
     }
 
@@ -53,7 +53,7 @@ public abstract class Middleware {
         new Thread(queueThread).start();
     }
 
-    public Set<Integer> getOnlineClients(){
+    public Set<Integer> getOnlineClients() {
         return queueThread.getOnlineClients();
     }
 
@@ -88,7 +88,7 @@ public abstract class Middleware {
     }
 
     public void registerRoom(ChatRoom room) {
-        chatRooms.put(room.getChatID(),room);
+        chatRooms.put(room.getChatID(), room);
         room.addParticipant(this.CLIENT_ID);
     }
 
@@ -111,7 +111,9 @@ public abstract class Middleware {
         try {
             lock.lock();
             if (chatRoomID.isPresent())
-                return chatRooms.get(chatRoomID.get()).getMessageCount() > 0;
+                if (chatRooms.contains(chatRoomID.get()))
+                    return chatRooms.get(chatRoomID.get()).getMessageCount() > 0;
+                else return false;
             return !incomingMessages.isEmpty();
         } finally {
             lock.unlock();
