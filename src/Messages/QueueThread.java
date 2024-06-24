@@ -144,7 +144,6 @@ public class QueueThread implements Runnable {
                         }
                         case MESSAGE_TYPE_CREATE_ROOM -> {
                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-
                             AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(roomID, sender, client.getBaseMessageStub(), "y", "n");
                             client.addEvent(eventToProcess);
 
