@@ -31,7 +31,7 @@ public class MyMulticastSocketWrapper {
         socket.receive(packet);
     }
 
-    public void sendPacket(Message message)   {
+    public void sendPacket(MulticastMessage message)   {
         String msg = message.toJSONString();
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
         try {

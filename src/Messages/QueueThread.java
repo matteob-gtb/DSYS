@@ -7,7 +7,6 @@ import Events.AbstractEvent;
 import Events.GenericNotifyEvent;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
-import Peer.ChatClient;
 import com.google.gson.*;
 
 import java.util.*;
@@ -41,7 +40,7 @@ public class QueueThread implements QueueManager {
      * @param room
      */
     @Override
-    public void sendMessage(Message m, ChatRoom room) {
+    public void sendMessage(MulticastMessage m, ChatRoom room) {
         room.addOutgoingMessage(m);
         room.getDedicatedRoomSocket().sendPacket(m);
     }
@@ -52,7 +51,7 @@ public class QueueThread implements QueueManager {
         }
     }
 
-    public void sendMessage(Message m, int roomID) throws IOException {
+    public void sendMessage(MulticastMessage m, int roomID) throws IOException {
         InetAddress destination = null;
         synchronized (roomsMap) {
             if (!roomsMap.containsKey(roomID))
@@ -106,7 +105,7 @@ public class QueueThread implements QueueManager {
         //client.print("QueueThread bootstrapped");
         byte[] buffer = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        Message nextMessage = null;
+        MulticastMessage nextMessage = null;
         JsonObject outgoingMessage;
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
@@ -117,14 +116,15 @@ public class QueueThread implements QueueManager {
             try {
                 currentSocket.receive(packet);
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
+                //TODO fix
                 JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
-                Message inbound = gson.fromJson(jsonInboundMessage, Message.class);
+                MulticastMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
                 System.out.println(jsonString);
                 System.out.println(inbound.toJSONString());
                 int messageType = inbound.getMessageType();
                 int sender = inbound.getSenderID();
-                if (inbound.getRecipientID() != -1 && inbound.getRecipientID() != this.client.getID()
-                        || sender == this.client.getID())
+                //TODO check based on message type
+                if (sender == this.client.getID())
                     continue;
 
                 switch (messageType) {
@@ -132,7 +132,7 @@ public class QueueThread implements QueueManager {
                     case MESSAGE_TYPE_HELLO -> {
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                         onlineClients.add(sender);
-                        Message welcome = Message.getWelcomeMessage(this.client.getID());
+                        MulticastMessage welcome = MulticastMessage.getWelcomeMessage(this.client.getID());
 
                         sendMessage(welcome, commonMulticastChannel);
                     }

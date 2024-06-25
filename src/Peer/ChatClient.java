@@ -80,11 +80,10 @@ public class ChatClient extends AbstractClient {
 
     //block until received from all or timer expires
     public void announceSelf() throws IOException {
-        Message welcomeMessage = new Message(
+        MulticastMessage welcomeMessage = new MulticastMessage(
                 this.CLIENT_ID,
                 MESSAGE_TYPE_HELLO,
                 DEFAULT_GROUP_ROOMID,
-                -1,
                 null
         );
         queueManager.sendMessage(welcomeMessage,currentRoom);
@@ -116,7 +115,7 @@ public class ChatClient extends AbstractClient {
                     waitingForInput = false;
                 }
                 if (currentEvent != null) {
-                    Optional<Message> eventOutcome = Optional.empty();
+                    Optional<MulticastMessage> eventOutcome = Optional.empty();
                     if (currentEvent.isActionable()) {
                         while (eventOutcome.isEmpty()) {
                             System.out.println(currentEvent.eventPrompt());
@@ -172,7 +171,7 @@ public class ChatClient extends AbstractClient {
                     print("Command 'Create room' received.");
                     ChatRoom room = new ChatRoom(random.nextInt(0, 999999), MyMulticastSocketWrapper.getNewGroupName());
 
-                    Message outMsg = new Message(this.CLIENT_ID,MESSAGE_TYPE_CREATE_ROOM,room.getChatID(),-1,null);
+                    MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID,MESSAGE_TYPE_CREATE_ROOM,room.getChatID(), null);
 
                     System.out.println(outMsg);
 

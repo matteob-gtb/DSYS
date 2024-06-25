@@ -1,6 +1,6 @@
 package Events;
 
-import Messages.Message;
+import Messages.MulticastMessage;
 import com.google.gson.JsonObject;
 
 import java.util.Arrays;
@@ -41,7 +41,7 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
     }
 
     @Override
-    public Optional<Message> executeEvent(String command) {
+    public Optional<MulticastMessage> executeEvent(String command) {
         Optional<String> foundMatch = Arrays.stream(acceptableOutcomes).filter(x -> x.contains(command)).findFirst();
         if (foundMatch.isEmpty())
             return Optional.empty();
@@ -50,11 +50,10 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
             type = MESSAGE_TYPE_JOIN_ROOM_ACCEPT;
         else
             type = MESSAGE_TYPE_JOIN_ROOM_REFUSE;
-        Message msg = new Message(
+        MulticastMessage msg = new MulticastMessage(
                 this.clientID,
                 type,
                 this.roomID,
-                this.recipientID,
                 null
         );
 

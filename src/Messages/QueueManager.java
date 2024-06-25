@@ -1,17 +1,11 @@
 package Messages;
 
-import com.google.gson.JsonObject;
-
-import java.io.IOException;
-import java.net.DatagramPacket;
 import java.util.Optional;
 import java.util.Set;
 
-import static utils.Constants.*;
-
 public interface QueueManager extends Runnable {
     void registerRoom(ChatRoom room);
-    void sendMessage(Message m,ChatRoom room);
+    void sendMessage(MulticastMessage m, ChatRoom room);
 
     /*
 

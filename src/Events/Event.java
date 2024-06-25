@@ -1,8 +1,6 @@
 package Events;
 
-import Messages.Message;
-import Messages.MyMulticastSocketWrapper;
-import com.google.gson.JsonObject;
+import Messages.MulticastMessage;
 
 import java.util.Optional;
 
@@ -10,7 +8,7 @@ public interface Event {
 
     public void executeEvent();
 
-    public Optional<Message> executeEvent(String command);
+    public Optional<MulticastMessage> executeEvent(String command);
 
     public String eventPrompt();
 }

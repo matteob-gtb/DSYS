@@ -1,24 +1,18 @@
 package Messages;
 
-import com.google.gson.JsonObject;
-import com.sun.source.tree.Tree;
-
 import java.net.*;
 import java.util.*;
 
-import static java.lang.System.exit;
-import static utils.Constants.GROUP_PORT;
-
 public class ChatRoom {
     private final int chatID;
-    private ArrayList<Message> messageList;
+    private ArrayList<MulticastMessage> messageList;
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private int[] ownVectorTimestamp;
     private MyMulticastSocketWrapper dedicatedRoomSocket = null;
     private boolean connected = false;
-    private ArrayList<Message> outGoingMessageQueue = new ArrayList<>();
+    private ArrayList<MulticastMessage> outGoingMessageQueue = new ArrayList<>();
 
-    public void addOutgoingMessage(Message message) {
+    public void addOutgoingMessage(MulticastMessage message) {
         outGoingMessageQueue.add(message);
     }
 
