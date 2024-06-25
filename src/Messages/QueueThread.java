@@ -76,6 +76,8 @@ public class QueueThread implements QueueManager {
      */
     @Override
     public Optional<ChatRoom> getChatRoom(int roomID) {
+        if (roomsMap.containsKey(roomID))
+            return Optional.of(roomsMap.get(roomID));
         return Optional.empty();
     }
 
@@ -108,7 +110,6 @@ public class QueueThread implements QueueManager {
         Gson gson = builder.create();
         boolean packetReceived = false;
         while (true) {
-            packetReceived = false;
             cycleRooms();
             if (!currentRoom.isRoomFinalized()) {
                 if (currentRoom.finalizeRoom()) {
@@ -127,9 +128,7 @@ public class QueueThread implements QueueManager {
                 currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
                 currentRoom.updateOutQueue();
             });
-
             //check for incoming packets
-
             packet = new DatagramPacket(buffer, buffer.length);
             packetReceived = currentRoom.getDedicatedRoomSocket().receive(packet);
             if (packetReceived) {
@@ -157,7 +156,7 @@ public class QueueThread implements QueueManager {
                         onlineClients.add(sender);
                         MulticastMessage welcome = MulticastMessage.getWelcomeMessage(this.client.getID());
                         commonMulticastChannel.addOutgoingMessage(welcome);
-                     }
+                    }
                     case MESSAGE_TYPE_WELCOME -> {
                         String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
                         client.addEvent(new GenericNotifyEvent(prompt));
@@ -172,7 +171,7 @@ public class QueueThread implements QueueManager {
                         int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                         AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), roomID, sender, client.getBaseMessageStub(), "y", "n");
                         client.addEvent(eventToProcess);
-                     }
+                    }
                     case ROOM_MESSAGE -> {
                         // int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
 

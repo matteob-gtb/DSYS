@@ -63,6 +63,8 @@ public class ChatClient extends AbstractClient {
         Random generator = new Random(System.currentTimeMillis());
         this.CLIENT_ID = generator.nextInt(0, 150000);
         ChatRoom commonMulticast = new ChatRoom(DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
+        //Default room, no fixed participants
+        commonMulticast.setRoomFinalized(true);
         this.queueManager = new QueueThread(this, commonMulticast);
         this.currentRoom = commonMulticast;
         ExecutorService executorService = Executors.newFixedThreadPool(1);
@@ -143,13 +145,16 @@ public class ChatClient extends AbstractClient {
                         if (nextLine.contains("q")) break;
                         try {
                             roomID = Integer.parseInt(nextLine);
+                            System.out.println("Asked to join room " + roomID);
                         } catch (Exception e) {
-
+                            System.out.println("Not a number");
                         }
                         Optional<ChatRoom> room = queueManager.getChatRoom(roomID);
                         if (room.isEmpty())
                             print("Room not found.");
-                        else {
+                        else if (!room.get().isRoomFinalized()) {
+                            System.out.println("Room has not been finalized yet, wait for" + (System.currentTimeMillis() - room.get().getCreationTimestamp()) + " more milliseconds");
+                        } else {
                             currentRoom = room.get();
                             print("Joining Chat #" + currentRoom.getChatID());
                             break;
@@ -160,13 +165,33 @@ public class ChatClient extends AbstractClient {
                     break;
                 case "2":
                     print("Command 'Create room' received.");
-                    ChatRoom room = new ChatRoom(random.nextInt(0, 999999), MyMulticastSocketWrapper.getNewGroupName());
-                    System.out.println("Created room with id #" + room.getChatID());
-                    MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), null);
-                    queueManager.registerRoom(room);
-                    currentRoom = room;
-                    currentRoom.addOutgoingMessage(outMsg);
-                    print("Sent room creation request to online peers,waiting for responses...");
+                    boolean stopCreatingRoom = false;
+                    int ID = -1;
+                    while (ID == -1) {
+                        System.out.println("Enter the room ID or q to exit this prompt >");
+                        String nextLine = reader.readLine().trim();
+                        if (nextLine.contains("q")) {
+                            stopCreatingRoom = true;
+                            break;
+                        } else {
+                            try {
+                                ID = Integer.parseInt(nextLine);
+                            } catch (NumberFormatException e) {
+                                System.out.println("Not a number");
+                            }
+
+                        }
+
+                    }
+                    if (!stopCreatingRoom) {
+                        ChatRoom room = new ChatRoom(ID, MyMulticastSocketWrapper.getNewGroupName());
+                        System.out.println("Created room with id #" + room.getChatID());
+                        MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), null);
+                        queueManager.registerRoom(room);
+                        currentRoom = room;
+                        currentRoom.addOutgoingMessage(outMsg);
+                        print("Sent room creation request to online peers,waiting for responses...");
+                    }
                     break;
                 case "3":
                     print("Command 'delete room' received.");
@@ -194,18 +219,6 @@ public class ChatClient extends AbstractClient {
         }
     }
 
-    private JsonObject getJsonObject(ChatRoom room) {
-        JsonObject outgoingMessage = getBaseMessageStub();
-        outgoingMessage.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_CREATE_ROOM);
-        JsonArray recipientsArray = new JsonArray(queueManager.getOnlineClients().size());
-        //messageMiddleware.getOnlineClients().forEach(recipientsArray::add);
-        outgoingMessage.add(MESSAGE_INTENDED_RECIPIENTS, recipientsArray);
-
-
-        outgoingMessage.addProperty(ROOM_ID_PROPERTY_NAME, room.getChatID());
-        return outgoingMessage;
-    }
-
     private void printAvailableCommands() {
         print("""
                 Available commands:
@@ -223,8 +236,6 @@ public class ChatClient extends AbstractClient {
     public void showRoomInfo(ChatRoom room) {
         print("Current participants " + Arrays.toString(room.getParticipants()));
         print("Type a message and hit Enter to send it in the current room #" + room.getChatID());
-
-
     }
 
 }

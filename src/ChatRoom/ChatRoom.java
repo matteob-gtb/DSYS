@@ -9,24 +9,32 @@ import java.util.*;
 
 public class ChatRoom {
     private final int chatID;
+
+    public Long getCreationTimestamp() {
+        return creationTimestamp;
+    }
+
     //it is mean as a VERY rough estimate in order to wait forever for a response,
     //by no means accurate
     private final Long creationTimestamp = System.currentTimeMillis();
 
-    private final static int MAX_ROOM_CREATION_WAIT_MILLI = 60 * 1000;
+    private final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
 
     private ArrayList<MulticastMessage> messageList;
     private Set<Integer> participantIDs = new TreeSet<Integer>();
 
 
     public boolean finalizeRoom() {
-        if (!roomFinalized && System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MILLI)
+        if (!roomFinalized && System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MILLI) {
             roomFinalized = true;
-        if (roomFinalized) {
             System.out.println("Room finalized,participants: ");
             System.out.println(participantIDs);
+            if (participantIDs.size() == 0) {
+                System.out.println("No participants, deleting room...");
+            }
+            return true;
         }
-        return roomFinalized;
+        return false;
     }
 
     public boolean isRoomFinalized() {
