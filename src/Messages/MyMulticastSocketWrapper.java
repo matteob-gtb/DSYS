@@ -31,9 +31,16 @@ public class MyMulticastSocketWrapper {
         socket.receive(packet);
     }
 
-    public void sendPacket(String message) throws IOException {
-        DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(), this.roomGroup, GROUP_PORT);
-        socket.send(packet);
+    public void sendPacket(Message message)   {
+        String msg = message.toJSONString();
+        DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            message.setSent(false);
+            throw new RuntimeException(e);
+        }
+        message.setSent(true);
     }
 
     //if this fails it means we can't and will never connect (no interfaces available)

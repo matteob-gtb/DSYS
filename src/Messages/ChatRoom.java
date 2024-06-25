@@ -11,11 +11,16 @@ import static utils.Constants.GROUP_PORT;
 
 public class ChatRoom {
     private final int chatID;
-    private ArrayList<JsonObject> messageList;
+    private ArrayList<Message> messageList;
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private int[] ownVectorTimestamp;
     private MyMulticastSocketWrapper dedicatedRoomSocket = null;
     private boolean connected = false;
+    private ArrayList<Message> outGoingMessageQueue = new ArrayList<>();
+
+    public void addOutgoingMessage(Message message) {
+        outGoingMessageQueue.add(message);
+    }
 
 
     public InetAddress getRoomAddress(){
@@ -35,9 +40,7 @@ public class ChatRoom {
         this.dedicatedRoomSocket = new MyMulticastSocketWrapper(groupName);
     }
 
-    public void sendMessage(String message) throws Exception {
-         dedicatedRoomSocket.sendPacket(message);
-    }
+
 
     public void probeSocket(){
 

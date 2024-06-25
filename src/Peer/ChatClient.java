@@ -66,13 +66,16 @@ public class ChatClient extends AbstractClient {
     }
 
     public ChatClient() throws Exception {
-        Random generator = new Random();
-        this.CLIENT_ID = generator.nextInt(0, 6000);
+        Random generator = new Random(System.currentTimeMillis());
+        this.CLIENT_ID = generator.nextInt(0, 150000);
         ChatRoom commonMulticast = new ChatRoom(DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
-        this.queueManager = new QueueThread(this,commonMulticast.getDedicatedRoomSocket());
+        this.queueManager = new QueueThread(this,commonMulticast);
+        this.currentRoom = commonMulticast;
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         executorService.execute(queueManager);
     }
+
+
 
 
     //block until received from all or timer expires
@@ -84,17 +87,10 @@ public class ChatClient extends AbstractClient {
                 -1,
                 null
         );
-//        JsonObject messageObject = new JsonObject();
-//        messageObject.addProperty(MESSAGE_PROPERTY_FIELD_CLIENTID, this.CLIENT_ID);
-//        messageObject.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_HELLO);
-//        print("Client #" + this.CLIENT_ID + " online, sent HELLO");
-        queueManager.sendMessage(welcomeMessage,null);
+        queueManager.sendMessage(welcomeMessage,currentRoom);
     }
 
-    public void createRoom() throws IOException {
-        //Send Message CreateRoom
 
-    }
 
 
     public void mainLoop() throws Exception {
@@ -180,7 +176,7 @@ public class ChatClient extends AbstractClient {
 
                     System.out.println(outMsg);
 
-                    queueManager.addRoom(room);
+                    queueManager.registerRoom(room);
                     currentRoom = room;
                     queueManager.sendMessage(outMsg,currentRoom);
                     print("Sent room creation request to online peers,waiting for responses...");

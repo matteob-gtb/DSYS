@@ -23,6 +23,7 @@ public abstract class AbstractClient {
         eventsToProcess.add(event);
     }
 
+
     public abstract void announceSelf() throws IOException;
 
     public abstract void print(String queueThreadBootstrapped);

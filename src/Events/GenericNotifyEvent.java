@@ -1,5 +1,6 @@
 package Events;
 
+import Messages.Message;
 import com.google.gson.JsonObject;
 
 import java.util.Optional;
@@ -11,6 +12,7 @@ public class GenericNotifyEvent extends AbstractEvent {
         super(false);
         this.prompt = prompt;
     }
+
 
 
     /**
@@ -26,7 +28,7 @@ public class GenericNotifyEvent extends AbstractEvent {
      * @return
      */
     @Override
-    public Optional<JsonObject> executeEvent(String command) {
+    public Optional<Message> executeEvent(String command) {
         throw new UnsupportedOperationException("Not supported");
     }
 

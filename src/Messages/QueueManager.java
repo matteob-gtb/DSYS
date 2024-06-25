@@ -10,7 +10,7 @@ import java.util.Set;
 import static utils.Constants.*;
 
 public interface QueueManager extends Runnable {
-    void addRoom(ChatRoom room);
+    void registerRoom(ChatRoom room);
     void sendMessage(Message m,ChatRoom room);
 
     /*
