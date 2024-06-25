@@ -4,6 +4,7 @@ package Peer;
 import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Messages.*;
+import Network.MyMulticastSocketWrapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -77,7 +78,7 @@ public class ChatClient extends AbstractClient {
                 DEFAULT_GROUP_ROOMID,
                 null
         );
-        queueManager.sendMessage(welcomeMessage, currentRoom);
+        currentRoom.addOutgoingMessage(welcomeMessage);
     }
 
 
@@ -112,7 +113,7 @@ public class ChatClient extends AbstractClient {
                             eventOutcome = currentEvent.executeEvent(command);
                         }
                         //TODO  fix currentroom
-                        queueManager.sendMessage(eventOutcome.get(), currentRoom);
+                        //   queueManager.sendMessage(eventOutcome.get(), currentRoom);
                         command = "x";
                         waitingForInput = false;
                     }
@@ -162,10 +163,9 @@ public class ChatClient extends AbstractClient {
                     ChatRoom room = new ChatRoom(random.nextInt(0, 999999), MyMulticastSocketWrapper.getNewGroupName());
                     System.out.println("Created room with id #" + room.getChatID());
                     MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), null);
-                    System.out.println(outMsg.toJSONString());
                     queueManager.registerRoom(room);
                     currentRoom = room;
-                    queueManager.sendMessage(outMsg, this.currentRoom);
+                    currentRoom.addOutgoingMessage(outMsg);
                     print("Sent room creation request to online peers,waiting for responses...");
                     break;
                 case "3":

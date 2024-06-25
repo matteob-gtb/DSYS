@@ -20,6 +20,8 @@ public class Constants {
 
     public static final int MESSAGE_TYPE_HELLO = 1;
     public static final int MESSAGE_TYPE_CREATE_ROOM = 5;
+    public static final int MESSAGE_TYPE_ROOM_FINALIZED = 33;
+
     public static final int MESSAGE_TYPE_DELETE_ROOM = 33;
     public static final int DEFAULT_GROUP_ROOMID = 99;
     public static final int MESSAGE_TYPE_JOIN_ROOM_ACCEPT = 6;

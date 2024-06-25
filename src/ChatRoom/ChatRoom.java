@@ -1,7 +1,8 @@
 package ChatRoom;
 
+import Messages.MessageInterface;
 import Messages.MulticastMessage;
-import Messages.MyMulticastSocketWrapper;
+import Network.MyMulticastSocketWrapper;
 
 import java.net.*;
 import java.util.*;
@@ -18,9 +19,13 @@ public class ChatRoom {
     private Set<Integer> participantIDs = new TreeSet<Integer>();
 
 
-    public boolean checkRoomStatus() {
-        if (System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MILLI) roomFinalized = true;
-        if(roomFinalized) System.out.println("Room finalized");
+    public boolean finalizeRoom() {
+        if (!roomFinalized && System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MILLI)
+            roomFinalized = true;
+        if (roomFinalized) {
+            System.out.println("Room finalized,participants: ");
+            System.out.println(participantIDs);
+        }
         return roomFinalized;
     }
 
@@ -34,6 +39,18 @@ public class ChatRoom {
     private boolean connected = false;
     private ArrayList<MulticastMessage> outGoingMessageQueue = new ArrayList<>();
 
+
+    public void updateOutQueue() {
+        if (outGoingMessageQueue.getFirst().isSent())
+            outGoingMessageQueue.removeFirst();
+    }
+
+    public Optional<MessageInterface> getOutgoingMessage() {
+        if (!outGoingMessageQueue.isEmpty() && !outGoingMessageQueue.getFirst().isSent()) {
+            return Optional.of(outGoingMessageQueue.getFirst());
+        }
+        return Optional.empty();
+    }
 
     public void addOutgoingMessage(MulticastMessage message) {
         outGoingMessageQueue.add(message);

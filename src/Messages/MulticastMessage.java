@@ -31,12 +31,10 @@ public class MulticastMessage extends AbstractMessage {
         return builder.create();
     }
 
-    public MulticastMessage(
-            int clientID,
+    public MulticastMessage(int clientID,
             int type,
             int roomID,
-            int[] vectorTimestamp
-    ) {
+            int[] vectorTimestamp) {
         super(clientID, type, roomID, vectorTimestamp);
     }
 

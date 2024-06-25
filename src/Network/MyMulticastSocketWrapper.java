@@ -1,4 +1,6 @@
-package Messages;
+package Network;
+
+import Messages.MessageInterface;
 
 import java.io.IOException;
 import java.net.*;
@@ -14,6 +16,7 @@ public class MyMulticastSocketWrapper {
     private boolean connected = false;
     private static Set<String> usedGroupNames = new HashSet<>();
     private final static int DEFAULT_TIMEOUT = 50;
+
     public void addUsedGroupName(String groupName) {
         usedGroupNames.add(groupName);
     }
@@ -71,16 +74,20 @@ public class MyMulticastSocketWrapper {
     }
 
 
-    public boolean receive(DatagramPacket packet)   {
+    public boolean receive(DatagramPacket packet) {
         try {
             socket.receive(packet);
+            return true;
+        } catch (SocketTimeoutException e) {
+            return false;
         } catch (IOException e) {
+            System.out.println("IO exception");
             return false;
         }
-        return true;
+
     }
 
-    public void sendPacket(MulticastMessage message)   {
+    public void sendPacket(MessageInterface message) {
         String msg = message.toJSONString();
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
         try {
