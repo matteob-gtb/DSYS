@@ -3,6 +3,7 @@ package Messages;
 import java.io.IOException;
 import java.net.*;
 
+import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Events.GenericNotifyEvent;
 import Peer.AbstractClient;
@@ -41,6 +42,7 @@ public class QueueThread implements QueueManager {
      */
     @Override
     public void sendMessage(MulticastMessage m, ChatRoom room) {
+        System.out.println("Sent message in room " + room.getChatID());
         room.addOutgoingMessage(m);
         room.getDedicatedRoomSocket().sendPacket(m);
     }
@@ -109,62 +111,62 @@ public class QueueThread implements QueueManager {
         JsonObject outgoingMessage;
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
+        boolean packetReceived = false;
         while (true) {
             cycleRooms();
-            //TODO send messages
+            //TODO send messages, check queue
 
-            try {
-                currentSocket.receive(packet);
-                String jsonString = new String(packet.getData(), 0, packet.getLength());
-                //TODO fix
-                JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
-                MulticastMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
-                System.out.println(jsonString);
-                System.out.println(inbound.toJSONString());
-                int messageType = inbound.getMessageType();
-                int sender = inbound.getSenderID();
-                //TODO check based on message type
-                if (sender == this.client.getID())
-                    continue;
-
-                switch (messageType) {
-                    //Actionable messages
-                    case MESSAGE_TYPE_HELLO -> {
-                        client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
-                        onlineClients.add(sender);
-                        MulticastMessage welcome = MulticastMessage.getWelcomeMessage(this.client.getID());
-
-                        sendMessage(welcome, commonMulticastChannel);
-                    }
-                    case MESSAGE_TYPE_WELCOME -> {
-                        String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
-                        client.addEvent(new GenericNotifyEvent(prompt));
-                        onlineClients.add(sender);
-                    }
-                    case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
-                        int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-                        client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
-                        addParticipantToRoom(chatRoomID, sender);
-                    }
-                    case MESSAGE_TYPE_CREATE_ROOM -> {
-                        int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-                        AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), roomID, sender, client.getBaseMessageStub(), "y", "n");
-                        client.addEvent(eventToProcess);
-                        System.out.println(client.eventsToProcess.size());
-                    }
-                    case ROOM_MESSAGE -> {
-                        // int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+            if (!currentRoom.isRoomFinalized()) currentRoom.checkRoomStatus();
 
 
-                    }
-                    //append to relevant queue
+            packetReceived = currentRoom.getDedicatedRoomSocket().receive(packet);
+            if (!packetReceived) {
+                continue;
+            }
+            String jsonString = new String(packet.getData(), 0, packet.getLength());
+            //TODO fix
+            JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
+            MulticastMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
+            System.out.println(inbound.toJSONString());
+            int messageType = inbound.getMessageType();
+            int sender = inbound.getSenderID();
+
+
+            //TODO check based on message type
+            if (sender == this.client.getID())
+                continue;
+
+            switch (messageType) {
+                //Actionable messages
+                case MESSAGE_TYPE_HELLO -> {
+                    client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
+                    onlineClients.add(sender);
+                    MulticastMessage welcome = MulticastMessage.getWelcomeMessage(this.client.getID());
+
+                    sendMessage(welcome, commonMulticastChannel);
                 }
+                case MESSAGE_TYPE_WELCOME -> {
+                    String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
+                    client.addEvent(new GenericNotifyEvent(prompt));
+                    onlineClients.add(sender);
+                }
+                case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
+                    int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+                    client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
+                    addParticipantToRoom(chatRoomID, sender);
+                }
+                case MESSAGE_TYPE_CREATE_ROOM -> {
+                    int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+                    AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), roomID, sender, client.getBaseMessageStub(), "y", "n");
+                    client.addEvent(eventToProcess);
+                    System.out.println(client.eventsToProcess.size());
+                }
+                case ROOM_MESSAGE -> {
+                    // int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
 
 
-            } catch (SocketTimeoutException e) {
-                //System.out.println("Socket timed out " + System.currentTimeMillis());
-            } catch (IOException e) {
-                System.out.println(e);
+                }
+                //append to relevant queue
             }
 
 

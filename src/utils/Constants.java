@@ -1,6 +1,9 @@
 package utils;
 
 public class Constants {
+
+
+
     public static final int SOCKET_PORT_LOW = 2000, SOCKET_PORT_HIGH = 5000, GROUP_PORT = 5000;
     public static final int RCV_BUFFER_SIZE = 1024;
     public static final String MESSAGE_TYPE_FIELD_NAME = "MESSAGE_TYPE";
@@ -26,5 +29,5 @@ public class Constants {
     public static final int ROOM_MESSAGE = 30;
 
 
-    public static final String COMMON_GROUPNAME = "228.5.6.254";
+    public static final String COMMON_GROUPNAME = "224.1.1.1";
 }

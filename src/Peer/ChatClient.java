@@ -1,6 +1,7 @@
 package Peer;
 
 
+import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Messages.*;
 import com.google.gson.JsonArray;
@@ -17,7 +18,6 @@ import java.util.concurrent.Semaphore;
 
 
 import static utils.Constants.*;
-
 
 
 public class ChatClient extends AbstractClient {
@@ -55,27 +55,18 @@ public class ChatClient extends AbstractClient {
     }
 
     public void print(String message) {
-        try {
-            consoleSemaphore.acquire();
-            System.out.println(message);
-        } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
-        } finally {
-            consoleSemaphore.release();
-        }
+        System.out.println(message);
     }
 
     public ChatClient() throws Exception {
         Random generator = new Random(System.currentTimeMillis());
         this.CLIENT_ID = generator.nextInt(0, 150000);
         ChatRoom commonMulticast = new ChatRoom(DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
-        this.queueManager = new QueueThread(this,commonMulticast);
+        this.queueManager = new QueueThread(this, commonMulticast);
         this.currentRoom = commonMulticast;
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         executorService.execute(queueManager);
     }
-
-
 
 
     //block until received from all or timer expires
@@ -86,10 +77,8 @@ public class ChatClient extends AbstractClient {
                 DEFAULT_GROUP_ROOMID,
                 null
         );
-        queueManager.sendMessage(welcomeMessage,currentRoom);
+        queueManager.sendMessage(welcomeMessage, currentRoom);
     }
-
-
 
 
     public void mainLoop() throws Exception {
@@ -123,10 +112,11 @@ public class ChatClient extends AbstractClient {
                             eventOutcome = currentEvent.executeEvent(command);
                         }
                         //TODO  fix currentroom
-                        queueManager.sendMessage(eventOutcome.get(),currentRoom);
+                        queueManager.sendMessage(eventOutcome.get(), currentRoom);
                         command = "x";
                         waitingForInput = false;
-                    } System.out.println(currentEvent.eventPrompt());
+                    }
+                    System.out.println(currentEvent.eventPrompt());
                     currentEvent = null;
                 }
                 Thread.sleep(25);
@@ -170,14 +160,12 @@ public class ChatClient extends AbstractClient {
                 case "2":
                     print("Command 'Create room' received.");
                     ChatRoom room = new ChatRoom(random.nextInt(0, 999999), MyMulticastSocketWrapper.getNewGroupName());
-
-                    MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID,MESSAGE_TYPE_CREATE_ROOM,room.getChatID(), null);
-
-                    System.out.println(outMsg);
-
+                    System.out.println("Created room with id #" + room.getChatID());
+                    MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), null);
+                    System.out.println(outMsg.toJSONString());
                     queueManager.registerRoom(room);
                     currentRoom = room;
-                    queueManager.sendMessage(outMsg,currentRoom);
+                    queueManager.sendMessage(outMsg, this.currentRoom);
                     print("Sent room creation request to online peers,waiting for responses...");
                     break;
                 case "3":
@@ -219,24 +207,25 @@ public class ChatClient extends AbstractClient {
     }
 
     private void printAvailableCommands() {
-        if (currentRoom == null)
-            print("""
-                    Available commands:
-                    0. List Commands
-                    1. Join Room
-                    2. Create Room
-                    3. Delete Room
-                    4. Leave Room
-                    5. List Online Peers
-                    6. Discover Online Peers
-                    7. Quit Application
-                    Enter command:  """);
-        else {
-            print("Current participants " + Arrays.toString(currentRoom.getParticipants()));
-            print("""
-                    Type a message and hit Enter to send it in the current room #""" + currentRoom.getChatID());
-        }
+        print("""
+                Available commands:
+                0. List Commands
+                1. Join Room
+                2. Create Room
+                3. Delete Room
+                4. Leave Room
+                5. List Online Peers
+                6. Discover Online Peers
+                7. Quit Application
+                Enter command:""");
+    }
+
+    public void showRoomInfo(ChatRoom room) {
+        print("Current participants " + Arrays.toString(room.getParticipants()));
+        print("Type a message and hit Enter to send it in the current room #" + room.getChatID());
+
 
     }
+
 }
 

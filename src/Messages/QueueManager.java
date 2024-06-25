@@ -1,5 +1,7 @@
 package Messages;
 
+import ChatRoom.ChatRoom;
+
 import java.util.Optional;
 import java.util.Set;
 
