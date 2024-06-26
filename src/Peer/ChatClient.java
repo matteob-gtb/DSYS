@@ -239,7 +239,7 @@ public class ChatClient extends AbstractClient {
     private void printAvailableCommands() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
-        print("User [" + this.userName + "]");
+        print("User [" + this.userName + "] - ID ["+ this.CLIENT_ID+  "]");
         print("""
                 Available commands:
                 0. List Commands
