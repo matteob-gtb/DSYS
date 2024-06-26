@@ -185,7 +185,7 @@ public class ChatClient extends AbstractClient {
                                 System.out.println("Created room with id #" + room.getChatID());
                                 MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID());
                                 queueManager.registerRoom(room);
-                                currentRoom = room;
+                                // NO ™currentRoom = room;
                                 currentRoom.addOutgoingMessage(outMsg);
                                 print("Sent room creation request to online peers,waiting for responses...");
                             } catch (NumberFormatException e) {
