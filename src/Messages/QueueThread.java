@@ -21,7 +21,6 @@ public class QueueThread implements QueueManager {
     private InetAddress group;
     private Set<Integer> onlineClients = new TreeSet<Integer>();
     private final AbstractClient client;
-    //private List<ChatRoom> roomsList = Collections.synchronizedList(new ArrayList<>());
     private final Map<Integer, ChatRoom> roomsMap = Collections.synchronizedMap(new HashMap<>());
     private ChatRoom commonMulticastChannel;
     private MyMulticastSocketWrapper currentSocket = null;
@@ -35,12 +34,6 @@ public class QueueThread implements QueueManager {
         currentRoom = roomsMap.get(roomIDs.get(currentIDIndex));
         currentIDIndex = currentIDIndex + 1 == roomIDs.size() ? 0 : currentIDIndex + 1;
     }
-
-
-    /**
-     * @param m
-     * @param room
-     */
 
     public void addParticipantToRoom(int roomID, int senderID) {
         synchronized (roomsMap) {
@@ -58,12 +51,6 @@ public class QueueThread implements QueueManager {
         currentSocket.sendPacket(m);
     }
 
-
-    private JsonObject prepareWelcomeMessage() {
-        JsonObject welcomeMessage = client.getBaseMessageStub();
-        welcomeMessage.addProperty(MESSAGE_TYPE_FIELD_NAME, MESSAGE_TYPE_WELCOME);
-        return welcomeMessage;
-    }
 
     @Override
     public Set<Integer> getOnlineClients() {
@@ -113,27 +100,15 @@ public class QueueThread implements QueueManager {
             cycleRooms();
             if (!currentRoom.isRoomFinalized()) {
                 if (currentRoom.finalizeRoom()) {
-                    MessageInterface msg = new MulticastMessage(
-                            client.getID(),
-                            MESSAGE_TYPE_ROOM_FINALIZED,
-                            currentRoom.getChatID()
-                    );
-                    JsonObject payload = new JsonObject();
-                    JsonArray participants = new JsonArray();
-                    currentRoom.getParticipantIDs().forEach(participants::add);
-                    payload.add(FIELD_ROOM_PARTICIPANTS, participants);
-                    payload.addProperty(ROOM_MULTICAST_GROUP_ADDRESS, currentRoom.getDedicatedRoomSocket().getMCastAddress().toString());
-
-                    msg.setPayload(payload.toString());
-                    System.out.println("Finalize room message");
-                    System.out.println(msg.toJSONString());
-                    currentRoom.addOutgoingMessage(msg);
+                    currentRoom.announceRoomFinalized(client.getID());
                 }
 
             }
             //TODO send messages, check queue
             Optional<MessageInterface> nextMsg = currentRoom.getOutgoingMessage();
             nextMsg.ifPresent(messageInterface -> {
+                System.out.println("NEXT MESSAGE");
+                System.out.println(nextMsg.get().toJSONString());
                 currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
                 currentRoom.updateOutQueue();
             });
@@ -149,14 +124,13 @@ public class QueueThread implements QueueManager {
 
                 Logger.writeLog("Received Message\n" + inbound.toJSONString() + "\n");
 
-
                 int messageType = inbound.getMessageType();
                 int sender = inbound.getSenderID();
 
 
                 //TODO check based on message type
-                if (sender == this.client.getID())
-                    continue;
+//                if (sender == this.client.getID())
+//                    continue;
 
                 switch (messageType) {
                     //Actionable messages
@@ -177,7 +151,9 @@ public class QueueThread implements QueueManager {
                         addParticipantToRoom(chatRoomID, sender);
                     }
                     case MESSAGE_TYPE_CREATE_ROOM -> {
-                        int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+                        //TODO deserialize
+                        MulticastMessage in = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
+                        int roomID = in.roomID;
                         AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), roomID, sender, client.getBaseMessageStub(), "y", "n");
                         client.addEvent(eventToProcess);
                     }
@@ -203,6 +179,11 @@ public class QueueThread implements QueueManager {
 
                     }
                     //append to relevant queue
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException("I/O thread must not be interrupted");
                 }
             }
         }

@@ -12,7 +12,7 @@ public class Constants {
     public static final String MESSAGE_PROPERTY_FIELD_KNOWNCLIENTS = "PEERS";
     public static final String MESSAGE_INTENDED_RECIPIENT = "RECIPIENT";
     public static final String MESSAGE_INTENDED_RECIPIENTS = "RECIPIENTS";
-    public static final String ROOM_ID_PROPERTY_NAME = "ROOM_ID";
+    public static final String ROOM_ID_PROPERTY_NAME = "roomID";
     public static final String ROOM_MULTICAST_GROUP_ADDRESS = "ROOM_ADDRESS";
     public static final String FIELD_ROOM_PARTICIPANTS = "PARTICIPANTS";
 

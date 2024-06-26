@@ -11,6 +11,12 @@ public abstract class AbstractMessage implements MessageInterface {
     protected transient boolean isRoomMessage = false;
     protected int messageType;
     protected int senderID;
+    protected static String username;
+
+    public static void setUsername(String username) {
+        AbstractMessage.username = username;
+    }
+
 
     //-1 if it's not meant to be a room message
     protected int roomID;

@@ -4,14 +4,16 @@ import Messages.MessageInterface;
 import Messages.MulticastMessage;
 import Messages.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import java.net.*;
 import java.util.*;
 
+import static utils.Constants.*;
+
 public class ChatRoom {
     private final int chatID;
-
-
 
 
     public Long getCreationTimestamp() {
@@ -30,12 +32,12 @@ public class ChatRoom {
     private int[] currentClientVectorTimestamp;
 
 
-    public void printMessages(){
+    public void printMessages() {
         throw new UnsupportedOperationException();
     }
 
-    public void forceFinalizeRoom(Set<Integer> participantIDs){
-        System.out.println("Room " +this.chatID + " has been finalized");
+    public void forceFinalizeRoom(Set<Integer> participantIDs) {
+        System.out.println("Room " + this.chatID + " has been finalized");
         this.participantIDs = participantIDs;
         this.roomFinalized = true;
     }
@@ -46,7 +48,7 @@ public class ChatRoom {
             currentClientVectorTimestamp = new int[participantIDs.size()];
             participantIDs.forEach(id -> {
                 currentClientVectorTimestamp[id] = 0;
-                perParticipantMessageQueue.put(id,new ArrayList<RoomMulticastMessage>());
+                perParticipantMessageQueue.put(id, new ArrayList<RoomMulticastMessage>());
             });
             System.out.println("Room finalized,participants: ");
             System.out.println(participantIDs);
@@ -59,7 +61,7 @@ public class ChatRoom {
     }
 
     public Set<Integer> getParticipantIDs() {
-        if(!roomFinalized) {
+        if (!roomFinalized) {
             throw new RuntimeException("Room not finalized yet");
         }
         return participantIDs;
@@ -87,6 +89,21 @@ public class ChatRoom {
             return Optional.of(outGoingMessageQueue.getFirst());
         }
         return Optional.empty();
+    }
+
+    public void announceRoomFinalized(int clientID) {
+        MessageInterface msg = new MulticastMessage(
+                clientID,
+                MESSAGE_TYPE_ROOM_FINALIZED,
+                this.getChatID()
+        );
+        JsonObject payload = new JsonObject();
+        JsonArray participants = new JsonArray();
+        this.getParticipantIDs().forEach(participants::add);
+        payload.add(FIELD_ROOM_PARTICIPANTS, participants);
+        payload.addProperty(ROOM_MULTICAST_GROUP_ADDRESS, this.getDedicatedRoomSocket().getMCastAddress().toString());
+        msg.setPayload(payload.toString());
+        this.addOutgoingMessage(msg);
     }
 
     public void addOutgoingMessage(MessageInterface message) {

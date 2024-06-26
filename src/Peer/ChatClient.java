@@ -33,14 +33,14 @@ public class ChatClient extends AbstractClient {
         Random generator = new Random(System.currentTimeMillis());
         reader = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
-            System.out.println("Enter your username: > ");
+            System.out.print("Enter your username: > ");
             this.userName = reader.readLine().trim();
             System.out.println("You chose : " + this.userName);
-            System.out.println("Press Enter to accept, r to change your username >");
+            System.out.print("Press Enter to accept, r to change your username >");
             String response = reader.readLine().trim();
             if (!response.contains("r")) break;
         }
-
+        AbstractMessage.setUsername(this.userName);
         this.CLIENT_ID = generator.nextInt(0, 150000);
         commonMulticastChannel = new ChatRoom(DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
         //Default room, no fixed participants
@@ -212,6 +212,7 @@ public class ChatClient extends AbstractClient {
                     print("Command 'Discover online Peers' received.");
                     announceSelf();
                     print("Sent an HELLO in multicast, waiting for replies...");
+                    break;
                 case "7":
                     System.exit(0);
                     break;
