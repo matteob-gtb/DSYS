@@ -126,12 +126,17 @@ public class QueueThread implements QueueManager {
                 int sender = inbound.getSenderID();
 
 
-                 if (sender == this.client.getID())
+                if (sender == this.client.getID())
                     continue;
-
-                switch (messageType) {
+                MulticastMessage message = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
+                int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
+                switch (message.messageType) {
                     //Actionable messages
                     case MESSAGE_TYPE_HELLO -> {
+
+                        System.out.println("Received hello from " + sender);
+                        String username = message.username;
+                        client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                         onlineClients.add(sender);
                         MulticastMessage welcome = MulticastMessage.getWelcomeMessage(this.client.getID());
@@ -144,32 +149,23 @@ public class QueueThread implements QueueManager {
                     }
                     case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
                         System.out.println("Processing ROOM_JOIN message");
-                        int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                         client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
-                        addParticipantToRoom(chatRoomID, sender);
+                        addParticipantToRoom(roomID, sender);
                     }
                     case MESSAGE_TYPE_CREATE_ROOM -> {
-                        //TODO deserialize
-                        MulticastMessage in = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
-                        int roomID = in.roomID;
                         AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), roomID, sender, client.getBaseMessageStub(), "y", "n");
                         client.addEvent(eventToProcess);
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
                         System.out.println("Received a finalized room message from " + sender);
-                        //if (sender == this.client.getID()) break;
                         synchronized (roomsMap) {
-                            int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                             ChatRoom room = roomsMap.get(roomID);
                             Set<Integer> finalParticipants = new HashSet<>();
-                            MulticastMessage message = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
                             JsonObject el = JsonParser.parseString(message.getPayload()).getAsJsonObject();
                             JsonArray array = el.getAsJsonObject().get(FIELD_ROOM_PARTICIPANTS).getAsJsonArray();
                             array.forEach(k -> finalParticipants.add(k.getAsInt()));
                             room.forceFinalizeRoom(finalParticipants);
                         }
-
-
                     }
                     case ROOM_MESSAGE -> {
                         // int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();

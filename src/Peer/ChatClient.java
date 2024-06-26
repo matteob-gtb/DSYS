@@ -29,6 +29,7 @@ public class ChatClient extends AbstractClient {
         System.out.println(message);
     }
 
+
     public ChatClient() throws Exception {
         Random generator = new Random(System.currentTimeMillis());
         reader = new BufferedReader(new InputStreamReader(System.in));
@@ -54,10 +55,12 @@ public class ChatClient extends AbstractClient {
     //block until received from all or timer expires
     public void announceSelf() throws IOException {
         MulticastMessage welcomeMessage = new MulticastMessage(
-                this.userName,
+                this.CLIENT_ID,
                 MESSAGE_TYPE_HELLO,
                 DEFAULT_GROUP_ROOMID
         );
+        //username only in HELLO messages
+        welcomeMessage.setUsername(this.userName);
         currentRoom.addOutgoingMessage(welcomeMessage);
     }
 
@@ -206,9 +209,13 @@ public class ChatClient extends AbstractClient {
                     print("Command 'List Online Peers' received.");
                     if (queueManager.getOnlineClients().isEmpty())
                         print("No online peer detected yet");
-                    else
-                        queueManager.getOnlineClients().forEach(System.out::println);
-
+                    else {
+                        ArrayList<String> namesList = new ArrayList<>(queueManager.getOnlineClients().size());
+                        queueManager.getOnlineClients().forEach(
+                                id -> namesList.add(idUsernameMappings.get(id))
+                        );
+                        System.out.println("List of online peers: [" + Arrays.toString(namesList.toArray()) + "]");
+                    }
                     break;
                 case "6":
                     print("Command 'Discover online Peers' received.");

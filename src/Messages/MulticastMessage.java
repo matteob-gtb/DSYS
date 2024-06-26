@@ -1,8 +1,10 @@
 package Messages;
 
+import Peer.ChatClient;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import utils.Constants;
+
 
 public class MulticastMessage extends AbstractMessage {
 
@@ -32,18 +34,13 @@ public class MulticastMessage extends AbstractMessage {
     }
 
 
-
-    public MulticastMessage(String clientUsername,
+    public MulticastMessage(
+                            int userID,
                             int type,
                             int roomID) {
-        super(clientUsername, type, roomID,null);
+        super(userID, type, roomID, null);
     }
 
-    public MulticastMessage(int clientID,
-            int type,
-            int roomID) {
-        super(clientID, type, roomID,null);
-    }
 
     ExclusionStrategy exclusionStrategy = new ExclusionStrategy() {
         public boolean shouldSkipField(FieldAttributes fieldAttributes) {

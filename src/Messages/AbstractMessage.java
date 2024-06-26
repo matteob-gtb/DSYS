@@ -8,9 +8,13 @@ public abstract class AbstractMessage implements MessageInterface {
     protected transient boolean isRoomMessage = false;
     protected int messageType;
     protected int senderID;
-    protected String username;
+    protected String username = null    ;
 
-    public String getPayload(){
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPayload() {
         return payload;
     }
 
@@ -70,15 +74,9 @@ public abstract class AbstractMessage implements MessageInterface {
     public AbstractMessage() {
     }
 
-    public AbstractMessage(int senderID, int messageType, int roomID, int[] vectorTimestamp) {
-        this.senderID = senderID;
-        this.messageType = messageType;
-        this.roomID = roomID;
-        this.vectorTimestamp = vectorTimestamp;
-    }
-
-    public AbstractMessage(String username, int messageType, int roomID, int[] vectorTimestamp) {
+    public AbstractMessage( int senderID, int messageType, int roomID, int[] vectorTimestamp) {
         this.username = username;
+        this.senderID = senderID;
         this.messageType = messageType;
         this.roomID = roomID;
         this.vectorTimestamp = vectorTimestamp;
