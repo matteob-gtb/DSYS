@@ -36,8 +36,7 @@ public class Logger {
                     writer.write(line);
                     writer.newLine();
                 }
-                writer.write(System.currentTimeMillis() + "\n");
-                writer.flush();
+                 writer.flush();
             } else {
                 System.out.println("Il file non è aperto. Apri il file prima di scrivere.");
             }

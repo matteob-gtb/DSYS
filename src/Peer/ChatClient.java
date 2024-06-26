@@ -40,7 +40,6 @@ public class ChatClient extends AbstractClient {
             String response = reader.readLine().trim();
             if (!response.contains("r")) break;
         }
-        AbstractMessage.setUsername(this.userName);
         this.CLIENT_ID = generator.nextInt(0, 150000);
         commonMulticastChannel = new ChatRoom(DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
         //Default room, no fixed participants
@@ -55,7 +54,7 @@ public class ChatClient extends AbstractClient {
     //block until received from all or timer expires
     public void announceSelf() throws IOException {
         MulticastMessage welcomeMessage = new MulticastMessage(
-                this.CLIENT_ID,
+                this.userName,
                 MESSAGE_TYPE_HELLO,
                 DEFAULT_GROUP_ROOMID
         );
@@ -71,13 +70,14 @@ public class ChatClient extends AbstractClient {
             System.out.println("Type M to send a message or q to go back to main menu > ");
             try {
                 response = reader.readLine();
-                if(response.contains("q")) break;
-                if(response.contains("M")) {
+                if (response.contains("q")) break;
+                if (response.contains("M")) {
                     System.out.println("Type the message you want to send >");
                     response = reader.readLine();
 //                    currentRoom.addOutgoingMessage(new MulticastMessage(
 //                     ))
-                };
+                }
+                ;
             } catch (IOException e) {
                 System.out.println("Unrecoverable I/O error,shutting down...");
                 System.exit(1);
@@ -113,14 +113,16 @@ public class ChatClient extends AbstractClient {
                         while (eventOutcome.isEmpty()) {
                             System.out.println(currentEvent.eventPrompt());
                             command = reader.readLine().trim();
+                            System.out.println("Read " + command + " from user");
                             eventOutcome = currentEvent.executeEvent(command);
+                            if (eventOutcome.isPresent())
+                                commonMulticastChannel.addOutgoingMessage(eventOutcome.get());
                         }
                         //TODO  fix currentroom
                         //   queueManager.sendMessage(eventOutcome.get(), currentRoom);
                         command = "x";
                         waitingForInput = false;
                     }
-                    System.out.println(currentEvent.eventPrompt());
                     currentEvent = null;
                 }
                 Thread.sleep(25);

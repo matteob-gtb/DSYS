@@ -107,8 +107,6 @@ public class QueueThread implements QueueManager {
             //TODO send messages, check queue
             Optional<MessageInterface> nextMsg = currentRoom.getOutgoingMessage();
             nextMsg.ifPresent(messageInterface -> {
-                System.out.println("NEXT MESSAGE");
-                System.out.println(nextMsg.get().toJSONString());
                 currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
                 currentRoom.updateOutQueue();
             });
@@ -128,9 +126,8 @@ public class QueueThread implements QueueManager {
                 int sender = inbound.getSenderID();
 
 
-                //TODO check based on message type
-//                if (sender == this.client.getID())
-//                    continue;
+                 if (sender == this.client.getID())
+                    continue;
 
                 switch (messageType) {
                     //Actionable messages
@@ -146,6 +143,7 @@ public class QueueThread implements QueueManager {
                         onlineClients.add(sender);
                     }
                     case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
+                        System.out.println("Processing ROOM_JOIN message");
                         int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                         client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
                         addParticipantToRoom(chatRoomID, sender);
@@ -158,16 +156,16 @@ public class QueueThread implements QueueManager {
                         client.addEvent(eventToProcess);
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
-                        System.out.println("Received a finalized room message");
+                        System.out.println("Received a finalized room message from " + sender);
                         //if (sender == this.client.getID()) break;
                         synchronized (roomsMap) {
                             int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                             ChatRoom room = roomsMap.get(roomID);
                             Set<Integer> finalParticipants = new HashSet<>();
-                            JsonElement el = jsonInboundMessage.get("payload");
+                            MulticastMessage message = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
+                            JsonObject el = JsonParser.parseString(message.getPayload()).getAsJsonObject();
                             JsonArray array = el.getAsJsonObject().get(FIELD_ROOM_PARTICIPANTS).getAsJsonArray();
                             array.forEach(k -> finalParticipants.add(k.getAsInt()));
-                            System.out.println(finalParticipants);
                             room.forceFinalizeRoom(finalParticipants);
                         }
 

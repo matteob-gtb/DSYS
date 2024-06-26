@@ -1,20 +1,17 @@
 package Messages;
 
-import com.google.gson.ExclusionStrategy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
-import utils.Constants;
 
 public abstract class AbstractMessage implements MessageInterface {
-    private String rawPayload;
+    protected String payload;
     protected transient boolean isRoomMessage = false;
     protected int messageType;
     protected int senderID;
-    protected static String username;
+    protected String username;
 
-    public static void setUsername(String username) {
-        AbstractMessage.username = username;
+    public String getPayload(){
+        return payload;
     }
 
 
@@ -22,8 +19,9 @@ public abstract class AbstractMessage implements MessageInterface {
     protected int roomID;
 
     public void setPayload(String rawPayload) {
-        this.rawPayload = rawPayload;
+        this.payload = rawPayload;
     }
+
     protected int[] vectorTimestamp;
 
 
@@ -69,7 +67,6 @@ public abstract class AbstractMessage implements MessageInterface {
     }
 
 
-
     public AbstractMessage() {
     }
 
@@ -80,5 +77,11 @@ public abstract class AbstractMessage implements MessageInterface {
         this.vectorTimestamp = vectorTimestamp;
     }
 
+    public AbstractMessage(String username, int messageType, int roomID, int[] vectorTimestamp) {
+        this.username = username;
+        this.messageType = messageType;
+        this.roomID = roomID;
+        this.vectorTimestamp = vectorTimestamp;
+    }
 
 }

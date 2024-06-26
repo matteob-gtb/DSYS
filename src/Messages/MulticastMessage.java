@@ -33,7 +33,11 @@ public class MulticastMessage extends AbstractMessage {
 
 
 
-
+    public MulticastMessage(String clientUsername,
+                            int type,
+                            int roomID) {
+        super(clientUsername, type, roomID,null);
+    }
 
     public MulticastMessage(int clientID,
             int type,

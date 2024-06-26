@@ -29,7 +29,7 @@ public class ChatRoom {
     private ArrayList<MulticastMessage> messageList;
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, ArrayList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
-    private int[] currentClientVectorTimestamp;
+    private HashMap<Integer,Integer> currentClientVectorTimestamp;
 
 
     public void printMessages() {
@@ -45,9 +45,9 @@ public class ChatRoom {
     public boolean finalizeRoom() {
         if (!roomFinalized && System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MILLI) {
             roomFinalized = true;
-            currentClientVectorTimestamp = new int[participantIDs.size()];
+            currentClientVectorTimestamp = new HashMap<>(participantIDs.size());
             participantIDs.forEach(id -> {
-                currentClientVectorTimestamp[id] = 0;
+                currentClientVectorTimestamp.put(id,0);
                 perParticipantMessageQueue.put(id, new ArrayList<RoomMulticastMessage>());
             });
             System.out.println("Room finalized,participants: ");

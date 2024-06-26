@@ -37,7 +37,6 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
     @Override
     public void executeEvent() {
         throw new UnsupportedOperationException("Not supported");
-
     }
 
     @Override
@@ -46,16 +45,18 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
         if (foundMatch.isEmpty())
             return Optional.empty();
         int type = -1;
-        if (command.equals("y"))
+        if (command.equals("y")) {
+            System.out.println("Accepted the invitation to room " + this.roomID);
             type = MESSAGE_TYPE_JOIN_ROOM_ACCEPT;
-        else
+        } else {
+            System.out.println("Refused the invitation to room " + this.roomID);
             type = MESSAGE_TYPE_JOIN_ROOM_REFUSE;
+        }
         MulticastMessage msg = new MulticastMessage(
                 this.clientID,
                 type,
                 this.roomID
         );
-
         return Optional.of(msg);
     }
 }
