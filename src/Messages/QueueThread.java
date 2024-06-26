@@ -123,11 +123,11 @@ public class QueueThread implements QueueManager {
                 Logger.writeLog("Received Message\n" + inbound.toJSONString() + "\n");
 
                 int sender = inbound.getSenderID();
+                MulticastMessage message = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 
-                System.out.println("Got a message from " + sender);
+                System.out.println("Got a message from " + sender + " type : " + (message.messageType == MESSAGE_TYPE_CREATE_ROOM));
                 if (sender == this.client.getID())
                     continue;
-                MulticastMessage message = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                 switch (message.messageType) {
                     //Actionable messages
