@@ -108,6 +108,8 @@ public class ChatClient extends AbstractClient {
              * as soon as they come, can't be interrupted
              * */
             while (waitingForInput) {
+                if (System.currentTimeMillis() % 20 == 0)
+                    System.out.println("test " + System.currentTimeMillis()%1000);
                 if (!eventsToProcess.isEmpty())
                     currentEvent = eventsToProcess.removeFirst();
                 if (reader.ready()) {
