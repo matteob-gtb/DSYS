@@ -75,7 +75,6 @@ public abstract class AbstractMessage implements MessageInterface {
     }
 
     public AbstractMessage( int senderID, int messageType, int roomID, int[] vectorTimestamp) {
-        this.username = username;
         this.senderID = senderID;
         this.messageType = messageType;
         this.roomID = roomID;
