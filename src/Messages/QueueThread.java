@@ -116,16 +116,15 @@ public class QueueThread implements QueueManager {
             if (packetReceived) {
 
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
-                //TODO fix
+
                 JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                 MulticastMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 
                 Logger.writeLog("Received Message\n" + inbound.toJSONString() + "\n");
 
-                int messageType = inbound.getMessageType();
                 int sender = inbound.getSenderID();
 
-
+                System.out.println("Got a message from " + sender);
                 if (sender == this.client.getID())
                     continue;
                 MulticastMessage message = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
@@ -133,7 +132,6 @@ public class QueueThread implements QueueManager {
                 switch (message.messageType) {
                     //Actionable messages
                     case MESSAGE_TYPE_HELLO -> {
-
                         String username = message.username;
                         client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
