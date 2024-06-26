@@ -12,6 +12,7 @@ import Events.ReplyToRoomRequestEvent;
 import com.google.gson.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
@@ -72,6 +73,11 @@ public class QueueThread implements QueueManager {
         if (roomsMap.containsKey(chatRoom.getChatID())) throw new RuntimeException("Duplicate chat room");
         roomsMap.put(chatRoom.getChatID(), chatRoom);
         roomIDs.add(chatRoom.getChatID());
+    }
+
+    @Override
+    public List<ChatRoom> getRooms() {
+        return new ArrayList<>(this.roomsMap.values());
     }
 
     public QueueThread(AbstractClient client, ChatRoom commonMulticastChannel) throws IOException {

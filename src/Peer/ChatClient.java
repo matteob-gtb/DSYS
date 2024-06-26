@@ -142,6 +142,12 @@ public class ChatClient extends AbstractClient {
                     printAvailableCommands();
                     break;
                 case "1":
+                    print("Command 'List Online Rooms' received.");
+                    queueManager.getRooms().forEach(
+                            id -> System.out.println("Room #" + id.getChatID())
+                    );
+                    break;
+                case "2":
                     print("Command 'Join Room' received.");
                     int roomID = -1;
                     while (true) {
@@ -168,7 +174,7 @@ public class ChatClient extends AbstractClient {
                     }
                     // Add logic to send message
                     break;
-                case "2":
+                case "3":
                     print("Command 'Create room' received.");
                     boolean stopCreatingRoom = false;
                     int ID = -1;
@@ -201,15 +207,15 @@ public class ChatClient extends AbstractClient {
 
 
                     break;
-                case "3":
+                case "4":
                     print("Command 'delete room' received.");
                     // Add logic to delete room
                     break;
-                case "4":
+                case "5":
                     print("Command 'Leave room' received.");
                     // Add logic to delete room
                     break;
-                case "5":
+                case "6":
                     print("Command 'List Online Peers' received.");
                     if (queueManager.getOnlineClients().isEmpty())
                         print("No online peer detected yet");
@@ -221,12 +227,12 @@ public class ChatClient extends AbstractClient {
                         System.out.println("List of online peers: [" + Arrays.toString(namesList.toArray()) + "]");
                     }
                     break;
-                case "6":
+                case "7":
                     print("Command 'Discover online Peers' received.");
                     announceSelf();
                     print("Sent an HELLO in multicast, waiting for replies...");
                     break;
-                case "7":
+                case "8":
                     System.exit(0);
                     break;
                 default:
@@ -239,17 +245,18 @@ public class ChatClient extends AbstractClient {
     private void printAvailableCommands() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
-        print("User [" + this.userName + "] - ID ["+ this.CLIENT_ID+  "]");
+        print("User [" + this.userName + "] - ID [" + this.CLIENT_ID + "]");
         print("""
                 Available commands:
                 0. List Commands
-                1. Join Room
-                2. Create Room
-                3. Delete Room
-                4. Leave Room
-                5. List Online Peers
-                6. Discover Online Peers
-                7. Quit Application
+                1. List Online Rooms
+                2. Join Room
+                3. Create Room
+                4. Delete Room
+                5. Leave Room
+                6. List Online Peers
+                7. Discover Online Peers
+                8. Quit Application
                 Enter command:""");
         //Flush console
 
