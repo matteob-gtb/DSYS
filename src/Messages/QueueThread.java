@@ -134,7 +134,6 @@ public class QueueThread implements QueueManager {
                     //Actionable messages
                     case MESSAGE_TYPE_HELLO -> {
 
-                        System.out.println("Received hello from " + sender);
                         String username = message.username;
                         client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
@@ -153,6 +152,7 @@ public class QueueThread implements QueueManager {
                         addParticipantToRoom(roomID, sender);
                     }
                     case MESSAGE_TYPE_CREATE_ROOM -> {
+                        System.out.println("Received a room invitation");
                         AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), roomID, sender, client.getBaseMessageStub(), "y", "n");
                         client.addEvent(eventToProcess);
                     }
