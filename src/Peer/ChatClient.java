@@ -33,14 +33,18 @@ public class ChatClient extends AbstractClient {
     public ChatClient() throws Exception {
         Random generator = new Random(System.currentTimeMillis());
         reader = new BufferedReader(new InputStreamReader(System.in));
-        while (true) {
-            System.out.print("Enter your username: > ");
-            this.userName = reader.readLine().trim();
-            System.out.println("You chose : " + this.userName);
-            System.out.print("Press Enter to accept, r to change your username >");
-            String response = reader.readLine().trim();
-            if (!response.contains("r")) break;
-        }
+
+
+        if (!Main.debug)
+            while (true) {
+                System.out.print("Enter your username: > ");
+                this.userName = reader.readLine().trim();
+                System.out.println("You chose : " + this.userName);
+                System.out.print("Press Enter to accept, r to change your username >");
+                String response = reader.readLine().trim();
+                if (!response.contains("r")) break;
+            }
+        else userName = "erererasdcawecqw";
         this.CLIENT_ID = generator.nextInt(0, 150000);
         commonMulticastChannel = new ChatRoom(DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
         //Default room, no fixed participants
