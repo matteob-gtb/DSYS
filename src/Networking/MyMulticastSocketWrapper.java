@@ -15,7 +15,7 @@ public class MyMulticastSocketWrapper {
     private MulticastSocket socket; //multicast or normal UDP
     private boolean connected = false;
     private static Set<String> usedGroupNames = new HashSet<>();
-    private final static int DEFAULT_TIMEOUT = 50;
+    private final static int DEFAULT_TIMEOUT = 250;
 
     private Long lastConnectionAttemptEpoch = -1L;
 
@@ -140,6 +140,7 @@ public class MyMulticastSocketWrapper {
     public MyMulticastSocketWrapper(String GROUPNAME) {
         try {
             this.roomGroup = InetAddress.getByName(GROUPNAME);
+            System.out.println("Room address resolved " + GROUPNAME);
             boolean socketCreated = false;
             while (!socketCreated) {
                 try {
@@ -156,6 +157,8 @@ public class MyMulticastSocketWrapper {
                 }
             }
         } catch (Exception e) {
+            System.out.println("Failed to create socket");
+            System.out.println(e.getMessage());
             connected = false;
         }
     }

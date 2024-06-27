@@ -54,15 +54,15 @@ public class QueueThread implements QueueManager {
         }
     }
 
-    public void sendMessage(MulticastMessage m, int roomID) throws IOException {
-        InetAddress destination = null;
-        synchronized (roomLock) {
-            if (!roomsMap.containsKey(roomID))
-                throw new RuntimeException("No such room");
-            destination = roomsMap.get(roomID).getRoomAddress();
-        }
-        currentSocket.sendPacket(m);
-    }
+//    public void sendMessage(MulticastMessage m, int roomID) throws IOException {
+//        InetAddress destination = null;
+//        synchronized (roomLock) {
+//            if (!roomsMap.containsKey(roomID))
+//                throw new RuntimeException("No such room");
+//            destination = roomsMap.get(roomID).getRoomAddress();
+//        }
+//        currentSocket.sendPacket(m);
+//    }
 
 
     @Override
@@ -114,6 +114,7 @@ public class QueueThread implements QueueManager {
         Gson gson = builder.create();
         boolean packetReceived = false;
         while (true) {
+            packetReceived = false;
             cycleRooms();
             if (!currentRoom.isRoomFinalized()) {
                 if (currentRoom.finalizeRoom()) {
@@ -129,17 +130,16 @@ public class QueueThread implements QueueManager {
                     currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
                     currentRoom.updateOutQueue();
                 });
+                packet = new DatagramPacket(buffer, buffer.length);
+                packetReceived = currentRoom.getDedicatedRoomSocket().receive(packet);
             } else {
                 currentRoom.getBackOnline();
             }
             //check for incoming packets
-            packet = new DatagramPacket(buffer, buffer.length);
-            packetReceived = currentRoom.getDedicatedRoomSocket().receive(packet);
+
             if (packetReceived) {
 
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
-
-
                 JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                 MulticastMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 

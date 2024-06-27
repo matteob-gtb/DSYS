@@ -18,7 +18,7 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
 
     public ReplyToRoomRequestEvent(int clientID, String GROUPNAME, int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
         super(true);
-        this.GROUPNAME = GROUPNAME;
+        this.GROUPNAME = GROUPNAME.replace("\\/","");
         this.clientID = clientID;
         this.roomID = roomID;
         this.recipientID = sender;
@@ -30,7 +30,6 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
         return new ChatRoom(
                 clientID,
                 GROUPNAME
-
         );
     }
 

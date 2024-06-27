@@ -140,7 +140,10 @@ public class ChatClient extends AbstractClient {
                                 commonMulticastChannel.addOutgoingMessage(eventOutcome.get());
                             if (currentEvent instanceof ReplyToRoomRequestEvent) {
                                 ChatRoom newRoom = ((ReplyToRoomRequestEvent) currentEvent).createRoomReference();
-                                queueManager.registerRoom(newRoom);
+                                System.out.println("Created room #" + newRoom.getChatID() + " Online " + newRoom.getStatusString());
+                                if (newRoom.isOnline()) {
+                                    queueManager.registerRoom(newRoom);
+                                }
                             }
                         }
                         //TODO  fix currentroom
@@ -205,7 +208,8 @@ public class ChatClient extends AbstractClient {
                                 ChatRoom room = new ChatRoom(ID, MyMulticastSocketWrapper.getNewGroupName());
                                 room.addParticipant(this.CLIENT_ID);
                                 System.out.println("Created room with id #" + room.getChatID());
-                                MulticastMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), room.getRoomAddress().toString());
+                                MulticastMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), room.getRoomAddress());
+                                System.out.println("groupname " + room.getRoomAddress());
                                 System.out.println("Create room request \n " + outMsg.toJSONString());
                                 queueManager.registerRoom(room);
                                 // NO ™currentRoom = room;
@@ -244,7 +248,8 @@ public class ChatClient extends AbstractClient {
                             System.out.println("Room not found");
                         else break;
                     }
-                    queueManager.deleteRoom(toDelete.get());
+                    if (toDelete.isPresent())
+                        queueManager.deleteRoom(toDelete.get());
                     printAvailableCommands();
                     break;
                 case "6":

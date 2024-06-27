@@ -152,8 +152,8 @@ public class ChatRoom {
     }
 
 
-    public InetAddress getRoomAddress() {
-        return dedicatedRoomSocket.getMCastAddress();
+    public String getRoomAddress() {
+        return dedicatedRoomSocket.getMCastAddress().toString().replace("\\/","");
     }
 
     public MyMulticastSocketWrapper getDedicatedRoomSocket() {
