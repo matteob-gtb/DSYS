@@ -117,7 +117,7 @@ public class QueueThread implements QueueManager {
             packetReceived = false;
             cycleRooms();
             if (!currentRoom.isRoomFinalized()) {
-                if (currentRoom.finalizeRoom()) {
+                if (currentRoom.getOwnerID() == this.client.getID() && currentRoom.finalizeRoom()) {
                     currentRoom.announceRoomFinalized(client.getID(), client.getDefaultRoom());
                 }
 

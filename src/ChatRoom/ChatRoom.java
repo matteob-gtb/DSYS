@@ -14,6 +14,12 @@ import static utils.Constants.*;
 
 public class ChatRoom {
     private final int chatID;
+
+    public int getOwnerID() {
+        return ownerID;
+    }
+
+    private final int ownerID;
     private boolean onlineStatus;
     private Long lastReconnectAttempt = -1L;
 
@@ -121,7 +127,7 @@ public class ChatRoom {
         return Optional.empty();
     }
 
-    public void announceRoomFinalized(int clientID,ChatRoom defaultChannel) {
+    public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {
         MessageInterface msg = new MulticastMessage(
                 clientID,
                 MESSAGE_TYPE_ROOM_FINALIZED,
@@ -164,7 +170,8 @@ public class ChatRoom {
         return chatID;
     }
 
-    public ChatRoom(int owner,int chatID, String groupName) {
+    public ChatRoom(int owner, int chatID, String groupName) {
+        this.ownerID = owner;
         this.chatID = chatID;
         this.dedicatedRoomSocket = new MyMulticastSocketWrapper(groupName);
         this.onlineStatus = dedicatedRoomSocket.isConnected();
