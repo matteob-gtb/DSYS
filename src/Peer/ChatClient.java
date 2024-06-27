@@ -196,6 +196,7 @@ public class ChatClient extends AbstractClient {
                             try {
                                 ID = Integer.parseInt(nextLine);
                                 ChatRoom room = new ChatRoom(ID, MyMulticastSocketWrapper.getNewGroupName());
+                                room.addParticipant(this.CLIENT_ID);
                                 System.out.println("Created room with id #" + room.getChatID());
                                 MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID());
                                 queueManager.registerRoom(room);
