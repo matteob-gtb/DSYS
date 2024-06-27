@@ -90,6 +90,15 @@ public class MyMulticastSocketWrapper {
 
     }
 
+
+    public void close() {
+        try {
+            socket.close();
+        } catch (Exception e) {
+            System.out.println("IO exception");
+        }
+    }
+
     public void sendPacket(MessageInterface message) {
         String msg = message.toJSONString();
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);

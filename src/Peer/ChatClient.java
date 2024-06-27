@@ -44,7 +44,7 @@ public class ChatClient extends AbstractClient {
                 String response = reader.readLine().trim();
                 if (!response.contains("r")) break;
             }
-        else userName = "erererasdcawecqw";
+        else userName = "asdvasdvwq";
         this.CLIENT_ID = generator.nextInt(0, 150000);
         commonMulticastChannel = new ChatRoom(DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
         //Default room, no fixed participants
@@ -91,6 +91,17 @@ public class ChatClient extends AbstractClient {
             }
         }
         currentRoom = this.commonMulticastChannel;
+    }
+
+    public void listRooms() {
+        queueManager.getRooms().forEach(
+                room -> {
+                    System.out.println("Room #" + room.getChatID());
+                    room.getParticipantIDs().forEach(
+                            id -> System.out.println("Participant #" + id)
+                    );
+                }
+        );
     }
 
     public void mainLoop() throws Exception {
@@ -143,9 +154,7 @@ public class ChatClient extends AbstractClient {
                     break;
                 case "1":
                     print("Command 'List Online Rooms' received.");
-                    queueManager.getRooms().forEach(
-                            id -> System.out.println("Room #" + id.getChatID())
-                    );
+                    listRooms();
                     break;
                 case "2":
                     print("Command 'Join Room' received.");
@@ -166,7 +175,6 @@ public class ChatClient extends AbstractClient {
                         else if (!room.get().isRoomFinalized()) {
                             System.out.println("Room has not been finalized yet, wait for" + (System.currentTimeMillis() - room.get().getCreationTimestamp()) + " more milliseconds");
                         } else {
-
                             stayInRoom(room.get());
                             break;
                         }
@@ -207,13 +215,28 @@ public class ChatClient extends AbstractClient {
 
 
                     break;
-                case "4":
-                    print("Command 'delete room' received.");
-                    // Add logic to delete room
-                    break;
                 case "5":
                     print("Command 'Leave room' received.");
-                    // Add logic to delete room
+                    int deleteID = -1;
+                    Optional<ChatRoom> toDelete = Optional.empty();
+
+                    while (true) {
+                        System.out.println("Enter the ID of the room you wish to delete,q to exit this prompt");
+                        String response = reader.readLine().trim();
+                        if (response.contains("q"))
+                            break;
+                        try {
+                            deleteID = Integer.parseInt(response);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Not a number");
+                        }
+                        toDelete = queueManager.getChatRoom(deleteID);
+                        if (toDelete.isEmpty())
+                            System.out.println("Room not found");
+                        else break;
+                    }
+                    queueManager.deleteRoom(toDelete.get());
+                    printAvailableCommands();
                     break;
                 case "6":
                     print("Command 'List Online Peers' received.");

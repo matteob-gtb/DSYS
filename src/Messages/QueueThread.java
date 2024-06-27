@@ -19,7 +19,7 @@ import static utils.Constants.*;
 public class QueueThread implements QueueManager {
 
     private static final int SOCKET_TIMEOUT = 100;
-    private InetAddress group;
+    private final Object roomLock = new Object();
     private Set<Integer> onlineClients = new TreeSet<Integer>();
     private final AbstractClient client;
     private final Map<Integer, ChatRoom> roomsMap = Collections.synchronizedMap(new HashMap<>());
@@ -30,21 +30,33 @@ public class QueueThread implements QueueManager {
     private List<Integer> roomIDs = Collections.synchronizedList(new ArrayList<>());
     private int currentIDIndex = 0;
 
+    public void deleteRoom(ChatRoom room) {
+        //TODO exception maybe not a great idea
+        if (!roomsMap.containsKey(room)) throw new RuntimeException("Room doesn't exist");
+        synchronized (roomLock) {
+            roomsMap.remove(room);
+            //java moment
+            roomIDs.remove((Integer) room.getChatID());
+        }
+    }
+
 
     private void cycleRooms() {
-        currentRoom = roomsMap.get(roomIDs.get(currentIDIndex));
-        currentIDIndex = currentIDIndex + 1 == roomIDs.size() ? 0 : currentIDIndex + 1;
+        synchronized (roomLock) {
+            currentRoom = roomsMap.get(roomIDs.get(currentIDIndex));
+            currentIDIndex = currentIDIndex + 1 == roomIDs.size() ? 0 : currentIDIndex + 1;
+        }
     }
 
     public void addParticipantToRoom(int roomID, int senderID) {
-        synchronized (roomsMap) {
+        synchronized (roomLock) {
             roomsMap.get(roomID).addParticipant(senderID);
         }
     }
 
     public void sendMessage(MulticastMessage m, int roomID) throws IOException {
         InetAddress destination = null;
-        synchronized (roomsMap) {
+        synchronized (roomLock) {
             if (!roomsMap.containsKey(roomID))
                 throw new RuntimeException("No such room");
             destination = roomsMap.get(roomID).getRoomAddress();
@@ -81,7 +93,6 @@ public class QueueThread implements QueueManager {
     }
 
     public QueueThread(AbstractClient client, ChatRoom commonMulticastChannel) throws IOException {
-        this.group = InetAddress.getByName(COMMON_GROUPNAME);
         this.commonMulticastChannel = commonMulticastChannel;
         this.currentSocket = commonMulticastChannel.getDedicatedRoomSocket();
         this.registerRoom(commonMulticastChannel);
@@ -94,7 +105,7 @@ public class QueueThread implements QueueManager {
      */
     @Override
     public void run() {
-        //client.print("QueueThread bootstrapped");
+        System.out.println("QueueThread Online");
         byte[] buffer = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         MulticastMessage nextMessage = null;
@@ -111,11 +122,16 @@ public class QueueThread implements QueueManager {
 
             }
             //TODO send messages, check queue
-            Optional<MessageInterface> nextMsg = currentRoom.getOutgoingMessage();
-            nextMsg.ifPresent(messageInterface -> {
-                currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
-                currentRoom.updateOutQueue();
-            });
+
+            if(currentRoom.isOnline()) {
+                Optional<MessageInterface> nextMsg = currentRoom.getOutgoingMessage();
+                nextMsg.ifPresent(messageInterface -> {
+                    currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
+                    currentRoom.updateOutQueue();
+                });
+            } else {
+                currentRoom.getBackOnline();
+            }
             //check for incoming packets
             packet = new DatagramPacket(buffer, buffer.length);
             packetReceived = currentRoom.getDedicatedRoomSocket().receive(packet);

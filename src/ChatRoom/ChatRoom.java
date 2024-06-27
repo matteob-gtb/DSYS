@@ -14,7 +14,8 @@ import static utils.Constants.*;
 
 public class ChatRoom {
     private final int chatID;
-
+    private boolean onlineStatus;
+    private Long lastReconnectAttempt = -1L;
 
     public Long getCreationTimestamp() {
         return creationTimestamp;
@@ -25,11 +26,12 @@ public class ChatRoom {
     private final Long creationTimestamp = System.currentTimeMillis();
 
     private final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
+    private final static int MIN_SOCKET_RECONNECT_DELAY = 5 * 1000;
 
     private ArrayList<MulticastMessage> messageList;
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, ArrayList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
-    private HashMap<Integer,Integer> currentClientVectorTimestamp;
+    private HashMap<Integer, Integer> currentClientVectorTimestamp;
 
 
     public void printMessages() {
@@ -47,7 +49,7 @@ public class ChatRoom {
             roomFinalized = true;
             currentClientVectorTimestamp = new HashMap<>(participantIDs.size());
             participantIDs.forEach(id -> {
-                currentClientVectorTimestamp.put(id,0);
+                currentClientVectorTimestamp.put(id, 0);
                 perParticipantMessageQueue.put(id, new ArrayList<RoomMulticastMessage>());
             });
             System.out.println("Room finalized,participants: ");
@@ -67,6 +69,23 @@ public class ChatRoom {
         return participantIDs;
     }
 
+    public boolean isOnline() {
+        return this.onlineStatus;
+    }
+
+
+    public void getBackOnline() {
+        if (this.lastReconnectAttempt - System.currentTimeMillis() < MIN_SOCKET_RECONNECT_DELAY) {
+            return;
+        }
+        this.lastReconnectAttempt = System.currentTimeMillis();
+        try {
+            dedicatedRoomSocket.close();
+            dedicatedRoomSocket = new MyMulticastSocketWrapper(dedicatedRoomSocket.getMCastAddress().toString());
+        } catch (Exception e) {
+            System.out.println("Reconnect attempt failed,trying later...");
+        }
+    }
 
     public boolean isRoomFinalized() {
         return roomFinalized;
@@ -82,6 +101,10 @@ public class ChatRoom {
     public void updateOutQueue() {
         if (outGoingMessageQueue.getFirst().isSent())
             outGoingMessageQueue.removeFirst();
+        else {
+            //could try a few more times honestly
+            this.connected = false;
+        }
     }
 
     public Optional<MessageInterface> getOutgoingMessage() {
@@ -111,7 +134,8 @@ public class ChatRoom {
     }
 
     public void sendInRoomMessage(MessageInterface message) {
-
+        //add to the queue first
+        outGoingMessageQueue.add(message);
     }
 
     public void setRoomFinalized(boolean roomFinalized) {
@@ -136,10 +160,6 @@ public class ChatRoom {
         this.dedicatedRoomSocket = new MyMulticastSocketWrapper(groupName);
     }
 
-
-    public void probeSocket() {
-
-    }
 
     public int[] getParticipants() {
         return participantIDs.stream().mapToInt(i -> i).toArray();
