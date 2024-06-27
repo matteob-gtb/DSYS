@@ -180,7 +180,7 @@ public class QueueThread implements QueueManager {
                         client.addEvent(eventToProcess);
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
-                        System.out.println("Received a finalized room message from " + sender);
+                        System.out.println("Received a finalized room message from " + sender + " room - " + roomID);
                         synchronized (roomsMap) {
                             ChatRoom room = roomsMap.get(roomID);
                             Set<Integer> finalParticipants = new HashSet<>();

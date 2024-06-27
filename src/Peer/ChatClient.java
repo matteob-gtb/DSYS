@@ -49,6 +49,7 @@ public class ChatClient extends AbstractClient {
         else userName = "asdvasdvwq";
         this.CLIENT_ID = generator.nextInt(0, 150000);
         commonMulticastChannel = new ChatRoom(this.CLIENT_ID, DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
+
         //Default room, no fixed participants
         commonMulticastChannel.setRoomFinalized(true);
         this.queueManager = new QueueThread(this, commonMulticastChannel);
@@ -100,7 +101,7 @@ public class ChatClient extends AbstractClient {
                 room -> {
                     System.out.println("Room #" + room.getChatID() + " - Status [" + room.getStatusString() + "]");
                     room.getParticipantIDs().forEach(
-                            id -> System.out.println("Participant #" + id)
+                            id -> System.out.println("      Participant #" + id)
                     );
                 }
         );

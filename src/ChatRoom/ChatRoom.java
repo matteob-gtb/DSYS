@@ -131,7 +131,7 @@ public class ChatRoom {
         MessageInterface msg = new MulticastMessage(
                 clientID,
                 MESSAGE_TYPE_ROOM_FINALIZED,
-                defaultChannel.getChatID()
+                this.chatID
         );
         JsonObject payload = new JsonObject();
         JsonArray participants = new JsonArray();
