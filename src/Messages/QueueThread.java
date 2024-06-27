@@ -138,7 +138,6 @@ public class QueueThread implements QueueManager {
             if (packetReceived) {
 
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
-
                 JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                 MulticastMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 

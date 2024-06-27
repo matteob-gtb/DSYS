@@ -132,11 +132,6 @@ public class MyMulticastSocketWrapper {
         }
     }
 
-    //TODO
-    public void reattemptConnection() {
-
-
-    }
 
     public boolean isConnected() {
         return connected;

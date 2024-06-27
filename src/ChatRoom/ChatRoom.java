@@ -73,6 +73,10 @@ public class ChatRoom {
         return this.onlineStatus;
     }
 
+    public String getStatusString() {
+        return this.onlineStatus ? "online" : "offline";
+    }
+
 
     public void getBackOnline() {
         if (this.lastReconnectAttempt - System.currentTimeMillis() < MIN_SOCKET_RECONNECT_DELAY) {
@@ -95,7 +99,7 @@ public class ChatRoom {
     private int[] ownVectorTimestamp;
     private MyMulticastSocketWrapper dedicatedRoomSocket = null;
     private boolean connected = false;
-    private ArrayList<MessageInterface> outGoingMessageQueue = new ArrayList<>();
+    private List<MessageInterface> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
 
 
     public void updateOutQueue() {
@@ -155,9 +159,10 @@ public class ChatRoom {
         return chatID;
     }
 
-    public ChatRoom(int chatID, String groupName) throws Exception {
+    public ChatRoom(int chatID, String groupName) {
         this.chatID = chatID;
         this.dedicatedRoomSocket = new MyMulticastSocketWrapper(groupName);
+        this.onlineStatus = dedicatedRoomSocket.isConnected();
     }
 
 

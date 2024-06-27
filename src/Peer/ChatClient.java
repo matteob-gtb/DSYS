@@ -96,7 +96,7 @@ public class ChatClient extends AbstractClient {
     public void listRooms() {
         queueManager.getRooms().forEach(
                 room -> {
-                    System.out.println("Room #" + room.getChatID());
+                    System.out.println("Room #" + room.getChatID() + " - Status [" + room.getStatusString() + "]");
                     room.getParticipantIDs().forEach(
                             id -> System.out.println("Participant #" + id)
                     );
@@ -180,7 +180,7 @@ public class ChatClient extends AbstractClient {
                         }
 
                     }
-                    // Add logic to send message
+                    printAvailableCommands();
                     break;
                 case "3":
                     print("Command 'Create room' received.");
