@@ -182,7 +182,9 @@ public class QueueThread implements QueueManager {
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
                         System.out.println("Received a finalized room message from " + sender + " room - " + roomID);
                         synchronized (roomsMap) {
+
                             ChatRoom room = roomsMap.get(roomID);
+                            System.out.println(roomsMap.keySet().toString());
                             Set<Integer> finalParticipants = new HashSet<>();
                             JsonObject el = JsonParser.parseString(message.getPayload()).getAsJsonObject();
                             JsonArray array = el.getAsJsonObject().get(FIELD_ROOM_PARTICIPANTS).getAsJsonArray();

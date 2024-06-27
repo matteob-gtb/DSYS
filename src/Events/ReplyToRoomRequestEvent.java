@@ -30,7 +30,7 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
     public ChatRoom createRoomReference() {
         return new ChatRoom(
                 this.ownerID,
-                clientID,
+                this.roomID,
                 GROUPNAME
         );
     }

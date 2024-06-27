@@ -142,9 +142,8 @@ public class ChatClient extends AbstractClient {
                             if (currentEvent instanceof ReplyToRoomRequestEvent) {
                                 ChatRoom newRoom = ((ReplyToRoomRequestEvent) currentEvent).createRoomReference();
                                 System.out.println("Created room #" + newRoom.getChatID() + " Online " + newRoom.getStatusString());
-                                if (newRoom.isOnline()) {
-                                    queueManager.registerRoom(newRoom);
-                                }
+                                queueManager.registerRoom(newRoom);
+
                             }
                         }
                         //TODO  fix currentroom
