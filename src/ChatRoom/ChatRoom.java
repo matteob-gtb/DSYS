@@ -24,7 +24,7 @@ public class ChatRoom {
     //it is mean as a VERY rough estimate in order to wait forever for a response,
     //by no means accurate
     private final Long creationTimestamp = System.currentTimeMillis();
-
+    private final String groupName;
     private final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
     private final static int MIN_SOCKET_RECONNECT_DELAY = 5 * 1000;
 
@@ -153,7 +153,7 @@ public class ChatRoom {
 
 
     public String getRoomAddress() {
-        return dedicatedRoomSocket.getMCastAddress().toString().replace("\\/","");
+        return groupName;
     }
 
     public MyMulticastSocketWrapper getDedicatedRoomSocket() {
@@ -168,6 +168,7 @@ public class ChatRoom {
         this.chatID = chatID;
         this.dedicatedRoomSocket = new MyMulticastSocketWrapper(groupName);
         this.onlineStatus = dedicatedRoomSocket.isConnected();
+        this.groupName = groupName;
     }
 
 
