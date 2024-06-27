@@ -11,14 +11,15 @@ import static utils.Constants.*;
 
 public class ReplyToRoomRequestEvent extends AbstractEvent {
 
-    private final int clientID, roomID, recipientID;
+    private final int clientID, roomID, recipientID, ownerID;
     private final String[] acceptableOutcomes;
     private final JsonObject msg;
     private final String GROUPNAME;
 
-    public ReplyToRoomRequestEvent(int clientID, String GROUPNAME, int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
+    public ReplyToRoomRequestEvent(int roomOwner, int clientID, String GROUPNAME, int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
         super(true);
-        this.GROUPNAME = GROUPNAME.replace("\\/","");
+        this.ownerID = roomOwner;
+        this.GROUPNAME = GROUPNAME.replace("\\/", "");
         this.clientID = clientID;
         this.roomID = roomID;
         this.recipientID = sender;
@@ -28,6 +29,7 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
 
     public ChatRoom createRoomReference() {
         return new ChatRoom(
+                this.ownerID,
                 clientID,
                 GROUPNAME
         );

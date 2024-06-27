@@ -48,7 +48,7 @@ public class ChatClient extends AbstractClient {
             }
         else userName = "asdvasdvwq";
         this.CLIENT_ID = generator.nextInt(0, 150000);
-        commonMulticastChannel = new ChatRoom(DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
+        commonMulticastChannel = new ChatRoom(this.CLIENT_ID, DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
         //Default room, no fixed participants
         commonMulticastChannel.setRoomFinalized(true);
         this.queueManager = new QueueThread(this, commonMulticastChannel);
@@ -205,7 +205,7 @@ public class ChatClient extends AbstractClient {
                         } else {
                             try {
                                 ID = Integer.parseInt(nextLine);
-                                ChatRoom room = new ChatRoom(ID, MyMulticastSocketWrapper.getNewGroupName());
+                                ChatRoom room = new ChatRoom(CLIENT_ID, ID, MyMulticastSocketWrapper.getNewGroupName());
                                 room.addParticipant(this.CLIENT_ID);
                                 System.out.println("Created room with id #" + room.getChatID());
                                 MulticastMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), room.getRoomAddress());

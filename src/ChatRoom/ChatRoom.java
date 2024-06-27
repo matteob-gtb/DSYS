@@ -164,7 +164,7 @@ public class ChatRoom {
         return chatID;
     }
 
-    public ChatRoom(int chatID, String groupName) {
+    public ChatRoom(int owner,int chatID, String groupName) {
         this.chatID = chatID;
         this.dedicatedRoomSocket = new MyMulticastSocketWrapper(groupName);
         this.onlineStatus = dedicatedRoomSocket.isConnected();

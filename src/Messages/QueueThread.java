@@ -176,7 +176,7 @@ public class QueueThread implements QueueManager {
                         System.out.println("Received a room invitation");
                         //TODO fix groupname
                         CreateRoomRequest req = gson.fromJson(jsonInboundMessage, CreateRoomRequest.class);
-                        AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), req.getGroupname(), roomID, sender, client.getBaseMessageStub(), "y", "n");
+                        AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, client.getBaseMessageStub(), "y", "n");
                         client.addEvent(eventToProcess);
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
