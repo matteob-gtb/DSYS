@@ -133,7 +133,7 @@ public class ChatRoom {
         payload.add(FIELD_ROOM_PARTICIPANTS, participants);
         payload.addProperty(ROOM_MULTICAST_GROUP_ADDRESS, this.getDedicatedRoomSocket().getMCastAddress().toString());
         msg.setPayload(payload.toString());
-        this.addOutgoingMessage(msg);
+        defaultChannel.addOutgoingMessage(msg);
     }
 
     public void addOutgoingMessage(MessageInterface message) {

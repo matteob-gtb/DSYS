@@ -117,7 +117,7 @@ public class QueueThread implements QueueManager {
             cycleRooms();
             if (!currentRoom.isRoomFinalized()) {
                 if (currentRoom.finalizeRoom()) {
-                    currentRoom.announceRoomFinalized(client.getID(),client.getDefaultRoom());
+                    currentRoom.announceRoomFinalized(client.getID(), client.getDefaultRoom());
                 }
 
             }
@@ -174,7 +174,9 @@ public class QueueThread implements QueueManager {
                     }
                     case MESSAGE_TYPE_CREATE_ROOM -> {
                         System.out.println("Received a room invitation");
-                        AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), roomID, sender, client.getBaseMessageStub(), "y", "n");
+                        //TODO fix groupname
+                        String groupName = jsonInboundMessage.get("GROUPNAME").toString();
+                        AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(this.client.getID(), groupName, roomID, sender, client.getBaseMessageStub(), "y", "n");
                         client.addEvent(eventToProcess);
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {

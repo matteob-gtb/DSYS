@@ -1,5 +1,6 @@
 package Events;
 
+import ChatRoom.ChatRoom;
 import Messages.MulticastMessage;
 import com.google.gson.JsonObject;
 
@@ -13,14 +14,24 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
     private final int clientID, roomID, recipientID;
     private final String[] acceptableOutcomes;
     private final JsonObject msg;
+    private final String GROUPNAME;
 
-    public ReplyToRoomRequestEvent(int clientID, int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
+    public ReplyToRoomRequestEvent(int clientID, String GROUPNAME, int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
         super(true);
+        this.GROUPNAME = GROUPNAME;
         this.clientID = clientID;
         this.roomID = roomID;
         this.recipientID = sender;
         this.msg = prepackagedMessage;
         this.acceptableOutcomes = acceptableOutcomes;
+    }
+
+    public ChatRoom createRoomReference() {
+        return new ChatRoom(
+                clientID,
+                GROUPNAME
+
+        );
     }
 
     /**

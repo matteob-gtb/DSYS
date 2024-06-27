@@ -1,5 +1,6 @@
 package Messages;
 
+import ChatRoom.ChatRoom;
 import com.google.gson.JsonObject;
 
 public interface MessageInterface {

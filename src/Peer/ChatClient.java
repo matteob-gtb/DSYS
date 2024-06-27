@@ -3,8 +3,10 @@ package Peer;
 
 import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
+import Events.ReplyToRoomRequestEvent;
 import Messages.*;
 import Networking.MyMulticastSocketWrapper;
+import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -136,6 +138,10 @@ public class ChatClient extends AbstractClient {
                             //events can only be broadcasted over the common channel
                             if (eventOutcome.isPresent())
                                 commonMulticastChannel.addOutgoingMessage(eventOutcome.get());
+                            if (currentEvent instanceof ReplyToRoomRequestEvent) {
+                                ChatRoom newRoom = ((ReplyToRoomRequestEvent) currentEvent).createRoomReference();
+                                queueManager.registerRoom(newRoom);
+                            }
                         }
                         //TODO  fix currentroom
                         //   queueManager.sendMessage(eventOutcome.get(), currentRoom);
@@ -200,6 +206,9 @@ public class ChatClient extends AbstractClient {
                                 room.addParticipant(this.CLIENT_ID);
                                 System.out.println("Created room with id #" + room.getChatID());
                                 MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID());
+                                JsonObject payload = new JsonObject();
+                                payload.addProperty("GROUPNAME", room.getRoomAddress().toString());
+                                outMsg.setPayload(payload.toString());
                                 queueManager.registerRoom(room);
                                 // NO ™currentRoom = room;
                                 currentRoom.addOutgoingMessage(outMsg);
@@ -292,7 +301,7 @@ public class ChatClient extends AbstractClient {
         print("Type a message and hit Enter to send it in the current room #" + room.getChatID());
     }
 
-    public ChatRoom getDefaultRoom(){
+    public ChatRoom getDefaultRoom() {
         return commonMulticastChannel;
     }
 
