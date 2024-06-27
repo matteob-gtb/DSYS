@@ -258,11 +258,15 @@ public class ChatClient extends AbstractClient {
                     if (queueManager.getOnlineClients().isEmpty())
                         print("No online peer detected yet");
                     else {
-                        ArrayList<String> namesList = new ArrayList<>(queueManager.getOnlineClients().size());
                         queueManager.getOnlineClients().forEach(
-                                id -> namesList.add(idUsernameMappings.get(id))
+                                id -> System.out.println(" Client #" + id)
                         );
-                        System.out.println("List of online peers: [" + Arrays.toString(namesList.toArray()) + "]");
+                        //TODO fix naming
+//                        ArrayList<String> namesList = new ArrayList<>(queueManager.getOnlineClients().size());
+//                        queueManager.getOnlineClients().forEach(
+//                                id -> namesList.add(idUsernameMappings.get(id))
+//                        );
+//                        System.out.println("List of online peers: [" + Arrays.toString(namesList.toArray()) + "]");
                     }
                     break;
                 case "7":
