@@ -103,9 +103,12 @@ public class ChatRoom {
 
 
     public void updateOutQueue() {
-        if (outGoingMessageQueue.getFirst().isSent())
-            outGoingMessageQueue.removeFirst();
-        else {
+        MessageInterface out;
+        if (outGoingMessageQueue.getFirst().isSent()) {
+            out = outGoingMessageQueue.removeFirst();
+            if (out instanceof RoomMulticastMessage)
+                this.ownVectorTimestamp = ((RoomMulticastMessage) out).getVectorTimestamp();
+        } else {
             //could try a few more times honestly
             this.connected = false;
         }
@@ -139,6 +142,8 @@ public class ChatRoom {
 
     public void sendInRoomMessage(MessageInterface message) {
         //add to the queue first
+        //TODO VECTOR CLOCK HERE
+        message.setVectorTimestamp(this.ownVectorTimestamp);
         outGoingMessageQueue.add(message);
     }
 

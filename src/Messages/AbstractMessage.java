@@ -3,12 +3,14 @@ package Messages;
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 
+import java.util.Arrays;
+
 public abstract class AbstractMessage implements MessageInterface {
     protected String payload;
     protected transient boolean isRoomMessage = false;
     protected int messageType;
     protected int senderID;
-    protected String username = null    ;
+    protected String username = null;
 
     public void setUsername(String username) {
         this.username = username;
@@ -67,14 +69,17 @@ public abstract class AbstractMessage implements MessageInterface {
     }
 
     public int[] getVectorTimestamp() {
-        return vectorTimestamp;
+        return Arrays.copyOf(vectorTimestamp, vectorTimestamp.length);
     }
 
+    public void setVectorTimestamp(int[] vectorTimestamp) {
+        this.vectorTimestamp = Arrays.copyOf(vectorTimestamp, vectorTimestamp.length);
+    }
 
     public AbstractMessage() {
     }
 
-    public AbstractMessage( int senderID, int messageType, int roomID, int[] vectorTimestamp) {
+    public AbstractMessage(int senderID, int messageType, int roomID, int[] vectorTimestamp) {
         this.senderID = senderID;
         this.messageType = messageType;
         this.roomID = roomID;
