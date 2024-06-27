@@ -9,9 +9,6 @@ public class Constants {
     public static final String MESSAGE_TYPE_FIELD_NAME = "MESSAGE_TYPE";
     public static final String MESSAGE_PROPERTY_FIELD_CLIENTID = "ID";
 
-    public static final String MESSAGE_PROPERTY_FIELD_KNOWNCLIENTS = "PEERS";
-    public static final String MESSAGE_INTENDED_RECIPIENT = "RECIPIENT";
-    public static final String MESSAGE_INTENDED_RECIPIENTS = "RECIPIENTS";
     public static final String ROOM_ID_PROPERTY_NAME = "roomID";
     public static final String ROOM_MULTICAST_GROUP_ADDRESS = "ROOM_ADDRESS";
     public static final String FIELD_ROOM_PARTICIPANTS = "PARTICIPANTS";
@@ -30,8 +27,6 @@ public class Constants {
     public static final int DEFAULT_GROUP_ROOMID = 99;
     public static final int MESSAGE_TYPE_JOIN_ROOM_ACCEPT = 6;
     public static final int MESSAGE_TYPE_JOIN_ROOM_REFUSE = 99;
-    public static final int MESSAGE_TYPE_ANNOUNCE_LEAVE = 7;
-    public static final int MESSAGE_TYPE_GENERIC_ACK = 15;
     public static final int ROOM_MESSAGE = 30;
 
 

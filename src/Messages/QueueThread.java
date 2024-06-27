@@ -123,7 +123,7 @@ public class QueueThread implements QueueManager {
             }
             //TODO send messages, check queue
 
-            if(currentRoom.isOnline()) {
+            if (currentRoom.isOnline()) {
                 Optional<MessageInterface> nextMsg = currentRoom.getOutgoingMessage();
                 nextMsg.ifPresent(messageInterface -> {
                     currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
@@ -138,15 +138,17 @@ public class QueueThread implements QueueManager {
             if (packetReceived) {
 
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
+
+
                 JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
                 MulticastMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 
                 Logger.writeLog("Received Message\n" + inbound.toJSONString() + "\n");
+                System.out.println(inbound.getMessageDebugString());
 
                 int sender = inbound.getSenderID();
                 MulticastMessage message = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 
-                System.out.println("Got a message from " + sender + " type : " + (message.messageType == MESSAGE_TYPE_CREATE_ROOM));
                 if (sender == this.client.getID())
                     continue;
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
