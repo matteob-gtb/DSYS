@@ -205,10 +205,8 @@ public class ChatClient extends AbstractClient {
                                 ChatRoom room = new ChatRoom(ID, MyMulticastSocketWrapper.getNewGroupName());
                                 room.addParticipant(this.CLIENT_ID);
                                 System.out.println("Created room with id #" + room.getChatID());
-                                MulticastMessage outMsg = new MulticastMessage(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID());
-                                JsonObject payload = new JsonObject();
-                                payload.addProperty("GROUPNAME", room.getRoomAddress().toString());
-                                outMsg.setPayload(payload.toString());
+                                MulticastMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), room.getRoomAddress().toString());
+                                System.out.println("Create room request \n " + outMsg.toJSONString());
                                 queueManager.registerRoom(room);
                                 // NO ™currentRoom = room;
                                 currentRoom.addOutgoingMessage(outMsg);
