@@ -133,6 +133,7 @@ public class ChatClient extends AbstractClient {
                             command = reader.readLine().trim();
                             System.out.println("Read " + command + " from user");
                             eventOutcome = currentEvent.executeEvent(command);
+                            //events can only be broadcasted over the common channel
                             if (eventOutcome.isPresent())
                                 commonMulticastChannel.addOutgoingMessage(eventOutcome.get());
                         }
@@ -289,6 +290,10 @@ public class ChatClient extends AbstractClient {
     public void showRoomInfo(ChatRoom room) {
         print("Current participants " + Arrays.toString(room.getParticipants()));
         print("Type a message and hit Enter to send it in the current room #" + room.getChatID());
+    }
+
+    public ChatRoom getDefaultRoom(){
+        return commonMulticastChannel;
     }
 
 }

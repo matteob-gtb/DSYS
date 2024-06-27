@@ -121,11 +121,11 @@ public class ChatRoom {
         return Optional.empty();
     }
 
-    public void announceRoomFinalized(int clientID) {
+    public void announceRoomFinalized(int clientID,ChatRoom defaultChannel) {
         MessageInterface msg = new MulticastMessage(
                 clientID,
                 MESSAGE_TYPE_ROOM_FINALIZED,
-                this.getChatID()
+                defaultChannel.getChatID()
         );
         JsonObject payload = new JsonObject();
         JsonArray participants = new JsonArray();
