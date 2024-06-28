@@ -123,8 +123,6 @@ public class QueueThread implements QueueManager {
                 }
 
             }
-            //TODO send messages, check queue
-
             if (currentRoom.isOnline()) {
                 Optional<AbstractMessage> nextMsg = currentRoom.getOutgoingMessage();
                 nextMsg.ifPresent(messageInterface -> {
@@ -142,24 +140,26 @@ public class QueueThread implements QueueManager {
 
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
                 JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
-                AbstractMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
+                //AbstractMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 
-                Logger.writeLog("Received Message\n" + inbound.toJSONString() + "\n");
-                System.out.println(inbound.getMessageDebugString());
-
-                int sender = inbound.getSenderID();
+//                Logger.writeLog("Received Message\n" + inbound.toJSONString() + "\n");
+//                System.out.println(inbound.getMessageDebugString());
+//
 
 
                 //TODO deserialize based on the type of the message
-                AbstractMessage incomingMessage = gson.fromJson(jsonInboundMessage, AbstractMessage.class);
+                AbstractMessage inbound = gson.fromJson(jsonInboundMessage, AbstractMessage.class);
 
+                int sender = inbound.getSenderID();
+
+                System.out.println("Class of incoming message is " + inbound.getClass());
                 if (sender == this.client.getID())
                     continue;
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-                switch (incomingMessage.messageType) {
+                switch (inbound.messageType) {
                     //Actionable messages
                     case MESSAGE_TYPE_HELLO -> {
-                        String username = incomingMessage.username;
+                        String username = inbound.username;
                         client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                         onlineClients.add(sender);
@@ -190,7 +190,7 @@ public class QueueThread implements QueueManager {
                             ChatRoom room = roomsMap.get(roomID);
                             System.out.println(roomsMap.keySet().toString());
                             Set<Integer> finalParticipants = new HashSet<>();
-                            JsonObject el = JsonParser.parseString(incomingMessage.getPayload()).getAsJsonObject();
+                            JsonObject el = JsonParser.parseString(inbound.getPayload()).getAsJsonObject();
                             JsonArray array = el.getAsJsonObject().get(FIELD_ROOM_PARTICIPANTS).getAsJsonArray();
                             array.forEach(k -> finalParticipants.add(k.getAsInt()));
                             room.forceFinalizeRoom(finalParticipants);
@@ -201,7 +201,7 @@ public class QueueThread implements QueueManager {
                             ChatRoom dedicatedRoom = roomsMap.get(roomID);
                             if (!(inbound instanceof RoomMulticastMessage))
                                 throw new RuntimeException("Illegal Message Type");
-                            dedicatedRoom.addIncomingMessage((RoomMulticastMessage) incomingMessage);
+                            dedicatedRoom.addIncomingMessage((RoomMulticastMessage) inbound);
                         }
                     }
                     //append to relevant queue

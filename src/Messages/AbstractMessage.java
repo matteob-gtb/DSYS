@@ -1,5 +1,6 @@
 package Messages;
 
+import Messages.AnonymousMessages.*;
 import VectorTimestamp.VectorTimestamp;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
@@ -114,8 +115,36 @@ public abstract class AbstractMessage implements MessageInterface {
         //TODO fix polymorphic deserializer
         @Override
         public AbstractMessage deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-           System.out.println(jsonElement.toString());
-           return null;
+            String username = null;
+            System.out.println(jsonElement.toString());
+            int senderID = jsonElement.getAsJsonObject().get("senderID").getAsInt();
+            if (jsonElement.getAsJsonObject().has("username"))
+                username = jsonElement.getAsJsonObject().get("username").getAsString();
+            int roomID = jsonElement.getAsJsonObject().get("roomID").getAsInt();
+
+            switch (jsonElement.getAsJsonObject().get("messageType").getAsInt()) {
+                case MESSAGE_TYPE_WELCOME -> {
+                    return new WelcomeMessage(senderID, username);
+                }
+                case MESSAGE_TYPE_HELLO -> {
+                    return new HelloMessage(senderID, roomID, username);
+                }
+                case MESSAGE_TYPE_CREATE_ROOM -> {
+                    return new CreateRoomRequest(senderID, roomID, username);
+                }
+                case MESSAGE_TYPE_ROOM_FINALIZED -> {
+                    return new RoomFinalizedMessage(senderID, roomID);
+                }
+                case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> {
+                    return new AcceptRoomRequest(senderID, roomID);
+                }
+                case MESSAGE_TYPE_JOIN_ROOM_REFUSE -> {
+                    return new RefuseRoomRequest(senderID, roomID);
+                }
+
+                default -> throw new RuntimeException("Bad message");
+            }
+
         }
     }
 }
