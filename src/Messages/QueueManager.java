@@ -9,12 +9,7 @@ import java.util.Set;
 public interface QueueManager extends Runnable {
     void registerRoom(ChatRoom room);
 
-    /*
-
-      Sanity check
-       */
     public void deleteRoom(ChatRoom room);
-
 
     public List<ChatRoom> getRooms();
 

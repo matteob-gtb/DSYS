@@ -1,15 +1,20 @@
 package Messages;
 
 import VectorTimestamp.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import utils.Constants;
 
-public class RoomMulticastMessage extends MulticastMessage  {
+import static utils.Constants.MESSAGE_TYPE_ROOM_MESSAGE;
+
+public class RoomMulticastMessage extends AbstractMessage {
 
     private final VectorTimestamp vectorTimestamp;
 
     private int sortAccordingToIndex = -1;
 
-    public RoomMulticastMessage(int clientID, int type, int roomID) {
-        super(clientID, type, roomID);
+    public RoomMulticastMessage(int clientID, int roomID) {
+        super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
         vectorTimestamp = null;
     }
 
@@ -18,9 +23,8 @@ public class RoomMulticastMessage extends MulticastMessage  {
     }
 
     public RoomMulticastMessage(int clientID,
-                                int type,
                                 int roomID, VectorTimestamp vectorTimestamp) {
-        super(clientID, type, roomID);
+        super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
         this.vectorTimestamp = vectorTimestamp;
     }
 
@@ -31,5 +35,14 @@ public class RoomMulticastMessage extends MulticastMessage  {
 
     public Timestamp getTimestamp() {
         return vectorTimestamp;
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public Gson gson() {
+        GsonBuilder builder = new GsonBuilder();
+        return builder.create();
     }
 }

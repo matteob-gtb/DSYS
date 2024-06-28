@@ -4,6 +4,7 @@ import Messages.MessageInterface;
 import Messages.MulticastMessage;
 import Messages.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
+import VectorTimestamp.VectorTimestamp;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -14,6 +15,8 @@ import static utils.Constants.*;
 
 public class ChatRoom {
     private final int chatID;
+
+    private VectorTimestamp lastMessageTimestamp;
 
     public int getOwnerID() {
         return ownerID;
@@ -60,6 +63,7 @@ public class ChatRoom {
     public boolean finalizeRoom() {
         if (!roomFinalized && System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MILLI) {
             roomFinalized = true;
+            lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
             currentClientVectorTimestamp = new HashMap<>(participantIDs.size());
             participantIDs.forEach(id -> {
                 currentClientVectorTimestamp.put(id, 0);
@@ -67,8 +71,8 @@ public class ChatRoom {
             });
             System.out.println("Room finalized,participants: ");
             System.out.println(participantIDs);
-            if (participantIDs.size() == 0) {
-                System.out.println("No participants, deleting room...");
+            if (participantIDs.isEmpty()) {
+                System.out.println("The room is empty...");
             }
             return true;
         }
@@ -149,16 +153,18 @@ public class ChatRoom {
         defaultChannel.addOutgoingMessage(msg);
     }
 
-    public void addOutgoingMessage(MessageInterface message) {
-
-        //TODO timestamp vectorclock
-        outGoingMessageQueue.add(message);
+    public void sendInRoomMessage(String payload, int clientID) {
+        VectorTimestamp messageTimestamp = lastMessageTimestamp.increment(this.ck);
+        RoomMulticastMessage out = new RoomMulticastMessage(
+                clientID,
+                this.getChatID(),
+                messageTimestamp
+        );
+        outGoingMessageQueue.add(out);
     }
 
-    public void sendInRoomMessage(MessageInterface message) {
-        //add to the queue first
-        //TODO VECTOR CLOCK HERE
-        message.setVectorTimestamp(this.ownVectorTimestamp);
+    public void addOutgoingMessage(MessageInterface message) {
+
         outGoingMessageQueue.add(message);
     }
 

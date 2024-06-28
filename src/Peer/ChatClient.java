@@ -84,8 +84,7 @@ public class ChatClient extends AbstractClient {
                 if (response.contains("M")) {
                     System.out.println("Type the message you want to send >");
                     response = reader.readLine();
-//                    currentRoom.addOutgoingMessage(new MulticastMessage(
-//                     ))
+                    currentRoom.sendInRoomMessage(response);
                 }
                 ;
             } catch (IOException e) {

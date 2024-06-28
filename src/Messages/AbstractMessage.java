@@ -1,5 +1,6 @@
 package Messages;
 
+import VectorTimestamp.VectorTimestamp;
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 
@@ -8,7 +9,7 @@ import java.util.Arrays;
 public abstract class AbstractMessage implements MessageInterface {
     protected String payload;
     protected transient boolean isRoomMessage = false;
-    protected int messageType;
+    protected int messageType = -1;
     protected int senderID;
     protected String username = null;
 
@@ -28,7 +29,7 @@ public abstract class AbstractMessage implements MessageInterface {
         this.payload = rawPayload;
     }
 
-    protected int[] vectorTimestamp;
+    protected VectorTimestamp vectorTimestamp;
 
 
     public abstract Gson gson();
@@ -68,22 +69,15 @@ public abstract class AbstractMessage implements MessageInterface {
         return roomID;
     }
 
-    public int[] getVectorTimestamp() {
-        return Arrays.copyOf(vectorTimestamp, vectorTimestamp.length);
-    }
 
-    public void setVectorTimestamp(int[] vectorTimestamp) {
-        this.vectorTimestamp = Arrays.copyOf(vectorTimestamp, vectorTimestamp.length);
-    }
 
     public AbstractMessage() {
     }
 
-    public AbstractMessage(int senderID, int messageType, int roomID, int[] vectorTimestamp) {
+    public AbstractMessage(int senderID, int messageType, int roomID) {
         this.senderID = senderID;
         this.messageType = messageType;
         this.roomID = roomID;
-        this.vectorTimestamp = vectorTimestamp;
     }
 
 }

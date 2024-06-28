@@ -5,10 +5,18 @@ import java.util.stream.IntStream;
 
 public class VectorTimestamp implements Timestamp {
 
+    //immutable
     private final int[] rawTimestamp;
 
     public VectorTimestamp(int[] rawTimestamp) {
         this.rawTimestamp = rawTimestamp;
+    }
+
+
+    public VectorTimestamp increment(int clientIndex) {
+        int[] newTimestamp = Arrays.copyOf(this.rawTimestamp, this.rawTimestamp.length);
+        newTimestamp[clientIndex] += 1;
+        return new VectorTimestamp(newTimestamp);
     }
 
     /**
