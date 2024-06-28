@@ -1,14 +1,15 @@
 package ChatRoom;
 
+import Messages.AbstractMessage;
 import Messages.MessageInterface;
 import Messages.MulticastMessage;
-import Messages.RoomMulticastMessage;
+import Messages.AnonymousMessages.RoomFinalizedMessage;
+import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import VectorTimestamp.VectorTimestamp;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.net.*;
 import java.util.*;
 
 import static utils.Constants.*;
@@ -113,7 +114,7 @@ public class ChatRoom {
     }
 
     private boolean roomFinalized = false; //finalized 60 seconds after the initial room creation request was acked
-    private int[] ownVectorTimestamp;
+    private VectorTimestamp ownVectorTimestamp;
     private MyMulticastSocketWrapper dedicatedRoomSocket = null;
     private boolean connected = false;
     private List<MessageInterface> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
@@ -124,7 +125,7 @@ public class ChatRoom {
         if (outGoingMessageQueue.getFirst().isSent()) {
             out = outGoingMessageQueue.removeFirst();
             if (out instanceof RoomMulticastMessage)
-                this.ownVectorTimestamp = ((RoomMulticastMessage) out).getVectorTimestamp();
+                this.ownVectorTimestamp = ((RoomMulticastMessage) out).getTimestamp();
         } else {
             //could try a few more times honestly
             this.connected = false;
@@ -139,9 +140,8 @@ public class ChatRoom {
     }
 
     public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {
-        MessageInterface msg = new MulticastMessage(
+        AbstractMessage msg = new RoomFinalizedMessage(
                 clientID,
-                MESSAGE_TYPE_ROOM_FINALIZED,
                 this.chatID
         );
         JsonObject payload = new JsonObject();
@@ -154,7 +154,8 @@ public class ChatRoom {
     }
 
     public void sendInRoomMessage(String payload, int clientID) {
-        VectorTimestamp messageTimestamp = lastMessageTimestamp.increment(this.ck);
+        //TODO search for client id
+        VectorTimestamp messageTimestamp = lastMessageTimestamp.increment(clientID);
         RoomMulticastMessage out = new RoomMulticastMessage(
                 clientID,
                 this.getChatID(),

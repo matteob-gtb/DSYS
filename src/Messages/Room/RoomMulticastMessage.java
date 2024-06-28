@@ -1,9 +1,9 @@
-package Messages;
+package Messages.Room;
 
+import Messages.AbstractMessage;
 import VectorTimestamp.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import utils.Constants;
 
 import static utils.Constants.MESSAGE_TYPE_ROOM_MESSAGE;
 
@@ -33,7 +33,7 @@ public class RoomMulticastMessage extends AbstractMessage {
      * @return
      */
 
-    public Timestamp getTimestamp() {
+    public VectorTimestamp getTimestamp() {
         return vectorTimestamp;
     }
 

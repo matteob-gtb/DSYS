@@ -6,13 +6,15 @@ import java.net.*;
 import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Events.GenericNotifyEvent;
+import Messages.AnonymousMessages.CreateRoomRequest;
+import Messages.AnonymousMessages.WelcomeMessage;
+import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
 import com.google.gson.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
@@ -141,12 +143,14 @@ public class QueueThread implements QueueManager {
 
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
                 JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
-                MulticastMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
+                AbstractMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 
                 Logger.writeLog("Received Message\n" + inbound.toJSONString() + "\n");
                 System.out.println(inbound.getMessageDebugString());
 
                 int sender = inbound.getSenderID();
+
+                //TODO deserialize based on the type of the message
                 MulticastMessage incomingMessage = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 
                 if (sender == this.client.getID())
@@ -159,7 +163,7 @@ public class QueueThread implements QueueManager {
                         client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                         onlineClients.add(sender);
-                        MulticastMessage welcome = MulticastMessage.getWelcomeMessage(this.client.getID());
+                        MessageInterface welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
                         commonMulticastChannel.addOutgoingMessage(welcome);
                     }
                     case MESSAGE_TYPE_WELCOME -> {

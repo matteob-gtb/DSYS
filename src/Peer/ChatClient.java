@@ -5,8 +5,10 @@ import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Events.ReplyToRoomRequestEvent;
 import Messages.*;
+import Messages.AnonymousMessages.CreateRoomRequest;
+import Messages.AnonymousMessages.HelloMessage;
+import Messages.MulticastMessage;
 import Networking.MyMulticastSocketWrapper;
-import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,8 +26,7 @@ public class ChatClient extends AbstractClient {
     //Avoid overlapping messages
     private ChatRoom currentRoom = null;
     private QueueManager queueManager;
-    private String userName;
-    private ChatRoom commonMulticastChannel;
+     private ChatRoom commonMulticastChannel;
 
     public void print(String message) {
         System.out.println(message);
@@ -61,13 +62,12 @@ public class ChatClient extends AbstractClient {
 
     //block until received from all or timer expires
     public void announceSelf() throws IOException {
-        MulticastMessage welcomeMessage = new MulticastMessage(
+        AbstractMessage welcomeMessage = new HelloMessage(
                 this.CLIENT_ID,
-                MESSAGE_TYPE_HELLO,
-                DEFAULT_GROUP_ROOMID
+                DEFAULT_GROUP_ROOMID,
+                this.userName
         );
         //username only in HELLO messages
-        welcomeMessage.setUsername(this.userName);
         currentRoom.addOutgoingMessage(welcomeMessage);
     }
 
@@ -84,7 +84,7 @@ public class ChatClient extends AbstractClient {
                 if (response.contains("M")) {
                     System.out.println("Type the message you want to send >");
                     response = reader.readLine();
-                    currentRoom.sendInRoomMessage(response);
+                    currentRoom.sendInRoomMessage(response,this.CLIENT_ID);
                 }
                 ;
             } catch (IOException e) {

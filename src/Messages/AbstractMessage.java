@@ -2,9 +2,13 @@ package Messages;
 
 import VectorTimestamp.VectorTimestamp;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 
 import java.util.Arrays;
+
+import static utils.Constants.*;
+import static utils.Constants.ROOM_MESSAGE;
 
 public abstract class AbstractMessage implements MessageInterface {
     protected String payload;
@@ -32,7 +36,12 @@ public abstract class AbstractMessage implements MessageInterface {
     protected VectorTimestamp vectorTimestamp;
 
 
-    public abstract Gson gson();
+    public Gson gson() {
+        GsonBuilder builder = new GsonBuilder();
+        return builder.create();
+    }
+
+    ;
 
     @Override
     public String toJSONString() {
@@ -70,7 +79,6 @@ public abstract class AbstractMessage implements MessageInterface {
     }
 
 
-
     public AbstractMessage() {
     }
 
@@ -80,4 +88,23 @@ public abstract class AbstractMessage implements MessageInterface {
         this.roomID = roomID;
     }
 
+    public String getMessageDebugString() {
+        String messageTypeStr;
+        int messageType = this.messageType;
+        int sender = this.senderID;
+        String payload = this.payload;
+        messageTypeStr = switch (messageType) {
+            case MESSAGE_TYPE_WELCOME -> "Welcome";
+            case MESSAGE_TYPE_ROOM_MESSAGE -> "Room Message";
+            case MESSAGE_TYPE_HELLO -> "Hello";
+            case MESSAGE_TYPE_CREATE_ROOM -> "Create Room";
+            case MESSAGE_TYPE_ROOM_FINALIZED -> "Room Finalized";
+            case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> "Join Room Accept";
+            case MESSAGE_TYPE_JOIN_ROOM_REFUSE -> "Join Room Refuse";
+            case ROOM_MESSAGE -> "Room Message (Causal Order)";
+            default -> "Unknown";
+        };
+
+        return String.format("Message Type: %s, Sender: %s, Payload: %s", messageTypeStr, sender, payload);
+    }
 }

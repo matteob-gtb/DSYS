@@ -10,6 +10,7 @@ import java.util.*;
 import static utils.Constants.MESSAGE_PROPERTY_FIELD_CLIENTID;
 
 public abstract class AbstractClient {
+    protected String userName;
 
     protected int CLIENT_ID;
     public List<AbstractEvent> eventsToProcess = Collections.synchronizedList(new ArrayList<AbstractEvent>());
@@ -21,6 +22,11 @@ public abstract class AbstractClient {
 
     public void addEvent(AbstractEvent event) {
         eventsToProcess.add(event);
+    }
+
+
+    public String getUserName(){
+        return this.userName;
     }
 
     public abstract ChatRoom getDefaultRoom();

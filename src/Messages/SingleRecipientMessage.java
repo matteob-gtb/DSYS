@@ -2,7 +2,7 @@ package Messages;
 
 import com.google.gson.Gson;
 
-public class SingleRecipientMessage extends AbstractMessage{
+public class SingleRecipientMessage extends AbstractMessage {
     /**
      * @return
      */

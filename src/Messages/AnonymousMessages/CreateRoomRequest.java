@@ -1,4 +1,6 @@
-package Messages;
+package Messages.AnonymousMessages;
+
+import Messages.MulticastMessage;
 
 public class CreateRoomRequest extends MulticastMessage {
     private String groupname;
