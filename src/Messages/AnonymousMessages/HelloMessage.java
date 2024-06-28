@@ -13,8 +13,5 @@ public class HelloMessage extends AbstractMessage {
         this.username = username;
     }
 
-    @Override
-    public Gson gson() {
-        return null;
-    }
+
 }

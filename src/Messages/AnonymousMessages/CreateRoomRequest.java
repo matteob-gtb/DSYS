@@ -1,8 +1,9 @@
 package Messages.AnonymousMessages;
 
+import Messages.AbstractMessage;
 import Messages.MulticastMessage;
 
-public class CreateRoomRequest extends MulticastMessage {
+public class CreateRoomRequest extends AbstractMessage {
     private String groupname;
 
     public CreateRoomRequest(int userID, int type, int roomID) {

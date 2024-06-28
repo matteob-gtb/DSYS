@@ -8,6 +8,7 @@ import static utils.Constants.*;
 public class MulticastMessage extends AbstractMessage {
 
 
+
     /**
      * @return
      */
@@ -33,8 +34,6 @@ public class MulticastMessage extends AbstractMessage {
     }
 
 
-
-
     ExclusionStrategy exclusionStrategy = new ExclusionStrategy() {
         public boolean shouldSkipField(FieldAttributes fieldAttributes) {
             if (fieldAttributes.getName().equals("sent")) {
@@ -50,11 +49,6 @@ public class MulticastMessage extends AbstractMessage {
             return false;
         }
     };
-
-
-
-
-
 
 
 }

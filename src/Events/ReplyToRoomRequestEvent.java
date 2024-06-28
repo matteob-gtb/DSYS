@@ -1,6 +1,9 @@
 package Events;
 
 import ChatRoom.ChatRoom;
+import Messages.AbstractMessage;
+import Messages.AnonymousMessages.AcceptRoomRequest;
+import Messages.AnonymousMessages.RefuseRoomRequest;
 import Messages.MulticastMessage;
 import com.google.gson.JsonObject;
 
@@ -52,23 +55,19 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
     }
 
     @Override
-    public Optional<MulticastMessage> executeEvent(String command) {
+    public Optional<AbstractMessage> executeEvent(String command) {
         Optional<String> foundMatch = Arrays.stream(acceptableOutcomes).filter(x -> x.contains(command)).findFirst();
         if (foundMatch.isEmpty())
             return Optional.empty();
         int type = -1;
+        AbstractMessage outcome = null;
         if (command.equals("y")) {
             System.out.println("Accepted the invitation to room " + this.roomID);
-            type = MESSAGE_TYPE_JOIN_ROOM_ACCEPT;
+            outcome = new AcceptRoomRequest(this.clientID,this.roomID);
         } else {
             System.out.println("Refused the invitation to room " + this.roomID);
-            type = MESSAGE_TYPE_JOIN_ROOM_REFUSE;
+            outcome = new RefuseRoomRequest(this.clientID,this.roomID);
         }
-        MulticastMessage msg = new MulticastMessage(
-                this.clientID,
-                type,
-                this.roomID
-        );
-        return Optional.of(msg);
+        return Optional.of(outcome);
     }
 }

@@ -112,8 +112,7 @@ public class QueueThread implements QueueManager {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         MulticastMessage nextMessage = null;
         JsonObject outgoingMessage;
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
+        Gson gson = new GsonBuilder().registerTypeAdapter(AbstractMessage.class, new AbstractMessage.AbstractMessageDeserializer()).create();
         boolean packetReceived = false;
         while (true) {
             packetReceived = false;
@@ -127,7 +126,7 @@ public class QueueThread implements QueueManager {
             //TODO send messages, check queue
 
             if (currentRoom.isOnline()) {
-                Optional<MessageInterface> nextMsg = currentRoom.getOutgoingMessage();
+                Optional<AbstractMessage> nextMsg = currentRoom.getOutgoingMessage();
                 nextMsg.ifPresent(messageInterface -> {
                     currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
                     currentRoom.updateOutQueue();
@@ -150,8 +149,9 @@ public class QueueThread implements QueueManager {
 
                 int sender = inbound.getSenderID();
 
+
                 //TODO deserialize based on the type of the message
-                MulticastMessage incomingMessage = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
+                AbstractMessage incomingMessage = gson.fromJson(jsonInboundMessage, AbstractMessage.class);
 
                 if (sender == this.client.getID())
                     continue;
@@ -163,7 +163,7 @@ public class QueueThread implements QueueManager {
                         client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                         onlineClients.add(sender);
-                        MessageInterface welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
+                        AbstractMessage welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
                         commonMulticastChannel.addOutgoingMessage(welcome);
                     }
                     case MESSAGE_TYPE_WELCOME -> {

@@ -117,7 +117,7 @@ public class ChatRoom {
     private VectorTimestamp ownVectorTimestamp;
     private MyMulticastSocketWrapper dedicatedRoomSocket = null;
     private boolean connected = false;
-    private List<MessageInterface> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
+    private List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
 
 
     public void updateOutQueue() {
@@ -132,7 +132,7 @@ public class ChatRoom {
         }
     }
 
-    public Optional<MessageInterface> getOutgoingMessage() {
+    public Optional<AbstractMessage> getOutgoingMessage() {
         if (!outGoingMessageQueue.isEmpty() && !outGoingMessageQueue.getFirst().isSent()) {
             return Optional.of(outGoingMessageQueue.getFirst());
         }
@@ -164,7 +164,7 @@ public class ChatRoom {
         outGoingMessageQueue.add(out);
     }
 
-    public void addOutgoingMessage(MessageInterface message) {
+    public void addOutgoingMessage(AbstractMessage message) {
 
         outGoingMessageQueue.add(message);
     }

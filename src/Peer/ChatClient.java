@@ -128,7 +128,7 @@ public class ChatClient extends AbstractClient {
                     waitingForInput = false;
                 }
                 if (currentEvent != null) {
-                    Optional<MulticastMessage> eventOutcome = Optional.empty();
+                    Optional<AbstractMessage> eventOutcome = Optional.empty();
                     if (currentEvent.isActionable()) {
                         while (eventOutcome.isEmpty()) {
                             System.out.println(currentEvent.eventPrompt());
@@ -206,7 +206,7 @@ public class ChatClient extends AbstractClient {
                                 ChatRoom room = new ChatRoom(CLIENT_ID, ID, MyMulticastSocketWrapper.getNewGroupName());
                                 room.addParticipant(this.CLIENT_ID);
                                 System.out.println("Created room with id #" + room.getChatID());
-                                MulticastMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), room.getRoomAddress());
+                                AbstractMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, MESSAGE_TYPE_CREATE_ROOM, room.getChatID(), room.getRoomAddress());
                                 System.out.println("groupname " + room.getRoomAddress());
                                 System.out.println("Create room request \n " + outMsg.toJSONString());
                                 queueManager.registerRoom(room);

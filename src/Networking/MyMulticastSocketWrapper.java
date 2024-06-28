@@ -1,5 +1,6 @@
 package Networking;
 
+import Messages.AbstractMessage;
 import Messages.MessageInterface;
 
 import java.io.IOException;
@@ -100,7 +101,8 @@ public class MyMulticastSocketWrapper {
         }
     }
 
-    public void sendPacket(MessageInterface message) {
+    public void sendPacket(AbstractMessage message) {
+        System.out.println(message.getClass().getName());
         String msg = message.toJSONString();
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
         try {

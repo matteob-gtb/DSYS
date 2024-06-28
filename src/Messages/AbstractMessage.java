@@ -1,11 +1,10 @@
 package Messages;
 
 import VectorTimestamp.VectorTimestamp;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 
-import java.util.Arrays;
+import java.lang.reflect.Type;
 
 import static utils.Constants.*;
 import static utils.Constants.ROOM_MESSAGE;
@@ -38,6 +37,7 @@ public abstract class AbstractMessage implements MessageInterface {
 
     public Gson gson() {
         GsonBuilder builder = new GsonBuilder();
+        //TODO register polymorphic serializer
         return builder.create();
     }
 
@@ -106,5 +106,16 @@ public abstract class AbstractMessage implements MessageInterface {
         };
 
         return String.format("Message Type: %s, Sender: %s, Payload: %s", messageTypeStr, sender, payload);
+    }
+
+    static class AbstractMessageDeserializer implements JsonDeserializer<AbstractMessage> {
+
+
+        //TODO fix polymorphic deserializer
+        @Override
+        public AbstractMessage deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+           System.out.println(jsonElement.toString());
+           return null;
+        }
     }
 }

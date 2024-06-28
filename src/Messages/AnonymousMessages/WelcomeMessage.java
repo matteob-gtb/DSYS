@@ -12,8 +12,5 @@ public class WelcomeMessage extends AbstractMessage {
 
 
 
-    @Override
-    public Gson gson() {
-        return null;
-    }
+
 }

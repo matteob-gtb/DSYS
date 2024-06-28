@@ -1,5 +1,6 @@
 package Events;
 
+import Messages.AbstractMessage;
 import Messages.MulticastMessage;
 
 import java.util.Optional;
@@ -27,7 +28,7 @@ public class GenericNotifyEvent extends AbstractEvent {
      * @return
      */
     @Override
-    public Optional<MulticastMessage> executeEvent(String command) {
+    public Optional<AbstractMessage> executeEvent(String command) {
         throw new UnsupportedOperationException("Not supported");
     }
 
