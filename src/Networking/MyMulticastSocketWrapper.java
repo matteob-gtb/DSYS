@@ -20,7 +20,7 @@ public class MyMulticastSocketWrapper {
     private Long lastConnectionAttemptEpoch = -1L;
 
 
-    public void addUsedGroupName(String groupName) {
+    public static void addUsedGroupName(String groupName) {
         usedGroupNames.add(groupName);
     }
 
@@ -30,7 +30,7 @@ public class MyMulticastSocketWrapper {
 
     private InetAddress roomGroup;
 
-    private final static String firstAvailableGroupName = "224.1.1.2";
+    private  static String firstAvailableGroupName = "224.1.1.2";
 
     public static String getNextIPAddress(String ipAddress) {
         // Split the input IP address into its components
@@ -70,9 +70,10 @@ public class MyMulticastSocketWrapper {
 
     public static String getNewGroupName() {
         String currentGroupName = firstAvailableGroupName;
-        while (usedGroupNames.contains(currentGroupName)) {
+        while (usedGroupNames.contains(currentGroupName))
             currentGroupName = getNextIPAddress(currentGroupName);
-        }
+        addUsedGroupName(currentGroupName);
+        firstAvailableGroupName = currentGroupName;
         return currentGroupName;
     }
 
