@@ -40,6 +40,13 @@ public class ChatRoom {
     private HashMap<Integer, Integer> currentClientVectorTimestamp;
 
 
+    public void addIncomingMessage(RoomMulticastMessage inbound) {
+        if (!perParticipantMessageQueue.containsKey(inbound.getSenderID()))
+            throw new RuntimeException("Bad room finalization");
+        perParticipantMessageQueue.get(inbound.getSenderID()).add(inbound);
+    }
+
+
     public void printMessages() {
         throw new UnsupportedOperationException();
     }
@@ -143,6 +150,8 @@ public class ChatRoom {
     }
 
     public void addOutgoingMessage(MessageInterface message) {
+
+        //TODO timestamp vectorclock
         outGoingMessageQueue.add(message);
     }
 

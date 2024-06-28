@@ -153,7 +153,6 @@ public class ChatClient extends AbstractClient {
                     }
                     currentEvent = null;
                 }
-                Thread.sleep(25);
             }
             switch (command.toLowerCase()) {
                 case "x":
@@ -280,6 +279,8 @@ public class ChatClient extends AbstractClient {
                     print("Invalid Command");
                     break;
             }
+            Thread.sleep(50);
+
         }
     }
 

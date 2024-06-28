@@ -147,15 +147,15 @@ public class QueueThread implements QueueManager {
                 System.out.println(inbound.getMessageDebugString());
 
                 int sender = inbound.getSenderID();
-                MulticastMessage message = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
+                MulticastMessage incomingMessage = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
 
                 if (sender == this.client.getID())
                     continue;
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-                switch (message.messageType) {
+                switch (incomingMessage.messageType) {
                     //Actionable messages
                     case MESSAGE_TYPE_HELLO -> {
-                        String username = message.username;
+                        String username = incomingMessage.username;
                         client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                         onlineClients.add(sender);
@@ -168,7 +168,7 @@ public class QueueThread implements QueueManager {
                         onlineClients.add(sender);
                     }
                     case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
-                        System.out.println("Processing ROOM_JOIN message");
+                        System.out.println("Processing ROOM_JOIN incomingMessage");
                         client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
                         addParticipantToRoom(roomID, sender);
                     }
@@ -180,22 +180,25 @@ public class QueueThread implements QueueManager {
                         client.addEvent(eventToProcess);
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
-                        System.out.println("Received a finalized room message from " + sender + " room - " + roomID);
+                        System.out.println("Received a finalized room incomingMessage from " + sender + " room - " + roomID);
                         synchronized (roomsMap) {
 
                             ChatRoom room = roomsMap.get(roomID);
                             System.out.println(roomsMap.keySet().toString());
                             Set<Integer> finalParticipants = new HashSet<>();
-                            JsonObject el = JsonParser.parseString(message.getPayload()).getAsJsonObject();
+                            JsonObject el = JsonParser.parseString(incomingMessage.getPayload()).getAsJsonObject();
                             JsonArray array = el.getAsJsonObject().get(FIELD_ROOM_PARTICIPANTS).getAsJsonArray();
                             array.forEach(k -> finalParticipants.add(k.getAsInt()));
                             room.forceFinalizeRoom(finalParticipants);
                         }
                     }
                     case ROOM_MESSAGE -> {
-                        // int chatRoomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
-
-
+                        synchronized (roomsMap) {
+                            ChatRoom dedicatedRoom = roomsMap.get(roomID);
+                            if (!(inbound instanceof RoomMulticastMessage))
+                                throw new RuntimeException("Illegal Message Type");
+                            dedicatedRoom.addIncomingMessage((RoomMulticastMessage) incomingMessage);
+                        }
                     }
                     //append to relevant queue
                 }
