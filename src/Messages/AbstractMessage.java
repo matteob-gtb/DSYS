@@ -115,7 +115,6 @@ public abstract class AbstractMessage implements MessageInterface {
     static class AbstractMessageDeserializer implements JsonDeserializer<AbstractMessage> {
 
 
-        //TODO fix polymorphic deserializer
         @Override
         public AbstractMessage deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
             String username = null;

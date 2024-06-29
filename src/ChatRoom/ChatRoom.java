@@ -7,12 +7,9 @@ import Messages.AnonymousMessages.RoomFinalizedMessage;
 import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import VectorTimestamp.VectorTimestamp;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 import java.util.*;
-
-import static utils.Constants.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ChatRoom {
     private final int chatID;
@@ -41,8 +38,9 @@ public class ChatRoom {
     private ArrayList<MulticastMessage> messageList;
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, ArrayList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
-    private HashMap<Integer, Integer> currentClientVectorTimestamp;
 
+    //associate client id to positions in the vector (lookup is probably more efficient)
+    private HashMap<Integer, Integer> clientVectorIndex;
 
     public void addIncomingMessage(RoomMulticastMessage inbound) {
         if (!perParticipantMessageQueue.containsKey(inbound.getSenderID()))
@@ -59,16 +57,26 @@ public class ChatRoom {
         System.out.println("Room " + this.chatID + " has been finalized");
         this.participantIDs = participantIDs;
         this.roomFinalized = true;
+        this.clientVectorIndex = new HashMap<>(participantIDs.size());
+        final AtomicReference<Integer> k = new AtomicReference<>(0);
+        this.participantIDs.stream().sorted().forEach(participantID -> {
+            clientVectorIndex.put(participantID,k.getAndAccumulate(1, Integer::sum));
+            System.out.println("Client " + participantID + " has been finalized : index " + k.get());
+        });
     }
 
     public boolean finalizeRoom() {
         if (!roomFinalized && System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MILLI) {
             roomFinalized = true;
             lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
-            currentClientVectorTimestamp = new HashMap<>(participantIDs.size());
+            clientVectorIndex = new HashMap<>(participantIDs.size());
+
+            final AtomicReference<Integer> k = new AtomicReference<>();
+            k.set(0);
             participantIDs.forEach(id -> {
-                currentClientVectorTimestamp.put(id, 0);
                 perParticipantMessageQueue.put(id, new ArrayList<RoomMulticastMessage>());
+                clientVectorIndex.put(id, k.getAndAccumulate(1, Integer::sum));
+                System.out.println("Client " + id + " has been finalized : index " + k.get());
             });
             System.out.println("Room finalized,participants: ");
             System.out.println(participantIDs);
@@ -156,8 +164,11 @@ public class ChatRoom {
     }
 
     public void sendInRoomMessage(String payload, int clientID) {
-        //TODO search for client id
-        VectorTimestamp messageTimestamp = lastMessageTimestamp.increment(clientID);
+        //Client id mapping --> sort
+        //E.G. clients 1231,456246,215 will have index 215 -> 0,1231 ->1,456246->3 in the vector timestamp array
+
+        int clientIndex = -1;
+        VectorTimestamp messageTimestamp = lastMessageTimestamp.increment(clientIndex);
         RoomMulticastMessage out = new RoomMulticastMessage(
                 clientID,
                 this.getChatID(),

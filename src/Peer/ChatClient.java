@@ -7,7 +7,6 @@ import Events.ReplyToRoomRequestEvent;
 import Messages.*;
 import Messages.AnonymousMessages.CreateRoomRequest;
 import Messages.AnonymousMessages.HelloMessage;
-import Messages.MulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 
 import java.io.BufferedReader;
@@ -71,7 +70,7 @@ public class ChatClient extends AbstractClient {
         currentRoom.addOutgoingMessage(welcomeMessage);
     }
 
-    public void stayInRoom(ChatRoom room) {
+    public void joinRoom(ChatRoom room) {
         currentRoom = room;
         print("Joining Chat #" + currentRoom.getChatID());
         room.printMessages();
@@ -183,7 +182,7 @@ public class ChatClient extends AbstractClient {
                         else if (!room.get().isRoomFinalized()) {
                             System.out.println("Room has not been finalized yet, wait for" + (System.currentTimeMillis() - room.get().getCreationTimestamp()) + " more milliseconds");
                         } else {
-                            stayInRoom(room.get());
+                            joinRoom(room.get());
                             break;
                         }
 
@@ -210,7 +209,6 @@ public class ChatClient extends AbstractClient {
                                 System.out.println("groupname " + room.getRoomAddress());
                                 System.out.println("Create room request \n " + outMsg.toJSONString());
                                 queueManager.registerRoom(room);
-                                // NO ™currentRoom = room;
                                 currentRoom.addOutgoingMessage(outMsg);
                                 print("Sent room creation request to online peers,waiting for responses...");
                             } catch (NumberFormatException e) {
