@@ -69,8 +69,8 @@ public class ChatRoom {
 
 
     public void printMessages() {
-        System.out.println("Chat room messages as observed by client# " + chatID);
-        observedMessageOrder.forEach(msg -> System.out.println(msg.toChatString()));
+        System.out.println("Chat room messages as observed by client #" + chatID);
+        observedMessageOrder.forEach(msg -> System.out.println("     " + msg.toChatString()));
     }
 
     public void forceFinalizeRoom(Set<Integer> participantIDs) {

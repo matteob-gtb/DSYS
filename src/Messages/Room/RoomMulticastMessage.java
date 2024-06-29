@@ -61,7 +61,7 @@ public class RoomMulticastMessage extends AbstractMessage {
     }
 
     public String toChatString() {
-        return "Client [" + this.senderID + "] : \n" + this.payload + "\n";
+        return "Client [" + this.senderID + "] wrote : [" + this.payload + "]\n";
     }
 
 }

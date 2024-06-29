@@ -88,6 +88,7 @@ public class ChatClient extends AbstractClient {
                     System.out.println("Type the message you want to send >");
                     response = reader.readLine();
                     currentRoom.sendInRoomMessage(response, this.CLIENT_ID);
+                    flushConsole();
                 }
             } catch (IOException e) {
                 System.out.println("Unrecoverable I/O error,shutting down...");
@@ -288,9 +289,13 @@ public class ChatClient extends AbstractClient {
         }
     }
 
-    private void printAvailableCommands() {
+    private void flushConsole(){
         System.out.print("\033[H\033[2J");
         System.out.flush();
+    }
+
+    private void printAvailableCommands() {
+        flushConsole();
         print("User [" + this.userName + "] - ID [" + this.CLIENT_ID + "]");
         print("""
                 Available commands:
