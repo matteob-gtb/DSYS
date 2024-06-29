@@ -4,20 +4,24 @@ package Peer;
 import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Events.ReplyToRoomRequestEvent;
-import Messages.*;
+import Messages.AbstractMessage;
 import Messages.AnonymousMessages.CreateRoomRequest;
 import Messages.AnonymousMessages.HelloMessage;
+import Messages.QueueManager;
+import Messages.QueueThread;
 import Networking.MyMulticastSocketWrapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
-import static utils.Constants.*;
+import static utils.Constants.COMMON_GROUPNAME;
+import static utils.Constants.DEFAULT_GROUP_ROOMID;
 
 
 public class ChatClient extends AbstractClient {
@@ -25,7 +29,7 @@ public class ChatClient extends AbstractClient {
     //Avoid overlapping messages
     private ChatRoom currentRoom = null;
     private QueueManager queueManager;
-     private ChatRoom commonMulticastChannel;
+    private ChatRoom commonMulticastChannel;
 
     public void print(String message) {
         System.out.println(message);
@@ -83,7 +87,7 @@ public class ChatClient extends AbstractClient {
                 if (response.contains("M")) {
                     System.out.println("Type the message you want to send >");
                     response = reader.readLine();
-                    currentRoom.sendInRoomMessage(response,this.CLIENT_ID);
+                    currentRoom.sendInRoomMessage(response, this.CLIENT_ID);
                 }
                 ;
             } catch (IOException e) {
@@ -97,10 +101,14 @@ public class ChatClient extends AbstractClient {
     public void listRooms() {
         queueManager.getRooms().forEach(
                 room -> {
-                    System.out.println("Room #" + room.getChatID() + " - Status [" + room.getStatusString() + "]");
-                    room.getParticipantIDs().forEach(
-                            id -> System.out.println("      Participant #" + id)
-                    );
+                    if (room.isRoomFinalized()) {
+                        System.out.println("Room #" + room.getChatID() + " - Status [" + room.getStatusString() + "]");
+                        room.getParticipantIDs().forEach(
+                                id -> System.out.println("      Participant #" + id));
+                    } else {
+                        System.out.println("Room #" + room.getChatID() + " - Not Finalized Yet]");
+                    }
+
                 }
         );
     }
