@@ -187,7 +187,7 @@ public class ChatRoom {
         //Client id mapping --> sort
         //E.G. clients 1231,456246,215 will have index 215 -> 0,1231 ->1,456246->3 in the vector timestamp array
 
-        int clientIndex = -1;
+        int clientIndex = clientVectorIndex.get(clientID)
         VectorTimestamp messageTimestamp = lastMessageTimestamp.increment(clientIndex);
         RoomMulticastMessage out = new RoomMulticastMessage(
                 clientID,
