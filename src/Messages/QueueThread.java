@@ -35,9 +35,9 @@ public class QueueThread implements QueueManager {
 
     public void deleteRoom(ChatRoom room) {
         //TODO exception maybe not a great idea
-        if (!roomsMap.containsKey(room)) throw new RuntimeException("Room doesn't exist");
+        if (!roomsMap.containsKey(room.getChatID())) throw new RuntimeException("Room doesn't exist");
         synchronized (roomLock) {
-            roomsMap.remove(room);
+            roomsMap.remove(room.getChatID());
             //java moment
             roomIDs.remove((Integer) room.getChatID());
         }
@@ -186,19 +186,17 @@ public class QueueThread implements QueueManager {
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
                         System.out.println("Received a finalized room incomingMessage from " + sender + " room - " + roomID);
-                        synchronized (roomsMap) {
+                        synchronized (roomLock) {
                             RoomFinalizedMessage fin = (RoomFinalizedMessage) inbound;
                             ChatRoom room = roomsMap.get(roomID);
-//                            System.out.println(roomsMap.keySet().toString());
-//                            Set<Integer> finalParticipants = new HashSet<>();
-//                            JsonObject el = JsonParser.parseString(inbound.getPayload()).getAsJsonObject();
-//                            JsonArray array = el.getAsJsonObject().get(FIELD_ROOM_PARTICIPANTS).getAsJsonArray();
-//                            array.forEach(k -> finalParticipants.add(k.getAsInt()));
-                            room.forceFinalizeRoom(fin.getParticipantIds());
+                            if (!fin.getParticipantIds().contains(client.getID())) {
+                                //Something went wrong, we can't access the room
+                                deleteRoom(room);
+                            } else room.forceFinalizeRoom(fin.getParticipantIds());
                         }
                     }
                     case ROOM_MESSAGE -> {
-                        synchronized (roomsMap) {
+                        synchronized (roomLock) {
                             ChatRoom dedicatedRoom = roomsMap.get(roomID);
                             if (!(inbound instanceof RoomMulticastMessage))
                                 throw new RuntimeException("Illegal Message Type");
