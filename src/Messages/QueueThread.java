@@ -7,6 +7,7 @@ import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Events.GenericNotifyEvent;
 import Messages.AnonymousMessages.CreateRoomRequest;
+import Messages.AnonymousMessages.RoomFinalizedMessage;
 import Messages.AnonymousMessages.WelcomeMessage;
 import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
@@ -186,14 +187,14 @@ public class QueueThread implements QueueManager {
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
                         System.out.println("Received a finalized room incomingMessage from " + sender + " room - " + roomID);
                         synchronized (roomsMap) {
-
+                            RoomFinalizedMessage fin = (RoomFinalizedMessage) inbound;
                             ChatRoom room = roomsMap.get(roomID);
-                            System.out.println(roomsMap.keySet().toString());
-                            Set<Integer> finalParticipants = new HashSet<>();
-                            JsonObject el = JsonParser.parseString(inbound.getPayload()).getAsJsonObject();
-                            JsonArray array = el.getAsJsonObject().get(FIELD_ROOM_PARTICIPANTS).getAsJsonArray();
-                            array.forEach(k -> finalParticipants.add(k.getAsInt()));
-                            room.forceFinalizeRoom(finalParticipants);
+//                            System.out.println(roomsMap.keySet().toString());
+//                            Set<Integer> finalParticipants = new HashSet<>();
+//                            JsonObject el = JsonParser.parseString(inbound.getPayload()).getAsJsonObject();
+//                            JsonArray array = el.getAsJsonObject().get(FIELD_ROOM_PARTICIPANTS).getAsJsonArray();
+//                            array.forEach(k -> finalParticipants.add(k.getAsInt()));
+                            room.forceFinalizeRoom(fin.getParticipantIds());
                         }
                     }
                     case ROOM_MESSAGE -> {

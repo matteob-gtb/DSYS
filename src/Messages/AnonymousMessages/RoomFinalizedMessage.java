@@ -18,5 +18,8 @@ public class RoomFinalizedMessage extends AbstractMessage {
         this.multicastAddress = multicastAddress;
     }
 
+    public Set<Integer> getParticipantIds() {
+        return participantIds;
+    }
 
 }
