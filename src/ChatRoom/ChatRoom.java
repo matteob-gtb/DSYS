@@ -75,7 +75,9 @@ public class ChatRoom {
 
     public void forceFinalizeRoom(Set<Integer> participantIDs) {
         System.out.println("Room " + this.chatID + " has been finalized");
+        System.out.println("Participants " + participantIDs);
         this.participantIDs = participantIDs;
+
         this.roomFinalized = true;
         this.clientVectorIndex = new HashMap<>(participantIDs.size());
         lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
