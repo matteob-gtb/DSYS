@@ -34,14 +34,14 @@ public class ChatRoom {
     private final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
     private final static int MIN_SOCKET_RECONNECT_DELAY = 5 * 1000;
 
-    private ArrayList<AbstractMessage> observedMessageOrder = new ArrayList<>();
+    private List<AbstractMessage> observedMessageOrder = new LinkedList<>();
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, ArrayList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
     //associate client id to positions in the vector (lookup is probably more efficient)
     private HashMap<Integer, Integer> clientVectorIndex;
 
-    public void addIncomingMessage(RoomMulticastMessage inbound) {
+    public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
         if (!perParticipantMessageQueue.containsKey(inbound.getSenderID()))
             throw new RuntimeException("Bad room finalization");
         var clientMessageList = perParticipantMessageQueue.get(inbound.getSenderID());
@@ -191,8 +191,10 @@ public class ChatRoom {
         RoomMulticastMessage out = new RoomMulticastMessage(
                 clientID,
                 this.getChatID(),
-                messageTimestamp
+                messageTimestamp,
+                payload
         );
+        observedMessageOrder.add(out);
         outGoingMessageQueue.add(out);
     }
 

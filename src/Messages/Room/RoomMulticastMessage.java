@@ -35,8 +35,9 @@ public class RoomMulticastMessage extends AbstractMessage {
 
 
     public RoomMulticastMessage(int clientID,
-                                int roomID, VectorTimestamp vectorTimestamp) {
-        super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
+                                int roomID, VectorTimestamp vectorTimestamp,String payload) {
+        super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID );
+        this.payload = payload;
         this.vectorTimestamp = vectorTimestamp;
     }
 
