@@ -27,24 +27,19 @@ public class RoomMulticastMessage extends AbstractMessage {
         }
     }
 
-    private final VectorTimestamp vectorTimestamp;
-
-    private int sortAccordingToIndex = -1;
 
     public RoomMulticastMessage(int clientID, int roomID) {
         super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
         vectorTimestamp = null;
     }
 
-    public void setSortAccordingToIndex(int partID) {
-        this.sortAccordingToIndex = partID;
-    }
 
     public RoomMulticastMessage(int clientID,
                                 int roomID, VectorTimestamp vectorTimestamp) {
         super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
         this.vectorTimestamp = vectorTimestamp;
     }
+
 
     /**
      * @param o the object to be compared.

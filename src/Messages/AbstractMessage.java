@@ -1,6 +1,7 @@
 package Messages;
 
 import Messages.AnonymousMessages.*;
+import Messages.Room.RoomMulticastMessage;
 import VectorTimestamp.VectorTimestamp;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
@@ -34,6 +35,10 @@ public abstract class AbstractMessage implements MessageInterface {
 
     public void setPayload(String rawPayload) {
         this.payload = rawPayload;
+    }
+
+    public void setVectorTimestamp(VectorTimestamp vectorTimestamp) {
+        this.vectorTimestamp = vectorTimestamp;
     }
 
     protected VectorTimestamp vectorTimestamp;
@@ -149,6 +154,10 @@ public abstract class AbstractMessage implements MessageInterface {
                 }
                 case MESSAGE_TYPE_JOIN_ROOM_REFUSE -> {
                     return new RefuseRoomRequest(senderID, roomID);
+                }
+                case ROOM_MESSAGE -> {
+                    //TODO work in progress
+                    return jsonDeserializationContext.deserialize(jsonElement, RoomMulticastMessage.class);
                 }
 
                 default -> throw new RuntimeException("Bad message");

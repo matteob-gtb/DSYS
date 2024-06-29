@@ -78,6 +78,8 @@ public class ChatRoom {
         this.participantIDs = participantIDs;
         this.roomFinalized = true;
         this.clientVectorIndex = new HashMap<>(participantIDs.size());
+        lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
+
         final AtomicReference<Integer> k = new AtomicReference<>(0);
         this.participantIDs.stream().sorted().forEach(participantID -> {
             clientVectorIndex.put(participantID, k.getAndAccumulate(1, Integer::sum));
@@ -174,12 +176,7 @@ public class ChatRoom {
                 this.getParticipantIDs(),
                 this.getDedicatedRoomSocket().getMCastAddress().toString()
         );
-//        JsonObject payload = new JsonObject();
-//        JsonArray participants = new JsonArray();
-//        this.getParticipantIDs().forEach(participants::add);
-//        payload.add(FIELD_ROOM_PARTICIPANTS, participants);
-//        payload.addProperty(ROOM_MULTICAST_GROUP_ADDRESS, this.getDedicatedRoomSocket().getMCastAddress().toString());
-//        msg.setPayload(payload.toString());
+
         defaultChannel.addOutgoingMessage(msg);
     }
 
