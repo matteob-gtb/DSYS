@@ -4,8 +4,11 @@ import Messages.AnonymousMessages.*;
 import VectorTimestamp.VectorTimestamp;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
+import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.Set;
 
 import static utils.Constants.*;
 import static utils.Constants.ROOM_MESSAGE;
@@ -133,7 +136,14 @@ public abstract class AbstractMessage implements MessageInterface {
                     return new CreateRoomRequest(senderID, roomID, username);
                 }
                 case MESSAGE_TYPE_ROOM_FINALIZED -> {
-                    return new RoomFinalizedMessage(senderID, roomID);
+                    System.out.println("ROom finaliziiing");
+                    String multicastAddress = jsonElement.getAsJsonObject().get("multicastAddress").toString();
+                    Set<Integer> participants = new HashSet<>();
+                    Type setType = new TypeToken<HashSet<Integer>>() {}.getType();
+                    Set<Integer> participantsIDs = new Gson().fromJson(jsonElement.getAsJsonObject().get("participantIds").toString(), setType);
+                    System.out.println(jsonElement.toString());
+                    System.out.println(participantsIDs);
+                    return new RoomFinalizedMessage(senderID, roomID, participantsIDs, multicastAddress);
                 }
                 case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> {
                     return new AcceptRoomRequest(senderID, roomID);

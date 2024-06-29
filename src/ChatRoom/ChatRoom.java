@@ -142,14 +142,16 @@ public class ChatRoom {
     public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {
         AbstractMessage msg = new RoomFinalizedMessage(
                 clientID,
-                this.chatID
+                this.chatID,
+                this.getParticipantIDs(),
+                this.getDedicatedRoomSocket().getMCastAddress().toString()
         );
-        JsonObject payload = new JsonObject();
-        JsonArray participants = new JsonArray();
-        this.getParticipantIDs().forEach(participants::add);
-        payload.add(FIELD_ROOM_PARTICIPANTS, participants);
-        payload.addProperty(ROOM_MULTICAST_GROUP_ADDRESS, this.getDedicatedRoomSocket().getMCastAddress().toString());
-        msg.setPayload(payload.toString());
+//        JsonObject payload = new JsonObject();
+//        JsonArray participants = new JsonArray();
+//        this.getParticipantIDs().forEach(participants::add);
+//        payload.add(FIELD_ROOM_PARTICIPANTS, participants);
+//        payload.addProperty(ROOM_MULTICAST_GROUP_ADDRESS, this.getDedicatedRoomSocket().getMCastAddress().toString());
+//        msg.setPayload(payload.toString());
         defaultChannel.addOutgoingMessage(msg);
     }
 
