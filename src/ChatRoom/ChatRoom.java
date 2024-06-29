@@ -34,7 +34,7 @@ public class ChatRoom {
     private final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
     private final static int MIN_SOCKET_RECONNECT_DELAY = 5 * 1000;
 
-    private ArrayList<AbstractMessage> observedMessageOrder;
+    private ArrayList<AbstractMessage> observedMessageOrder = new ArrayList<>();
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, ArrayList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
