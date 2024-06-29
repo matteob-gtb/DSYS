@@ -156,4 +156,8 @@ public abstract class AbstractMessage implements MessageInterface {
 
         }
     }
+
+    public String toChatString(){
+       return toJSONString();
+    }
 }

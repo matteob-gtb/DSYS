@@ -2,7 +2,6 @@ package ChatRoom;
 
 import Messages.AbstractMessage;
 import Messages.MessageInterface;
-import Messages.MulticastMessage;
 import Messages.AnonymousMessages.RoomFinalizedMessage;
 import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
@@ -35,7 +34,7 @@ public class ChatRoom {
     private final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
     private final static int MIN_SOCKET_RECONNECT_DELAY = 5 * 1000;
 
-    private ArrayList<MulticastMessage> messageList;
+    private ArrayList<AbstractMessage> observedMessageOrder;
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, ArrayList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
@@ -45,12 +44,33 @@ public class ChatRoom {
     public void addIncomingMessage(RoomMulticastMessage inbound) {
         if (!perParticipantMessageQueue.containsKey(inbound.getSenderID()))
             throw new RuntimeException("Bad room finalization");
-        perParticipantMessageQueue.get(inbound.getSenderID()).add(inbound);
+        var clientMessageList = perParticipantMessageQueue.get(inbound.getSenderID());
+        clientMessageList.add(inbound);
+
+        //Sorts only by the vector timestamp of the CLIENT in the CLIENT's queue, ensuring essentially FIFO ordering of the message
+        //causality is not enforced here
+        clientMessageList.sort(new RoomMulticastMessage.RoomMulticastMessageComparator());
+        //check, for all queues if any message can now be received
+
+        Collection<ArrayList<RoomMulticastMessage>> queues = perParticipantMessageQueue.values();
+
+
+        for (ArrayList<RoomMulticastMessage> queue : queues) {
+            while (queue.getFirst().getTimestamp().comesAfter(this.lastMessageTimestamp)) {
+                System.out.println(queue.getFirst().getTimestamp());
+                System.out.println(this.lastMessageTimestamp);
+
+                observedMessageOrder.add(inbound);
+                queue.removeFirst();
+            }
+        }
+
     }
 
 
     public void printMessages() {
-        throw new UnsupportedOperationException();
+        System.out.println("Chat room messages as observed by client# " + chatID);
+        observedMessageOrder.forEach(msg -> System.out.println(msg.toChatString()));
     }
 
     public void forceFinalizeRoom(Set<Integer> participantIDs) {
@@ -60,7 +80,7 @@ public class ChatRoom {
         this.clientVectorIndex = new HashMap<>(participantIDs.size());
         final AtomicReference<Integer> k = new AtomicReference<>(0);
         this.participantIDs.stream().sorted().forEach(participantID -> {
-            clientVectorIndex.put(participantID,k.getAndAccumulate(1, Integer::sum));
+            clientVectorIndex.put(participantID, k.getAndAccumulate(1, Integer::sum));
             System.out.println("Client " + participantID + " has been finalized : index " + k.get());
         });
     }
@@ -220,7 +240,7 @@ public class ChatRoom {
     }
 
     public int getMessageCount() {
-        return messageList.size();
+        return observedMessageOrder.size();
     }
 
 }
