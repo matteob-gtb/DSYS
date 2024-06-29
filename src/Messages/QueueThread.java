@@ -153,7 +153,7 @@ public class QueueThread implements QueueManager {
 
                 int sender = inbound.getSenderID();
 
-                System.out.println("Class of incoming message is " + inbound.getClass());
+                 System.out.println("Sender id : " + sender);
                 if (sender == this.client.getID())
                     continue;
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
