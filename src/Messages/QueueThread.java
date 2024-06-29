@@ -189,13 +189,13 @@ public class QueueThread implements QueueManager {
                         synchronized (roomLock) {
                             RoomFinalizedMessage fin = (RoomFinalizedMessage) inbound;
                             ChatRoom room = roomsMap.get(roomID);
-                            if (!fin.getParticipantIds().contains(client.getID())) {
+                            if (!fin.getParticipantIds().contains(client.getID()) && roomsMap.containsKey(roomID)) {
                                 //Something went wrong, we can't access the room
                                 deleteRoom(room);
                             } else room.forceFinalizeRoom(fin.getParticipantIds());
                         }
                     }
-                    case ROOM_MESSAGE -> {
+                    case MESSAGE_TYPE_ROOM_MESSAGE -> {
                         synchronized (roomLock) {
                             ChatRoom dedicatedRoom = roomsMap.get(roomID);
                             if (!(inbound instanceof RoomMulticastMessage))

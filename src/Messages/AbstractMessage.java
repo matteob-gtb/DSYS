@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static utils.Constants.*;
-import static utils.Constants.ROOM_MESSAGE;
 
 public abstract class AbstractMessage implements MessageInterface {
     protected String payload;
@@ -104,13 +103,12 @@ public abstract class AbstractMessage implements MessageInterface {
         String payload = this.payload;
         messageTypeStr = switch (messageType) {
             case MESSAGE_TYPE_WELCOME -> "Welcome";
-            case MESSAGE_TYPE_ROOM_MESSAGE -> "Room Message";
             case MESSAGE_TYPE_HELLO -> "Hello";
             case MESSAGE_TYPE_CREATE_ROOM -> "Create Room";
             case MESSAGE_TYPE_ROOM_FINALIZED -> "Room Finalized";
             case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> "Join Room Accept";
             case MESSAGE_TYPE_JOIN_ROOM_REFUSE -> "Join Room Refuse";
-            case ROOM_MESSAGE -> "Room Message (Causal Order)";
+            case MESSAGE_TYPE_ROOM_MESSAGE -> "Room Message (Causal Order)";
             default -> "Unknown";
         };
 
@@ -155,7 +153,7 @@ public abstract class AbstractMessage implements MessageInterface {
                 case MESSAGE_TYPE_JOIN_ROOM_REFUSE -> {
                     return new RefuseRoomRequest(senderID, roomID);
                 }
-                case ROOM_MESSAGE -> {
+                case MESSAGE_TYPE_ROOM_MESSAGE -> {
                     //TODO work in progress
                     return jsonDeserializationContext.deserialize(jsonElement, RoomMulticastMessage.class);
                 }

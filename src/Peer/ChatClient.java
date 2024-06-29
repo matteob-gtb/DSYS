@@ -89,7 +89,6 @@ public class ChatClient extends AbstractClient {
                     response = reader.readLine();
                     currentRoom.sendInRoomMessage(response, this.CLIENT_ID);
                 }
-                ;
             } catch (IOException e) {
                 System.out.println("Unrecoverable I/O error,shutting down...");
                 System.exit(1);

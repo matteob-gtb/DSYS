@@ -27,7 +27,6 @@ public class Constants {
     public static final int DEFAULT_GROUP_ROOMID = 99;
     public static final int MESSAGE_TYPE_JOIN_ROOM_ACCEPT = 6;
     public static final int MESSAGE_TYPE_JOIN_ROOM_REFUSE = 99;
-    public static final int ROOM_MESSAGE = 30;
 
 
     public static final String COMMON_GROUPNAME = "224.1.1.1";
