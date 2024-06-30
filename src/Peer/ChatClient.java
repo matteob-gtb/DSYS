@@ -150,7 +150,6 @@ public class ChatClient extends AbstractClient {
                                 commonMulticastChannel.addOutgoingMessage(eventOutcome.get());
                             if (currentEvent instanceof ReplyToRoomRequestEvent) {
                                 ChatRoom newRoom = ((ReplyToRoomRequestEvent) currentEvent).createRoomReference();
-                                System.out.println("Created room #" + newRoom.getChatID() + " Online " + newRoom.getStatusString());
                                 queueManager.registerRoom(newRoom);
 
                             }
