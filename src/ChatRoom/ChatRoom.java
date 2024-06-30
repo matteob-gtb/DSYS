@@ -150,8 +150,7 @@ public class ChatRoom {
     private boolean roomFinalized = false; //finalized 60 seconds after the initial room creation request was acked
     private VectorTimestamp ownVectorTimestamp;
     private MyMulticastSocketWrapper dedicatedRoomSocket = null;
-    private boolean connected = false;
-    private List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
+     private List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
 
 
     public void updateOutQueue() {
@@ -162,7 +161,7 @@ public class ChatRoom {
                 this.ownVectorTimestamp = ((RoomMulticastMessage) out).getTimestamp();
         } else {
             //could try a few more times honestly
-            this.connected = false;
+            this.onlineStatus = false;
         }
     }
 
@@ -207,7 +206,7 @@ public class ChatRoom {
 
     public void setOffline(boolean isOffline) {
         System.out.println("Room " + this.chatID + " is offline, attempting reconnect in a bit");
-        this.connected = !isOffline;
+        this.onlineStatus = !isOffline;
     }
 
     public String getRoomAddress() {
