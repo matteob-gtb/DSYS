@@ -21,8 +21,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static utils.Constants.COMMON_GROUPNAME;
-import static utils.Constants.DEFAULT_GROUP_ROOMID;
+import static utils.Constants.*;
 
 
 public class ChatClient extends AbstractClient {
@@ -285,7 +284,7 @@ public class ChatClient extends AbstractClient {
                     print("Invalid Command");
                     break;
             }
-            Thread.sleep(50);
+            Thread.sleep(QUEUE_THREAD_SLEEP_MIN_MS);
 
         }
     }

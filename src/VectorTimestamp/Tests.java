@@ -8,9 +8,9 @@ public class Tests {
         VectorTimestamp reply = new VectorTimestamp(new int[]{1, 1, 0});
 
 
-        System.out.println(initial.canAccept(message));
-        System.out.println(reply.canAccept(message));
-        System.out.println(message.canAccept(reply));
+        System.out.println(initial.comesBefore(message));
+        System.out.println(reply.comesBefore(message));
+        System.out.println(message.comesBefore(reply));
 
 
     }
