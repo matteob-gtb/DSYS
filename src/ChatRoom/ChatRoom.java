@@ -167,15 +167,7 @@ public class ChatRoom {
     }
 
     public Optional<AbstractMessage> getOutgoingMessage() {
-        if (!outGoingMessageQueue.isEmpty() && !outGoingMessageQueue.getFirst().isSent()) {
-            //TODO don't get the first, return the first NOT sent
-
-            return outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst();
-
-
-            //return Optional.of(outGoingMessageQueue.getFirst());
-        }
-        return Optional.empty();
+        return outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst();
     }
 
     public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {
@@ -213,6 +205,10 @@ public class ChatRoom {
         this.roomFinalized = roomFinalized;
     }
 
+    public void setOffline(boolean isOffline) {
+        System.out.println("Room " + this.chatID + " is offline, attempting reconnect in a bit");
+        this.connected = !isOffline;
+    }
 
     public String getRoomAddress() {
         return groupName;
