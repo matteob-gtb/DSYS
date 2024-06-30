@@ -141,7 +141,6 @@ public class ChatRoom {
             dedicatedRoomSocket.probeConnection();
         } catch (Exception e) {
             System.out.print("Reconnect attempt failed,trying later...  ");
-            System.out.println(e.getMessage());
         }
         //no exception thrown -> connection re-established
         System.out.println("Reconnect attempt completed");
@@ -169,9 +168,6 @@ public class ChatRoom {
     }
 
     public Optional<AbstractMessage> getOutgoingMessage() {
-        if (outGoingMessageQueue.size() > 0)
-            System.out.println("Messages yet to send ");
-        outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst().ifPresent(System.out::println);
         return outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst();
     }
 
@@ -211,7 +207,6 @@ public class ChatRoom {
     }
 
     public void setOffline(boolean isOffline) {
-        System.out.println("Room " + this.chatID + " is offline, attempting reconnect in a bit");
         this.onlineStatus = !isOffline;
     }
 

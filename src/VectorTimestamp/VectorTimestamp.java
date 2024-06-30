@@ -117,7 +117,6 @@ public class VectorTimestamp implements Timestamp {
         var howManyPositionsPlusOne = IntStream.range(0, otherV.rawTimestamp.length).filter(
                 index -> otherV.rawTimestamp[index] == this.rawTimestamp[index] + 1
         ).boxed().toList();
-        System.out.println("How many positions plus one: " + howManyPositionsPlusOne);
         if (howManyPositionsPlusOne.size() != 1) return false;
 
         return IntStream.range(0, otherV.rawTimestamp.length).
