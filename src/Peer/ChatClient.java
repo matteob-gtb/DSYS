@@ -134,7 +134,9 @@ public class ChatClient extends AbstractClient {
                 if (reader.ready()) {
                     command = reader.readLine().trim();
                     waitingForInput = false;
+
                 }
+
                 if (currentEvent != null) {
                     Optional<AbstractMessage> eventOutcome = Optional.empty();
                     if (currentEvent.isActionable()) {
@@ -160,6 +162,7 @@ public class ChatClient extends AbstractClient {
                     }
                     currentEvent = null;
                 }
+                Thread.sleep(CLIENT_SLEEP_MS);
             }
             switch (command.toLowerCase()) {
                 case "x":
@@ -284,7 +287,6 @@ public class ChatClient extends AbstractClient {
                     print("Invalid Command");
                     break;
             }
-            Thread.sleep(QUEUE_THREAD_SLEEP_MIN_MS);
 
         }
     }
