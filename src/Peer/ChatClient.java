@@ -155,8 +155,6 @@ public class ChatClient extends AbstractClient {
 
                             }
                         }
-                        //TODO  fix currentroom
-                        //   queueManager.sendMessage(eventOutcome.get(), currentRoom);
                         command = "x";
                         waitingForInput = false;
                     }

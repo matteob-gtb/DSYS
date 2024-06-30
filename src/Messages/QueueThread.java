@@ -184,7 +184,6 @@ public class QueueThread implements QueueManager {
                             AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, client.getBaseMessageStub(), "y", "n");
                             client.addEvent(eventToProcess);
                         }
-                        break;
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
                         synchronized (roomLock) {
