@@ -47,6 +47,8 @@ public class ChatRoom {
         var clientMessageList = perParticipantMessageQueue.get(inbound.getSenderID());
         clientMessageList.add(inbound);
 
+        //TODO insertion sort
+
         //Sorts only by the vector timestamp of the CLIENT in the CLIENT's queue, ensuring essentially FIFO ordering of the message
         //causality is not enforced here
         clientMessageList.sort(new RoomMulticastMessage.RoomMulticastMessageComparator());
@@ -60,7 +62,8 @@ public class ChatRoom {
 //                System.out.println("Comparing " + queue.getFirst().getTimestamp());
 //                System.out.println("Comparing " + this.lastMessageTimestamp);
 //                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
-                observedMessageOrder.add(inbound);
+                observedMessageOrder.add(queue.getFirst());
+                this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
                 queue.removeFirst();
             }
 

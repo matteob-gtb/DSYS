@@ -18,6 +18,11 @@ public class VectorTimestamp implements Timestamp {
         this.rawTimestamp = rawTimestamp;
     }
 
+    public static VectorTimestamp merge(VectorTimestamp first, VectorTimestamp other) {
+        VectorTimestamp merged = new VectorTimestamp(first.rawTimestamp);
+        IntStream.range(0, first.rawTimestamp.length).forEach(i -> merged.rawTimestamp[i] = Math.max(other.rawTimestamp[i], merged.rawTimestamp[i]));
+        return merged;
+    }
 
     public VectorTimestamp increment(int clientIndex) {
         int[] newTimestamp = Arrays.copyOf(this.rawTimestamp, this.rawTimestamp.length);
