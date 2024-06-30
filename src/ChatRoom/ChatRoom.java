@@ -56,7 +56,6 @@ public class ChatRoom {
 
 
         for (ArrayList<RoomMulticastMessage> queue : queues) {
-            System.out.println("Queue " + queue.size());
             while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
 //                System.out.println("Comparing " + queue.getFirst().getTimestamp());
 //                System.out.println("Comparing " + this.lastMessageTimestamp);
@@ -135,16 +134,18 @@ public class ChatRoom {
             return;
         }
         this.lastReconnectAttempt = System.currentTimeMillis();
+        boolean exceptionThrown = false;
         try {
            /* dedicatedRoomSocket.close();
             dedicatedRoomSocket = new MyMulticastSocketWrapper(this.groupName);*/
             dedicatedRoomSocket.probeConnection();
         } catch (Exception e) {
+            exceptionThrown = true;
             //System.out.print("Reconnect attempt failed,trying later...  ");
         }
         //no exception thrown -> connection re-established
-        System.out.println("Reconnect attempt completed");
-        this.onlineStatus = true;
+        //System.out.println("Reconnect attempt completed");
+        this.onlineStatus = !exceptionThrown;
 
     }
 
