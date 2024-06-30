@@ -28,6 +28,6 @@ public class Constants {
     public static final int MESSAGE_TYPE_JOIN_ROOM_ACCEPT = 6;
     public static final int MESSAGE_TYPE_JOIN_ROOM_REFUSE = 99;
     public static final int QUEUE_THREAD_SLEEP_MIN_MS = 300;
-    public static final int   CLIENT_SLEEP_MS = 50;
+    public static final int   CLIENT_SLEEP_MS = 15;
     public static final String COMMON_GROUPNAME = "224.1.1.1";
 }
