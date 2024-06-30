@@ -121,7 +121,6 @@ public abstract class AbstractMessage implements MessageInterface {
         @Override
         public AbstractMessage deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
             String username = null;
-            System.out.println(jsonElement.toString());
             int senderID = jsonElement.getAsJsonObject().get("senderID").getAsInt();
             if (jsonElement.getAsJsonObject().has("username"))
                 username = jsonElement.getAsJsonObject().get("username").getAsString();

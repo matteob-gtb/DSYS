@@ -217,7 +217,6 @@ public class ChatClient extends AbstractClient {
                                 System.out.println("Created room with id #" + room.getChatID());
                                 AbstractMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, room.getChatID(), room.getRoomAddress());
                                 System.out.println("groupname " + room.getRoomAddress());
-                                System.out.println("Create room request \n " + outMsg.toJSONString());
                                 queueManager.registerRoom(room);
                                 currentRoom.addOutgoingMessage(outMsg);
                                 print("Sent room creation request to online peers,waiting for responses...");
