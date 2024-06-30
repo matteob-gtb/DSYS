@@ -102,7 +102,7 @@ public class VectorTimestamp implements Timestamp {
     }
 
     @Override
-    public boolean canAccept(Timestamp other) {
+    public boolean comesBefore(Timestamp other) {
         if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
         VectorTimestamp otherV = (VectorTimestamp) other;
         if (this.rawTimestamp.length != otherV.rawTimestamp.length)
