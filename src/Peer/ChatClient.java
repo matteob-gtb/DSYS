@@ -80,10 +80,15 @@ public class ChatClient extends AbstractClient {
         room.printMessages();
         String response;
         while (true) {
-            System.out.println("Type M to send a message or q to go back to main menu > ");
+            System.out.print("1) M -> send a message \n2) q exit this prompt 3) R refresh the message list>   ");
             try {
                 response = reader.readLine();
                 if (response.contains("q")) break;
+                if (response.contains("R")) {
+                    flushConsole();
+                    room.printMessages();
+                    continue;
+                }
                 if (response.contains("M")) {
                     System.out.println("Type the message you want to send >");
                     response = reader.readLine();
