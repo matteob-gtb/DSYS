@@ -153,7 +153,7 @@ public class QueueThread implements QueueManager {
 
                 int sender = inbound.getSenderID();
 
-                 System.out.println("Sender id : " + sender);
+                System.out.println("Sender id : " + sender);
                 if (sender == this.client.getID())
                     continue;
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
@@ -180,18 +180,25 @@ public class QueueThread implements QueueManager {
                     case MESSAGE_TYPE_CREATE_ROOM -> {
                         System.out.println("Received a room invitation");
                         CreateRoomRequest req = gson.fromJson(jsonInboundMessage, CreateRoomRequest.class);
-                        AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, client.getBaseMessageStub(), "y", "n");
-                        client.addEvent(eventToProcess);
+                        if (!roomsMap.containsKey(req.getRoomID())) { //don't ask the user multiple times
+                            AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, client.getBaseMessageStub(), "y", "n");
+                            client.addEvent(eventToProcess);
+                        }
+                        break;
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
                         System.out.println("Received a finalized room incomingMessage from " + sender + " room - " + roomID);
                         synchronized (roomLock) {
                             RoomFinalizedMessage fin = (RoomFinalizedMessage) inbound;
                             ChatRoom room = roomsMap.get(roomID);
-                            if (!fin.getParticipantIds().contains(client.getID()) && roomsMap.containsKey(roomID)) {
-                                //Something went wrong, we can't access the room
-                                deleteRoom(room);
-                            } else room.forceFinalizeRoom(fin.getParticipantIds());
+                            if (room == null) {
+                                System.out.println("Non-existent room, missed the CREATE_ROOM_MESSAGE");
+                            } else {
+                                if (!fin.getParticipantIds().contains(client.getID()) && roomsMap.containsKey(roomID)) {
+                                    //Something went wrong, we can't access the room
+                                    deleteRoom(room);
+                                } else room.forceFinalizeRoom(fin.getParticipantIds());
+                            }
                         }
                     }
                     case MESSAGE_TYPE_ROOM_MESSAGE -> {
