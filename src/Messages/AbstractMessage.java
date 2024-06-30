@@ -15,7 +15,6 @@ import static utils.Constants.*;
 
 public abstract class AbstractMessage implements MessageInterface {
     protected String payload;
-    protected transient boolean isRoomMessage = false;
     protected int messageType = -1;
     protected int senderID;
     protected String username = null;
@@ -70,9 +69,6 @@ public abstract class AbstractMessage implements MessageInterface {
     @Expose(serialize = false, deserialize = false)
     private boolean sent = false;
 
-    public boolean isRoomMessage() {
-        return isRoomMessage;
-    }
 
     public int getMessageType() {
         return messageType;

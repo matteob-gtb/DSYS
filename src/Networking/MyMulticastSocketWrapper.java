@@ -101,7 +101,7 @@ public class MyMulticastSocketWrapper {
         }
     }
 
-    public void sendPacket(AbstractMessage message) {
+    public boolean sendPacket(AbstractMessage message) {
         String msg = message.toJSONString();
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
         try {
@@ -112,6 +112,7 @@ public class MyMulticastSocketWrapper {
             message.setSent(false);
         }
         message.setSent(true);
+        return message.isSent();
     }
 
     //if this fails it means we can't and will never connect (no interfaces available)

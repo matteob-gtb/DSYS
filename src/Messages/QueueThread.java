@@ -17,6 +17,7 @@ import com.google.gson.*;
 import utils.Constants;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static utils.Constants.*;
 
@@ -135,10 +136,14 @@ public class QueueThread implements QueueManager {
                 //TODO message cursor index
                 Optional<AbstractMessage> nextMsg = currentRoom.getOutgoingMessage();
                 nextMsg.ifPresent(messageInterface -> {
-                    currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
+                    boolean sendOutcome = (currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface));
+                    currentRoom.setOffline(sendOutcome);
                     currentRoom.updateOutQueue();
                 });
                 packet = new DatagramPacket(buffer, buffer.length);
+
+
+                //now attempt to receive
                 packetReceived = currentRoom.getDedicatedRoomSocket().receive(packet);
             } else {
                 System.out.println("Attempting reconnection...");
