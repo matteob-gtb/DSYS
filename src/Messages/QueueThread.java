@@ -14,6 +14,7 @@ import Networking.MyMulticastSocketWrapper;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
 import com.google.gson.*;
+import utils.Constants;
 
 import java.util.*;
 
@@ -213,7 +214,7 @@ public class QueueThread implements QueueManager {
                     //append to relevant queue
                 }
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(QUEUE_THREAD_SLEEP_MIN_MS);
                 } catch (InterruptedException e) {
                     throw new RuntimeException("I/O thread must not be interrupted");
                 }
