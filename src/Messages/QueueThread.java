@@ -85,9 +85,10 @@ public class QueueThread implements QueueManager {
     }
 
     public void registerRoom(ChatRoom chatRoom) {
-        if (roomsMap.containsKey(chatRoom.getChatID())) throw new RuntimeException("Duplicate chat room");
-        roomsMap.put(chatRoom.getChatID(), chatRoom);
-        roomIDs.add(chatRoom.getChatID());
+        synchronized (roomLock) {
+            if (roomsMap.containsKey(chatRoom.getChatID())) throw new RuntimeException("Duplicate chat room");
+            roomsMap.put(chatRoom.getChatID(), chatRoom);
+        }
     }
 
     @Override
@@ -120,6 +121,8 @@ public class QueueThread implements QueueManager {
             cycleRooms();
             if (!currentRoom.isRoomFinalized()) {
                 if (currentRoom.getOwnerID() == this.client.getID() && currentRoom.finalizeRoom()) {
+                    //listen on its socket only AFTER it's been finalized
+                    roomIDs.add(currentRoom.getChatID());
                     currentRoom.announceRoomFinalized(client.getID(), client.getDefaultRoom());
                 }
 
@@ -197,7 +200,13 @@ public class QueueThread implements QueueManager {
                                 if (!fin.getParticipantIds().contains(client.getID()) && roomsMap.containsKey(roomID)) {
                                     //Something went wrong, we can't access the room
                                     deleteRoom(room);
-                                } else room.forceFinalizeRoom(fin.getParticipantIds());
+                                } else {
+                                    room.forceFinalizeRoom(fin.getParticipantIds());
+                                    //overkill
+                                    synchronized (roomLock) {
+                                        roomIDs.add(room.getChatID());
+                                    }
+                                }
                             }
                         }
                     }
