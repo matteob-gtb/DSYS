@@ -56,13 +56,14 @@ public class ChatRoom {
 
 
         for (ArrayList<RoomMulticastMessage> queue : queues) {
-            while (!queue.isEmpty() && queue.getFirst().getTimestamp().comesAfter(this.lastMessageTimestamp)) {
-                System.out.println(queue.getFirst().getTimestamp());
-                System.out.println(this.lastMessageTimestamp);
-
-                observedMessageOrder.add(inbound);
-                queue.removeFirst();
-            }
+            System.out.println("Queue " + queue.size());
+            if (!queue.isEmpty())
+                while (queue.getFirst().getTimestamp().comesAfter(this.lastMessageTimestamp)) {
+                    System.out.println(queue.getFirst().getTimestamp());
+                    System.out.println(this.lastMessageTimestamp);
+                    observedMessageOrder.add(inbound);
+                    queue.removeFirst();
+                }
         }
 
     }
