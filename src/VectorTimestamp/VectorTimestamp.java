@@ -111,10 +111,15 @@ public class VectorTimestamp implements Timestamp {
          * Given client k (this) and client j (source of the message), check that the message
          * can be delivered to j's queue iff v_k[j] = v_j[j] - 1 e tutte le altre posizioni sono <=
          * */
+
+        //check in how many positions this[k] = other[k] + 1, must be only 1 to accept
+
         var howManyPositionsPlusOne = IntStream.range(0, otherV.rawTimestamp.length).filter(
                 index -> otherV.rawTimestamp[index] == this.rawTimestamp[index] + 1
         ).boxed().toList();
+        System.out.println("How many positions plus one: " + howManyPositionsPlusOne);
         if (howManyPositionsPlusOne.size() != 1) return false;
+
         return IntStream.range(0, otherV.rawTimestamp.length).
                 filter(index -> index != howManyPositionsPlusOne.getFirst()).
                 filter(index -> this.rawTimestamp[index] <= otherV.rawTimestamp[index]).
