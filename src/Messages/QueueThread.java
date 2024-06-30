@@ -47,7 +47,6 @@ public class QueueThread implements QueueManager {
     private void cycleRooms() {
         synchronized (roomLock) {
             currentRoom = roomsMap.get(roomIDs.get(currentIDIndex));
-            System.out.println(roomIDs.size());
             currentIDIndex = currentIDIndex + 1 == roomIDs.size() ? 0 : currentIDIndex + 1;
         }
     }
@@ -153,11 +152,6 @@ public class QueueThread implements QueueManager {
 
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
                 JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
-                //AbstractMessage inbound = gson.fromJson(jsonInboundMessage, MulticastMessage.class);
-
-//                Logger.writeLog("Received Message\n" + inbound.toJSONString() + "\n");
-//                System.out.println(inbound.getMessageDebugString());
-//
 
 
                 //TODO deserialize based on the type of the message
