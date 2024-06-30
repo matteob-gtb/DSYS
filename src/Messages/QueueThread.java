@@ -137,6 +137,7 @@ public class QueueThread implements QueueManager {
                 Optional<AbstractMessage> nextMsg = currentRoom.getOutgoingMessage();
                 nextMsg.ifPresent(messageInterface -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
+                    System.out.println("Sent packet " + sendOutcome);
                     if (!sendOutcome) {
                         System.out.println("Failed to send the message, queueing it");
                         currentRoom.setOffline(true);
