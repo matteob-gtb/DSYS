@@ -155,7 +155,7 @@ public class QueueThread implements QueueManager {
 
                 if (sender == this.client.getID())
                     continue;
-                System.out.println("Received a message of type + " + inbound.getClass());
+                System.out.println("Received a message of type + " + inbound.getClass() + " from #" + sender + " Client " + this.client.getID());
 
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                 switch (inbound.messageType) {
