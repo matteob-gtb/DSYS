@@ -151,10 +151,9 @@ public class QueueThread implements QueueManager {
 
                 //TODO deserialize based on the type of the message
                 AbstractMessage inbound = gson.fromJson(jsonInboundMessage, AbstractMessage.class);
-
+                System.out.println("Received a message of type + " + inbound.getClass());
                 int sender = inbound.getSenderID();
 
-                System.out.println("Sender id : " + sender);
                 if (sender == this.client.getID())
                     continue;
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
@@ -165,7 +164,6 @@ public class QueueThread implements QueueManager {
                         client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                         onlineClients.add(sender);
-                        System.out.println("Received an hello from #" + sender + " replying with WELCOME");
                         AbstractMessage welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
                         commonMulticastChannel.addOutgoingMessage(welcome);
                     }
@@ -175,12 +173,10 @@ public class QueueThread implements QueueManager {
                         onlineClients.add(sender);
                     }
                     case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
-                        System.out.println("Processing ROOM_JOIN incomingMessage");
                         client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
                         addParticipantToRoom(roomID, sender);
                     }
                     case MESSAGE_TYPE_CREATE_ROOM -> {
-                        System.out.println("Received a room invitation");
                         CreateRoomRequest req = gson.fromJson(jsonInboundMessage, CreateRoomRequest.class);
                         if (!roomsMap.containsKey(req.getRoomID())) { //don't ask the user multiple times
                             AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, client.getBaseMessageStub(), "y", "n");
@@ -189,7 +185,6 @@ public class QueueThread implements QueueManager {
                         break;
                     }
                     case MESSAGE_TYPE_ROOM_FINALIZED -> {
-                        System.out.println("Received a finalized room incomingMessage from " + sender + " room - " + roomID);
                         synchronized (roomLock) {
                             RoomFinalizedMessage fin = (RoomFinalizedMessage) inbound;
                             ChatRoom room = roomsMap.get(roomID);

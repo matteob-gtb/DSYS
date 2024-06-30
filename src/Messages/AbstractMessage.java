@@ -138,14 +138,15 @@ public abstract class AbstractMessage implements MessageInterface {
                     return new CreateRoomRequest(senderID, roomID, username);
                 }
                 case MESSAGE_TYPE_ROOM_FINALIZED -> {
-                    System.out.println("ROom finaliziiing");
-                    String multicastAddress = jsonElement.getAsJsonObject().get("multicastAddress").toString();
-                    Set<Integer> participants = new HashSet<>();
-                    Type setType = new TypeToken<HashSet<Integer>>() {}.getType();
-                    Set<Integer> participantsIDs = new Gson().fromJson(jsonElement.getAsJsonObject().get("participantIds").toString(), setType);
-                    System.out.println(jsonElement.toString());
-                    System.out.println(participantsIDs);
-                    return new RoomFinalizedMessage(senderID, roomID, participantsIDs, multicastAddress);
+                    return jsonDeserializationContext.deserialize(jsonElement,RoomFinalizedMessage.class);
+//                    System.out.println("ROom finaliziiing");
+//                    String multicastAddress = jsonElement.getAsJsonObject().get("multicastAddress").toString();
+//                    Set<Integer> participants = new HashSet<>();
+//                    Type setType = new TypeToken<HashSet<Integer>>() {}.getType();
+//                    Set<Integer> participantsIDs = new Gson().fromJson(jsonElement.getAsJsonObject().get("participantIds").toString(), setType);
+//                    System.out.println(jsonElement.toString());
+//                    System.out.println(participantsIDs);
+//                    return new RoomFinalizedMessage(senderID, roomID, participantsIDs, multicastAddress);
                 }
                 case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> {
                     return new AcceptRoomRequest(senderID, roomID);
@@ -154,7 +155,6 @@ public abstract class AbstractMessage implements MessageInterface {
                     return new RefuseRoomRequest(senderID, roomID);
                 }
                 case MESSAGE_TYPE_ROOM_MESSAGE -> {
-                    //TODO work in progress
                     return jsonDeserializationContext.deserialize(jsonElement, RoomMulticastMessage.class);
                 }
 
