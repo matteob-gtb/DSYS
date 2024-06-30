@@ -56,7 +56,7 @@ public class ChatRoom {
 
 
         for (ArrayList<RoomMulticastMessage> queue : queues) {
-            while (queue.getFirst() != null && queue.getFirst().getTimestamp().comesAfter(this.lastMessageTimestamp)) {
+            while (!queue.isEmpty() && queue.getFirst().getTimestamp().comesAfter(this.lastMessageTimestamp)) {
                 System.out.println(queue.getFirst().getTimestamp());
                 System.out.println(this.lastMessageTimestamp);
 
