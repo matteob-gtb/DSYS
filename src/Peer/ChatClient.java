@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -290,7 +291,7 @@ public class ChatClient extends AbstractClient {
         }
     }
 
-    private void flushConsole(){
+    private void flushConsole() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
     }

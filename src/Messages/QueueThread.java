@@ -47,6 +47,7 @@ public class QueueThread implements QueueManager {
     private void cycleRooms() {
         synchronized (roomLock) {
             currentRoom = roomsMap.get(roomIDs.get(currentIDIndex));
+            System.out.println(roomIDs.size());
             currentIDIndex = currentIDIndex + 1 == roomIDs.size() ? 0 : currentIDIndex + 1;
         }
     }
@@ -99,8 +100,16 @@ public class QueueThread implements QueueManager {
     public QueueThread(AbstractClient client, ChatRoom commonMulticastChannel) throws IOException {
         this.commonMulticastChannel = commonMulticastChannel;
         this.currentSocket = commonMulticastChannel.getDedicatedRoomSocket();
-        this.registerRoom(commonMulticastChannel);
+        this.roomIDs.add(commonMulticastChannel.getChatID());
         this.client = client;
+        this.currentRoom = commonMulticastChannel;
+        registerRoom(currentRoom);
+    }
+
+    public void setFinalized(int roomId) {
+        synchronized (roomLock) {
+            roomIDs.add(roomId);
+        }
     }
 
     /**
