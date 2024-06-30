@@ -131,9 +131,7 @@ public class ChatRoom {
 
 
     public void getBackOnline() {
-        System.out.println("Last " + lastReconnectAttempt + " Curr " + System.currentTimeMillis());
         if (System.currentTimeMillis() - this.lastReconnectAttempt < MIN_SOCKET_RECONNECT_DELAY) {
-            System.out.println("Not enough time yet");
             return;
         }
         this.lastReconnectAttempt = System.currentTimeMillis();
@@ -142,10 +140,11 @@ public class ChatRoom {
             dedicatedRoomSocket = new MyMulticastSocketWrapper(this.groupName);*/
             dedicatedRoomSocket.probeConnection();
         } catch (Exception e) {
+            System.out.print("Reconnect attempt failed,trying later...  ");
             System.out.println(e.getMessage());
-            System.out.println("Reconnect attempt failed,trying later...");
         }
-        //no exception throw -> connection re-established
+        //no exception thrown -> connection re-established
+        System.out.println("Reconnect attempt completed");
         this.onlineStatus = true;
 
     }
@@ -170,6 +169,9 @@ public class ChatRoom {
     }
 
     public Optional<AbstractMessage> getOutgoingMessage() {
+        if (outGoingMessageQueue.size() > 0)
+            System.out.println("Messages yet to send ");
+        outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst().ifPresent(System.out::println);
         return outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst();
     }
 

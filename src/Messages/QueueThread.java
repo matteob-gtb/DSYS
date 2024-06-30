@@ -138,7 +138,6 @@ public class QueueThread implements QueueManager {
                 nextMsg.ifPresent(messageInterface -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
                     if (!sendOutcome) {
-                        System.out.println("Failed to send the message, queueing it");
                         currentRoom.setOffline(true);
                     }
                     currentRoom.updateOutQueue();
@@ -147,9 +146,7 @@ public class QueueThread implements QueueManager {
                 //now attempt to receive
                 packetReceived = currentRoom.getDedicatedRoomSocket().receive(packet);
             } else {
-                System.out.println("Attempting reconnection...");
                 currentRoom.getBackOnline();
-                System.out.println("Reconnection outcome -> " + currentRoom.isOnline());
             }
             //check for incoming packets
 
