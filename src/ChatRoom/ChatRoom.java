@@ -58,9 +58,9 @@ public class ChatRoom {
         for (ArrayList<RoomMulticastMessage> queue : queues) {
             System.out.println("Queue " + queue.size());
             while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
-                System.out.println("Comparing " + queue.getFirst().getTimestamp());
-                System.out.println("Comparing " + this.lastMessageTimestamp);
-                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
+//                System.out.println("Comparing " + queue.getFirst().getTimestamp());
+//                System.out.println("Comparing " + this.lastMessageTimestamp);
+//                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
                 observedMessageOrder.add(inbound);
                 queue.removeFirst();
             }
@@ -140,7 +140,7 @@ public class ChatRoom {
             dedicatedRoomSocket = new MyMulticastSocketWrapper(this.groupName);*/
             dedicatedRoomSocket.probeConnection();
         } catch (Exception e) {
-            System.out.print("Reconnect attempt failed,trying later...  ");
+            //System.out.print("Reconnect attempt failed,trying later...  ");
         }
         //no exception thrown -> connection re-established
         System.out.println("Reconnect attempt completed");
