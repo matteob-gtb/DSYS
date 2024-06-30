@@ -132,6 +132,7 @@ public class QueueThread implements QueueManager {
 
             }
             if (currentRoom.isOnline()) {
+                //TODO message cursor index
                 Optional<AbstractMessage> nextMsg = currentRoom.getOutgoingMessage();
                 nextMsg.ifPresent(messageInterface -> {
                     currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
@@ -140,7 +141,9 @@ public class QueueThread implements QueueManager {
                 packet = new DatagramPacket(buffer, buffer.length);
                 packetReceived = currentRoom.getDedicatedRoomSocket().receive(packet);
             } else {
+                System.out.println("Attempting reconnection...");
                 currentRoom.getBackOnline();
+                System.out.println("Reconnection outcome -> " + currentRoom.isOnline());
             }
             //check for incoming packets
 

@@ -80,7 +80,7 @@ public class ChatClient extends AbstractClient {
         room.printMessages();
         String response;
         while (true) {
-            System.out.print("1) M -> send a message \n2) q exit this prompt 3) R refresh the message list>   ");
+            System.out.print("1) M -> send a message \n2) q exit this prompt \n3) R refresh the message list>   ");
             try {
                 response = reader.readLine();
                 if (response.contains("q")) break;
@@ -212,6 +212,8 @@ public class ChatClient extends AbstractClient {
                         String nextLine = reader.readLine().trim();
                         if (nextLine.contains("q")) {
                             stopCreatingRoom = true;
+                            flushConsole();
+                            printAvailableCommands();
                             break;
                         } else {
                             try {
