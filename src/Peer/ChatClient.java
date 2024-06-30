@@ -220,9 +220,8 @@ public class ChatClient extends AbstractClient {
                                 ID = Integer.parseInt(nextLine);
                                 ChatRoom room = new ChatRoom(CLIENT_ID, ID, MyMulticastSocketWrapper.getNewGroupName());
                                 room.addParticipant(this.CLIENT_ID);
-                                System.out.println("Created room with id #" + room.getChatID());
+                                System.out.println("Created room with id #" + room.getChatID() + " groupname " + room.getRoomAddress());
                                 AbstractMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, room.getChatID(), room.getRoomAddress());
-                                System.out.println("groupname " + room.getRoomAddress());
                                 queueManager.registerRoom(room);
                                 currentRoom.addOutgoingMessage(outMsg);
                                 print("Sent room creation request to online peers,waiting for responses...");

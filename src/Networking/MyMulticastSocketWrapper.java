@@ -1,6 +1,7 @@
 package Networking;
 
 import Messages.AbstractMessage;
+import Messages.AnonymousMessages.ProbeMessage;
 import Messages.MessageInterface;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class MyMulticastSocketWrapper {
 
     private InetAddress roomGroup;
 
-    private  static String firstAvailableGroupName = "224.1.1.2";
+    private static String firstAvailableGroupName = "224.1.1.2";
 
     public static String getNextIPAddress(String ipAddress) {
         // Split the input IP address into its components
@@ -110,9 +111,10 @@ public class MyMulticastSocketWrapper {
             this.connected = false;
             System.out.println("Detected network loss/partition");
             message.setSent(false);
+            return false;
         }
         message.setSent(true);
-        return message.isSent();
+        return true;
     }
 
     //if this fails it means we can't and will never connect (no interfaces available)
@@ -141,10 +143,10 @@ public class MyMulticastSocketWrapper {
         return connected;
     }
 
+
     public MyMulticastSocketWrapper(String GROUPNAME) {
         try {
             this.roomGroup = InetAddress.getByName(GROUPNAME);
-            System.out.println("Room address resolved " + GROUPNAME);
             boolean socketCreated = false;
             while (!socketCreated) {
                 try {
@@ -167,4 +169,10 @@ public class MyMulticastSocketWrapper {
         }
     }
 
+
+    public void probeConnection() throws IOException {
+        byte[] buffer = new ProbeMessage().toJSONString().getBytes();
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, this.roomGroup, GROUP_PORT);
+        socket.send(packet);
+    }
 }

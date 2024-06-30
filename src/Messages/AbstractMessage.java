@@ -123,31 +123,29 @@ public abstract class AbstractMessage implements MessageInterface {
             int roomID = jsonElement.getAsJsonObject().get("roomID").getAsInt();
 
             switch (jsonElement.getAsJsonObject().get("messageType").getAsInt()) {
+                case MESSAGE_TYPE_CONNECTION_PROBE -> {
+                    return jsonDeserializationContext.deserialize(jsonElement,ProbeMessage.class);
+                }
                 case MESSAGE_TYPE_WELCOME -> {
-                    return new WelcomeMessage(senderID, username);
+                    return jsonDeserializationContext.deserialize(jsonElement,WelcomeMessage.class);
+
                 }
                 case MESSAGE_TYPE_HELLO -> {
-                    return new HelloMessage(senderID, roomID, username);
+                    return jsonDeserializationContext.deserialize(jsonElement,HelloMessage  .class);
+
                 }
                 case MESSAGE_TYPE_CREATE_ROOM -> {
-                    return new CreateRoomRequest(senderID, roomID, username);
+                    return jsonDeserializationContext.deserialize(jsonElement,CreateRoomRequest  .class);
+
                 }
                 case MESSAGE_TYPE_ROOM_FINALIZED -> {
                     return jsonDeserializationContext.deserialize(jsonElement,RoomFinalizedMessage.class);
-//                    System.out.println("ROom finaliziiing");
-//                    String multicastAddress = jsonElement.getAsJsonObject().get("multicastAddress").toString();
-//                    Set<Integer> participants = new HashSet<>();
-//                    Type setType = new TypeToken<HashSet<Integer>>() {}.getType();
-//                    Set<Integer> participantsIDs = new Gson().fromJson(jsonElement.getAsJsonObject().get("participantIds").toString(), setType);
-//                    System.out.println(jsonElement.toString());
-//                    System.out.println(participantsIDs);
-//                    return new RoomFinalizedMessage(senderID, roomID, participantsIDs, multicastAddress);
                 }
                 case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> {
-                    return new AcceptRoomRequest(senderID, roomID);
+                    return jsonDeserializationContext.deserialize(jsonElement,AcceptRoomRequest.class);
                 }
                 case MESSAGE_TYPE_JOIN_ROOM_REFUSE -> {
-                    return new RefuseRoomRequest(senderID, roomID);
+                    return jsonDeserializationContext.deserialize(jsonElement,RefuseRoomRequest.class);
                 }
                 case MESSAGE_TYPE_ROOM_MESSAGE -> {
                     return jsonDeserializationContext.deserialize(jsonElement, RoomMulticastMessage.class);

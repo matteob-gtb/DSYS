@@ -21,7 +21,7 @@ public class ChatRoom {
 
     private final int ownerID;
     private boolean onlineStatus;
-    private Long lastReconnectAttempt = -1L;
+    private Long lastReconnectAttempt = 0L;
 
     public Long getCreationTimestamp() {
         return creationTimestamp;
@@ -32,7 +32,7 @@ public class ChatRoom {
     private final Long creationTimestamp = System.currentTimeMillis();
     private final String groupName;
     private final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
-    private final static int MIN_SOCKET_RECONNECT_DELAY = 5 * 1000;
+    private final static int MIN_SOCKET_RECONNECT_DELAY = 1 * 1000;
 
     private List<AbstractMessage> observedMessageOrder = new LinkedList<>();
     private Set<Integer> participantIDs = new TreeSet<Integer>();
@@ -131,16 +131,22 @@ public class ChatRoom {
 
 
     public void getBackOnline() {
-        if (this.lastReconnectAttempt - System.currentTimeMillis() < MIN_SOCKET_RECONNECT_DELAY) {
+        if (System.currentTimeMillis() - this.lastReconnectAttempt < MIN_SOCKET_RECONNECT_DELAY) {
             return;
         }
         this.lastReconnectAttempt = System.currentTimeMillis();
         try {
-            dedicatedRoomSocket.close();
-            dedicatedRoomSocket = new MyMulticastSocketWrapper(dedicatedRoomSocket.getMCastAddress().toString());
+           /* dedicatedRoomSocket.close();
+            dedicatedRoomSocket = new MyMulticastSocketWrapper(this.groupName);*/
+            dedicatedRoomSocket.probeConnection();
         } catch (Exception e) {
-            System.out.println("Reconnect attempt failed,trying later...");
+            System.out.print("Reconnect attempt failed,trying later...  ");
+            System.out.println(e.getMessage());
         }
+        //no exception thrown -> connection re-established
+        System.out.println("Reconnect attempt completed");
+        this.onlineStatus = true;
+
     }
 
     public boolean isRoomFinalized() {
@@ -150,7 +156,7 @@ public class ChatRoom {
     private boolean roomFinalized = false; //finalized 60 seconds after the initial room creation request was acked
     private VectorTimestamp ownVectorTimestamp;
     private MyMulticastSocketWrapper dedicatedRoomSocket = null;
-     private List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
+    private List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
 
 
     public void updateOutQueue() {
@@ -159,13 +165,13 @@ public class ChatRoom {
             out = outGoingMessageQueue.removeFirst();
             if (out instanceof RoomMulticastMessage)
                 this.ownVectorTimestamp = ((RoomMulticastMessage) out).getTimestamp();
-        } else {
-            //could try a few more times honestly
-            this.onlineStatus = false;
         }
     }
 
     public Optional<AbstractMessage> getOutgoingMessage() {
+        if (outGoingMessageQueue.size() > 0)
+            System.out.println("Messages yet to send ");
+        outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst().ifPresent(System.out::println);
         return outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst();
     }
 
