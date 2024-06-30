@@ -112,7 +112,7 @@ public class ChatClient extends AbstractClient {
                         room.getParticipantIDs().forEach(
                                 id -> System.out.println("      Participant #" + id));
                     } else {
-                        System.out.println("Room #" + room.getChatID() + " - Not Finalized Yet]");
+                        System.out.println("Room #" + room.getChatID() + " - Not Finalized Yet");
                     }
 
                 }
