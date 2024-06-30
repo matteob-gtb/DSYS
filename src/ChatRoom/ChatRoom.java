@@ -61,7 +61,7 @@ public class ChatRoom {
                 System.out.println("Comparing " + queue.getFirst().getTimestamp());
                 System.out.println("Comparing " + this.lastMessageTimestamp);
 
-                while (queue.getFirst().getTimestamp().comesAfter(this.lastMessageTimestamp)) {
+                while (queue.getFirst().getTimestamp().canAccept(this.lastMessageTimestamp)) {
                     System.out.println(queue.getFirst().getTimestamp());
                     System.out.println(this.lastMessageTimestamp);
                     observedMessageOrder.add(inbound);

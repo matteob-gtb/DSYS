@@ -12,7 +12,7 @@ public interface Timestamp {
     boolean equal(Timestamp other);
 
     //checks if it can be delivered given the current client's timestamp
-    boolean comesAfter(Timestamp other);
+    boolean canAccept(Timestamp other);
 
 
     public int getValueAtPosition(int position);
