@@ -199,7 +199,6 @@ public class ChatRoom {
     }
 
     public void addOutgoingMessage(AbstractMessage message) {
-
         outGoingMessageQueue.add(message);
     }
 
