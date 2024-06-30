@@ -168,7 +168,12 @@ public class ChatRoom {
 
     public Optional<AbstractMessage> getOutgoingMessage() {
         if (!outGoingMessageQueue.isEmpty() && !outGoingMessageQueue.getFirst().isSent()) {
-            return Optional.of(outGoingMessageQueue.getFirst());
+            //TODO don't get the first, return the first NOT sent
+
+            return outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst();
+
+
+            //return Optional.of(outGoingMessageQueue.getFirst());
         }
         return Optional.empty();
     }

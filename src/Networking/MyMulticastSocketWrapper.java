@@ -107,8 +107,9 @@ public class MyMulticastSocketWrapper {
         try {
             socket.send(packet);
         } catch (IOException e) {
+            this.connected = false;
+            System.out.println("Detected network loss/partition, failed to send the message");
             message.setSent(false);
-            throw new RuntimeException(e);
         }
         message.setSent(true);
     }
