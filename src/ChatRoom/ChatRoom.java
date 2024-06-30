@@ -77,13 +77,13 @@ public class ChatRoom {
         System.out.println("Room " + this.chatID + " has been finalized");
         System.out.println("Participants " + participantIDs);
         this.participantIDs = participantIDs;
-
         this.roomFinalized = true;
         this.clientVectorIndex = new HashMap<>(participantIDs.size());
         lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
 
         final AtomicReference<Integer> k = new AtomicReference<>(0);
         this.participantIDs.stream().sorted().forEach(participantID -> {
+            perParticipantMessageQueue.put(participantID, new ArrayList<>());
             clientVectorIndex.put(participantID, k.getAndAccumulate(1, Integer::sum));
             System.out.println("Client " + participantID + " has been finalized : index " + k.get());
         });

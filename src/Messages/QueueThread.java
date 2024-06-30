@@ -151,11 +151,12 @@ public class QueueThread implements QueueManager {
 
                 //TODO deserialize based on the type of the message
                 AbstractMessage inbound = gson.fromJson(jsonInboundMessage, AbstractMessage.class);
-                System.out.println("Received a message of type + " + inbound.getClass());
                 int sender = inbound.getSenderID();
 
                 if (sender == this.client.getID())
                     continue;
+                System.out.println("Received a message of type + " + inbound.getClass());
+
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                 switch (inbound.messageType) {
                     //Actionable messages
@@ -196,10 +197,7 @@ public class QueueThread implements QueueManager {
                                     deleteRoom(room);
                                 } else {
                                     room.forceFinalizeRoom(fin.getParticipantIds());
-                                    //overkill
-                                    synchronized (roomLock) {
-                                        roomIDs.add(room.getChatID());
-                                    }
+
                                 }
                             }
                         }
