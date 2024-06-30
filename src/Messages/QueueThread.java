@@ -88,6 +88,7 @@ public class QueueThread implements QueueManager {
         synchronized (roomLock) {
             if (roomsMap.containsKey(chatRoom.getChatID())) throw new RuntimeException("Duplicate chat room");
             roomsMap.put(chatRoom.getChatID(), chatRoom);
+            roomIDs.add(chatRoom.getChatID());
         }
     }
 
@@ -105,11 +106,6 @@ public class QueueThread implements QueueManager {
         registerRoom(currentRoom);
     }
 
-    public void setFinalized(int roomId) {
-        synchronized (roomLock) {
-            roomIDs.add(roomId);
-        }
-    }
 
     /**
      * The thread takes care of the queue, waits for messages on the socket and is in charge
@@ -130,7 +126,6 @@ public class QueueThread implements QueueManager {
             if (!currentRoom.isRoomFinalized()) {
                 if (currentRoom.getOwnerID() == this.client.getID() && currentRoom.finalizeRoom()) {
                     //listen on its socket only AFTER it's been finalized
-                    roomIDs.add(currentRoom.getChatID());
                     currentRoom.announceRoomFinalized(client.getID(), client.getDefaultRoom());
                 }
 
