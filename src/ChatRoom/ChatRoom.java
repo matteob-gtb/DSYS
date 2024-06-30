@@ -166,9 +166,6 @@ public class ChatRoom {
             out = outGoingMessageQueue.removeFirst();
             if (out instanceof RoomMulticastMessage)
                 this.ownVectorTimestamp = ((RoomMulticastMessage) out).getTimestamp();
-        } else {
-            //could try a few more times honestly
-            this.onlineStatus = false;
         }
     }
 
