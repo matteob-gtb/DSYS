@@ -60,7 +60,7 @@ public class ChatRoom {
             while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
                 System.out.println("Comparing " + queue.getFirst().getTimestamp());
                 System.out.println("Comparing " + this.lastMessageTimestamp);
-                System.out.println("Result " + queue.getFirst().getTimestamp().comesBefore(this.lastMessageTimestamp));
+                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
                 observedMessageOrder.add(inbound);
                 queue.removeFirst();
             }
