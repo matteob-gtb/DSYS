@@ -32,17 +32,12 @@ public abstract class AbstractMessage implements MessageInterface {
         this.payload = rawPayload;
     }
 
-    
-
-
 
     public Gson gson() {
         GsonBuilder builder = new GsonBuilder();
-        //TODO register polymorphic serializer
         return builder.create();
     }
 
-    ;
 
     @Override
     public String toJSONString() {
@@ -118,28 +113,28 @@ public abstract class AbstractMessage implements MessageInterface {
 
             switch (jsonElement.getAsJsonObject().get("messageType").getAsInt()) {
                 case MESSAGE_TYPE_CONNECTION_PROBE -> {
-                    return jsonDeserializationContext.deserialize(jsonElement,ProbeMessage.class);
+                    return jsonDeserializationContext.deserialize(jsonElement, ProbeMessage.class);
                 }
                 case MESSAGE_TYPE_WELCOME -> {
-                    return jsonDeserializationContext.deserialize(jsonElement,WelcomeMessage.class);
+                    return jsonDeserializationContext.deserialize(jsonElement, WelcomeMessage.class);
 
                 }
                 case MESSAGE_TYPE_HELLO -> {
-                    return jsonDeserializationContext.deserialize(jsonElement,HelloMessage  .class);
+                    return jsonDeserializationContext.deserialize(jsonElement, HelloMessage.class);
 
                 }
                 case MESSAGE_TYPE_CREATE_ROOM -> {
-                    return jsonDeserializationContext.deserialize(jsonElement,CreateRoomRequest  .class);
+                    return jsonDeserializationContext.deserialize(jsonElement, CreateRoomRequest.class);
 
                 }
                 case MESSAGE_TYPE_ROOM_FINALIZED -> {
-                    return jsonDeserializationContext.deserialize(jsonElement,RoomFinalizedMessage.class);
+                    return jsonDeserializationContext.deserialize(jsonElement, RoomFinalizedMessage.class);
                 }
                 case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> {
-                    return jsonDeserializationContext.deserialize(jsonElement,AcceptRoomRequest.class);
+                    return jsonDeserializationContext.deserialize(jsonElement, AcceptRoomRequest.class);
                 }
                 case MESSAGE_TYPE_JOIN_ROOM_REFUSE -> {
-                    return jsonDeserializationContext.deserialize(jsonElement,RefuseRoomRequest.class);
+                    return jsonDeserializationContext.deserialize(jsonElement, RefuseRoomRequest.class);
                 }
                 case MESSAGE_TYPE_ROOM_MESSAGE -> {
                     return jsonDeserializationContext.deserialize(jsonElement, RoomMulticastMessage.class);
@@ -151,7 +146,7 @@ public abstract class AbstractMessage implements MessageInterface {
         }
     }
 
-    public String toChatString(){
-       return toJSONString();
+    public String toChatString() {
+        return toJSONString();
     }
 }

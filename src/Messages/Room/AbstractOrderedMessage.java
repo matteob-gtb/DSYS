@@ -3,7 +3,6 @@ package Messages.Room;
 import Messages.AbstractMessage;
 import VectorTimestamp.VectorTimestamp;
 
-import static utils.Constants.MESSAGE_TYPE_ROOM_MESSAGE;
 
 public class AbstractOrderedMessage extends AbstractMessage {
 
@@ -17,5 +16,16 @@ public class AbstractOrderedMessage extends AbstractMessage {
 
     public VectorTimestamp getTimestamp() {
         return this.vectorTimestamp;
+    }
+
+    public boolean equals(Object other){
+        if(other == null) return false;
+        if(!(other instanceof AbstractOrderedMessage)) return false;
+        AbstractOrderedMessage otherMessage = (AbstractOrderedMessage) other;
+        return this.senderID == otherMessage.senderID
+                && this.messageType == otherMessage.messageType &&
+                this.roomID == otherMessage.roomID
+                //CHECK TIMESTAMP
+                && this.vectorTimestamp.equals(otherMessage.vectorTimestamp);
     }
 }
