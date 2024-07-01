@@ -2,8 +2,6 @@ package Messages;
 
 import com.google.gson.*;
 
-import static utils.Constants.*;
-
 
 public class MulticastMessage extends AbstractMessage {
 

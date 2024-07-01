@@ -4,13 +4,10 @@ import ChatRoom.ChatRoom;
 import Messages.AbstractMessage;
 import Messages.AnonymousMessages.AcceptRoomRequest;
 import Messages.AnonymousMessages.RefuseRoomRequest;
-import Messages.MulticastMessage;
 import com.google.gson.JsonObject;
 
 import java.util.Arrays;
 import java.util.Optional;
-
-import static utils.Constants.*;
 
 public class ReplyToRoomRequestEvent extends AbstractEvent {
 

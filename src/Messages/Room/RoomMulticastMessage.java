@@ -9,7 +9,7 @@ import java.util.Comparator;
 
 import static utils.Constants.MESSAGE_TYPE_ROOM_MESSAGE;
 
-public class RoomMulticastMessage extends AbstractMessage {
+public class RoomMulticastMessage extends AbstractOrderedMessage {
 
 
     public static class RoomMulticastMessageComparator implements Comparator<RoomMulticastMessage> {

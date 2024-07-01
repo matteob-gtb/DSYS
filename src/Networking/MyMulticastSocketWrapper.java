@@ -2,7 +2,6 @@ package Networking;
 
 import Messages.AbstractMessage;
 import Messages.AnonymousMessages.ProbeMessage;
-import Messages.MessageInterface;
 
 import java.io.IOException;
 import java.net.*;

@@ -5,11 +5,8 @@ import Messages.Room.RoomMulticastMessage;
 import VectorTimestamp.VectorTimestamp;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
-import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.Set;
 
 import static utils.Constants.*;
 
@@ -35,11 +32,8 @@ public abstract class AbstractMessage implements MessageInterface {
         this.payload = rawPayload;
     }
 
-    public void setVectorTimestamp(VectorTimestamp vectorTimestamp) {
-        this.vectorTimestamp = vectorTimestamp;
-    }
+    
 
-    protected VectorTimestamp vectorTimestamp;
 
 
     public Gson gson() {

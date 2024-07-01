@@ -14,10 +14,8 @@ import Networking.MyMulticastSocketWrapper;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
 import com.google.gson.*;
-import utils.Constants;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static utils.Constants.*;
 

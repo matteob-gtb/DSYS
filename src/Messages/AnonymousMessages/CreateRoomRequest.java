@@ -1,7 +1,6 @@
 package Messages.AnonymousMessages;
 
 import Messages.AbstractMessage;
-import Messages.MulticastMessage;
 import utils.Constants;
 
 public class CreateRoomRequest extends AbstractMessage {

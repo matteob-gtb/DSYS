@@ -1,8 +1,10 @@
 package ChatRoom;
 
 import Messages.AbstractMessage;
+import Messages.Room.DummyMessage;
 import Messages.MessageInterface;
 import Messages.AnonymousMessages.RoomFinalizedMessage;
+import Messages.Room.AbstractOrderedMessage;
 import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import VectorTimestamp.VectorTimestamp;
@@ -34,7 +36,7 @@ public class ChatRoom {
     private final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
     private final static int MIN_SOCKET_RECONNECT_DELAY = 1 * 1000;
 
-    private List<AbstractMessage> observedMessageOrder = new LinkedList<>();
+    private List<AbstractOrderedMessage> observedMessageOrder = new LinkedList<>();
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, ArrayList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
@@ -43,27 +45,47 @@ public class ChatRoom {
 
     public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
         if (!perParticipantMessageQueue.containsKey(inbound.getSenderID()))
-            throw new RuntimeException("Bad room finalization");
+            throw new RuntimeException("Unknown participant ID, something went wrong");
+
         var clientMessageList = perParticipantMessageQueue.get(inbound.getSenderID());
-        clientMessageList.add(inbound);
+        //clientMessageList.add(inbound);
 
         //TODO insertion sort
+        //Insertion sort if detected as stale or old i.e. ts(m) < this.currentTimestamp
+        if (this.lastMessageTimestamp.greaterThan(inbound.getTimestamp())) {
+            System.out.println("Detected old message, reconciling the state");
+
+            ListIterator<AbstractOrderedMessage> listIterator = observedMessageOrder.listIterator();
+            AbstractOrderedMessage current = null;
+            while (listIterator.hasNext()) {
+                current = listIterator.next();
+                if (current.getTimestamp().comesBefore(inbound.getTimestamp())) {
+                    listIterator.add(inbound);
+                }
+
+            }
+        }
+
 
         //Sorts only by the vector timestamp of the CLIENT in the CLIENT's queue, ensuring essentially FIFO ordering of the message
         //causality is not enforced here
         clientMessageList.sort(new RoomMulticastMessage.RoomMulticastMessageComparator());
-        //check, for all queues if any message can now be received
-
+        //check in all queues if any message can now be received
         Collection<ArrayList<RoomMulticastMessage>> queues = perParticipantMessageQueue.values();
-
 
         for (ArrayList<RoomMulticastMessage> queue : queues) {
             while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
 //                System.out.println("Comparing " + queue.getFirst().getTimestamp());
 //                System.out.println("Comparing " + this.lastMessageTimestamp);
 //                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
+                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
+
                 observedMessageOrder.add(queue.getFirst());
+
                 this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
+
+                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
+
                 queue.removeFirst();
             }
 
@@ -74,7 +96,10 @@ public class ChatRoom {
 
     public void printMessages() {
         System.out.println("Chat room messages as observed by client #" + chatID);
-        observedMessageOrder.forEach(msg -> System.out.println("     " + msg.toChatString()));
+        observedMessageOrder.
+                stream().
+                filter(msg -> !(msg instanceof DummyMessage)).
+                forEach(msg -> System.out.println("     " + msg.toChatString()));
     }
 
     public void forceFinalizeRoom(Set<Integer> participantIDs) {
