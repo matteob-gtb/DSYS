@@ -103,7 +103,6 @@ public class MyMulticastSocketWrapper {
 
     public boolean sendPacket(AbstractMessage message) {
         String msg = message.toJSONString();
-        System.out.println("Sending message : " + msg);
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
         try {
             socket.send(packet);

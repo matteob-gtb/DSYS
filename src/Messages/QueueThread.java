@@ -136,6 +136,7 @@ public class QueueThread implements QueueManager {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
                     if (!sendOutcome) {
                         currentRoom.setOffline(true);
+                        client.addEvent(new GenericNotifyEvent("Detected network loss"));
                     }
                     currentRoom.updateOutQueue();
                 });
