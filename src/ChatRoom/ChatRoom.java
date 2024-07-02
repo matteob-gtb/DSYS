@@ -54,7 +54,7 @@ public class ChatRoom {
 
         //Insertion sort if detected as stale or old i.e. ts(m) < this.currentTimestamp
         System.out.println("Detected old message, reconciling the state");
-        if(inbound.getTimestamp().lessThan(this.lastMessageTimestamp)) {
+        if (inbound.getTimestamp().lessThan(this.lastMessageTimestamp)) {
             ListIterator<AbstractOrderedMessage> listIterator = observedMessageOrder.listIterator();
             AbstractOrderedMessage current = null;
             while (listIterator.hasNext()) {
@@ -71,7 +71,7 @@ public class ChatRoom {
         }
         //Sorts only by the vector timestamp of the CLIENT in the CLIENT's queue, ensuring essentially FIFO ordering of the message
         //causality is not enforced here
-         //check in all queues if any message can now be received
+        //check in all queues if any message can now be received
         Collection<ArrayList<RoomMulticastMessage>> queues = perParticipantMessageQueue.values();
 
         for (ArrayList<RoomMulticastMessage> queue : queues) {
@@ -217,11 +217,11 @@ public class ChatRoom {
         //E.G. clients 1231,456246,215 will have index 215 -> 0,1231 ->1,456246->3 in the vector timestamp array
 
         int clientIndex = clientVectorIndex.get(clientID);
-        VectorTimestamp messageTimestamp = lastMessageTimestamp.increment(clientIndex);
+        this.lastMessageTimestamp = lastMessageTimestamp.increment(clientIndex);
         RoomMulticastMessage out = new RoomMulticastMessage(
                 clientID,
                 this.getChatID(),
-                messageTimestamp,
+                this.lastMessageTimestamp,
                 payload
         );
         observedMessageOrder.add(out);
