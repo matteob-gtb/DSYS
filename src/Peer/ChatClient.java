@@ -130,7 +130,7 @@ public class ChatClient extends AbstractClient {
              * */
             while (waitingForInput) {
                 if (!eventsToProcess.isEmpty()) {
-                    currentEvent = eventsToProcess.removeFirst();
+                    currentEvent = eventsToProcess.remove(0);
                     if (currentEvent instanceof ReplyToRoomRequestEvent && System.currentTimeMillis() - currentEvent.getCreationTimestamp() > ChatRoom.MAX_ROOM_CREATION_WAIT_MILLI)
                         currentEvent = null;//discard the event, MOST LIKELY the timeout has already passed
                 }

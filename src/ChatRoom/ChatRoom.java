@@ -219,8 +219,8 @@ public class ChatRoom {
 
     public void updateOutQueue() {
         MessageInterface out;
-        if (outGoingMessageQueue.getFirst().isSent()) {
-            out = outGoingMessageQueue.removeFirst();
+        if (outGoingMessageQueue.get(0).isSent()) {
+            out = outGoingMessageQueue.remove(0);
             if (out instanceof RoomMulticastMessage)
                 this.ownVectorTimestamp = ((RoomMulticastMessage) out).getTimestamp();
         }

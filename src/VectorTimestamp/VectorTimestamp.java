@@ -131,7 +131,7 @@ public class VectorTimestamp implements Timestamp {
         if (howManyPositionsPlusOne.size() != 1) return false;
 
         return IntStream.range(0, otherV.rawTimestamp.length).
-                filter(index -> index != howManyPositionsPlusOne.getFirst()).
+                filter(index -> index != howManyPositionsPlusOne.get(0)).
                 filter(index -> this.rawTimestamp[index] <= otherV.rawTimestamp[index]).
                 count() == this.rawTimestamp.length - 1;
 
