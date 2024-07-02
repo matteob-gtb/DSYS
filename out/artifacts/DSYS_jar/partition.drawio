@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-07-02T22:26:51.938Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0" etag="ePuuQnAiadkw7XrlPIjj" version="24.6.4" type="github">
+<mxfile host="app.diagrams.net" modified="2024-07-02T22:31:17.942Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0" etag="WwRdgrustd_Kld2YMCMF" version="24.6.4" type="github">
   <diagram name="Pagina-1" id="wVNYKXsu3Rp-eQYOAy_b">
     <mxGraphModel dx="779" dy="1636" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -210,6 +210,9 @@
         </mxCell>
         <mxCell id="ZhEzjXxPFrmBf8q8PmP2-33" value="&lt;div&gt;m3&lt;/div&gt;[&lt;font color=&quot;#ff3333&quot;&gt;2&lt;/font&gt;,1,0,1]" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="340" y="530" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ZhEzjXxPFrmBf8q8PmP2-38" value="m4 can&#39;t yet be delivered, first it will have to merge c4&#39;s messages" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="75" y="600" width="370" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
