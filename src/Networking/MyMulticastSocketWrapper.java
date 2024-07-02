@@ -152,13 +152,14 @@ public class MyMulticastSocketWrapper {
                     SocketAddress socketAddress = new InetSocketAddress(this.roomGroup, GROUP_PORT);
                     socket = new MulticastSocket(GROUP_PORT);
                     socket.setSoTimeout(DEFAULT_TIMEOUT);
+
                     socket.joinGroup(socketAddress, networkInterface);
                     socketCreated = true;
                     connected = true;
                 } catch (SocketException e) {
-                    System.err.println("Socket exception: " + e.getMessage());
+                    System.out.println("Socket exception: " + e.getMessage());
                     connected = false;
-                    exit(1);
+
                 }
             }
         } catch (Exception e) {
