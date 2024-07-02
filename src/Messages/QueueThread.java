@@ -182,11 +182,15 @@ public class QueueThread implements QueueManager {
                         onlineClients.add(sender);
                     }
                     case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
-                        client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
-                        addParticipantToRoom(roomID, sender);
+                        //if false i haven't created the room
+                        if (roomsMap.containsKey(inbound.getRoomID())) {
+                            client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
+                            addParticipantToRoom(roomID, sender);
+                        }
                     }
                     case MESSAGE_TYPE_CREATE_ROOM -> {
                         CreateRoomRequest req = (CreateRoomRequest) inbound;
+
                         if (!roomsMap.containsKey(req.getRoomID())) { //don't ask the user multiple times
                             AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, "y", "n");
                             client.addEvent(eventToProcess);
