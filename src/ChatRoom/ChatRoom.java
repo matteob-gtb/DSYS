@@ -62,7 +62,7 @@ public class ChatRoom {
                 if (current.getTimestamp().comesBefore(inbound.getTimestamp())) {
                     //listIterator.add(new DummyMessage(this.lastMessageTimestamp));
                     listIterator.add(inbound);
-                    this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
+                    this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, inbound.getTimestamp());
                     listIterator.add(new DummyMessage(this.lastMessageTimestamp));
 
                 }
