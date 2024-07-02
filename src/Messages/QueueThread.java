@@ -131,7 +131,6 @@ public class QueueThread implements QueueManager {
 
             }
             if (currentRoom.isOnline()) {
-                //TODO message cursor index
                 Optional<AbstractMessage> nextMsg = currentRoom.getOutgoingMessage();
                 nextMsg.ifPresent(messageInterface -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
