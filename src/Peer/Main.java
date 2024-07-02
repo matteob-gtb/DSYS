@@ -6,7 +6,7 @@ import Networking.MyMulticastSocketWrapper;
 import java.nio.file.attribute.FileAttribute;
 
 public class Main {
-    public static boolean debug = false;
+    public static boolean debug = true;
 
     public static void main(String[] args) throws Exception {
 

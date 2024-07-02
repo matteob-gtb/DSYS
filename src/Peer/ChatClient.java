@@ -50,7 +50,7 @@ public class ChatClient extends AbstractClient {
                 if (!response.contains("r")) break;
             }
         else {
-            userName = "asdvasdvwq";
+            userName = "test " + System.currentTimeMillis();
         }
         this.CLIENT_ID = generator.nextInt(0, 150000);
         System.out.println("Client ID: " + CLIENT_ID + " username " + this.userName);

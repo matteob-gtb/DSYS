@@ -16,13 +16,6 @@ public abstract class AbstractMessage implements MessageInterface {
     protected int senderID;
     protected String username = null;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPayload() {
-        return payload;
-    }
 
 
     //-1 if it's not meant to be a room message
@@ -59,9 +52,6 @@ public abstract class AbstractMessage implements MessageInterface {
     private boolean sent = false;
 
 
-    public int getMessageType() {
-        return messageType;
-    }
 
     public int getSenderID() {
         return senderID;

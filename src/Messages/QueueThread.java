@@ -170,9 +170,8 @@ public class QueueThread implements QueueManager {
                         client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                         onlineClients.add(sender);
-                        System.out.println("Sending WELCOME " + this.client.getID());
                         AbstractMessage welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
-                        commonMulticastChannel.addOutgoingMessage(welcome);
+                        //commonMulticastChannel.addOutgoingMessage(welcome);
                     }
                     case MESSAGE_TYPE_WELCOME -> {
                         String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
