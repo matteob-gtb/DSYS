@@ -50,47 +50,47 @@ public class ChatRoom {
         var clientMessageList = perParticipantMessageQueue.get(inbound.getSenderID());
         //TODO check if not inserted
         clientMessageList.add(inbound);
+        clientMessageList.sort(new RoomMulticastMessage.RoomMulticastMessageComparator());
 
         //Insertion sort if detected as stale or old i.e. ts(m) < this.currentTimestamp
         System.out.println("Detected old message, reconciling the state");
+        if(inbound.getTimestamp().lessThan(this.lastMessageTimestamp)) {
+            ListIterator<AbstractOrderedMessage> listIterator = observedMessageOrder.listIterator();
+            AbstractOrderedMessage current = null;
+            while (listIterator.hasNext()) {
+                current = listIterator.next();
+                if (current.getTimestamp().comesBefore(inbound.getTimestamp())) {
+                    //listIterator.add(new DummyMessage(this.lastMessageTimestamp));
+                    listIterator.add(inbound);
+                    this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
+                    listIterator.add(new DummyMessage(this.lastMessageTimestamp));
 
-        ListIterator<AbstractOrderedMessage> listIterator = observedMessageOrder.listIterator();
-        AbstractOrderedMessage current = null;
-        while (listIterator.hasNext()) {
-            current = listIterator.next();
-            if (current.getTimestamp().comesBefore(inbound.getTimestamp())) {
-                listIterator.add(new DummyMessage(this.lastMessageTimestamp));
-                listIterator.add(inbound);
-                this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
-                listIterator.add(new DummyMessage(this.lastMessageTimestamp));
-
+                }
             }
+
         }
-
-
         //Sorts only by the vector timestamp of the CLIENT in the CLIENT's queue, ensuring essentially FIFO ordering of the message
         //causality is not enforced here
-        clientMessageList.sort(new RoomMulticastMessage.RoomMulticastMessageComparator());
-        //check in all queues if any message can now be received
+         //check in all queues if any message can now be received
         Collection<ArrayList<RoomMulticastMessage>> queues = perParticipantMessageQueue.values();
 
-//        for (ArrayList<RoomMulticastMessage> queue : queues) {
-//            while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
-////                System.out.println("Comparing " + queue.getFirst().getTimestamp());
-////                System.out.println("Comparing " + this.lastMessageTimestamp);
-////                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
-//                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
-//
-//                observedMessageOrder.add(queue.getFirst());
-//
-//                this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
-//
-//                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
-//
-//                queue.removeFirst();
-//            }
-//
-//        }
+        for (ArrayList<RoomMulticastMessage> queue : queues) {
+            while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
+//                System.out.println("Comparing " + queue.getFirst().getTimestamp());
+//                System.out.println("Comparing " + this.lastMessageTimestamp);
+//                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
+                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
+
+                observedMessageOrder.add(queue.getFirst());
+
+                this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
+
+                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
+
+                queue.removeFirst();
+            }
+
+        }
 
     }
 
