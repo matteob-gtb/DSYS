@@ -4,13 +4,10 @@ public class Constants {
 
 
     public static final int SOCKET_PORT_LOW = 2000, SOCKET_PORT_HIGH = 5000, GROUP_PORT = 7631;
-    public static final int RCV_BUFFER_SIZE = 1024;
-    public static final String MESSAGE_TYPE_FIELD_NAME = "MESSAGE_TYPE";
+
     public static final String MESSAGE_PROPERTY_FIELD_CLIENTID = "ID";
 
     public static final String ROOM_ID_PROPERTY_NAME = "roomID";
-    public static final String ROOM_MULTICAST_GROUP_ADDRESS = "ROOM_ADDRESS";
-    public static final String FIELD_ROOM_PARTICIPANTS = "PARTICIPANTS";
 
 
     public static final int MESSAGE_TYPE_WELCOME = 2;

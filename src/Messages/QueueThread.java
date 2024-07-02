@@ -21,7 +21,6 @@ import static utils.Constants.*;
 
 public class QueueThread implements QueueManager {
 
-    private static final int SOCKET_TIMEOUT = 100;
     private final Object roomLock = new Object();
     private Set<Integer> onlineClients = new TreeSet<Integer>();
     private final AbstractClient client;
@@ -147,22 +146,26 @@ public class QueueThread implements QueueManager {
                 currentRoom.getBackOnline();
             }
             //check for incoming packets
-
+            AbstractMessage inbound = null;
             if (packetReceived) {
 
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
-                JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
+                try {
+                    JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
 
 
-                //TODO deserialize based on the type of the message
-                AbstractMessage inbound = gson.fromJson(jsonInboundMessage, AbstractMessage.class);
+                    //TODO deserialize based on the type of the message
+                    inbound = gson.fromJson(jsonInboundMessage, AbstractMessage.class);
+                } catch (Exception e) {
+                    System.out.println("Bad message detected");
+                    continue;
+                }
                 int sender = inbound.getSenderID();
-
+                int roomID = inbound.getRoomID();
                 if (sender == this.client.getID())
                     continue;
                 //System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
 
-                int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                 switch (inbound.messageType) {
                     //Actionable messages
                     case MESSAGE_TYPE_HELLO -> {
@@ -183,9 +186,9 @@ public class QueueThread implements QueueManager {
                         addParticipantToRoom(roomID, sender);
                     }
                     case MESSAGE_TYPE_CREATE_ROOM -> {
-                        CreateRoomRequest req = gson.fromJson(jsonInboundMessage, CreateRoomRequest.class);
+                        CreateRoomRequest req = (CreateRoomRequest) inbound;
                         if (!roomsMap.containsKey(req.getRoomID())) { //don't ask the user multiple times
-                            AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender,  "y", "n");
+                            AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, "y", "n");
                             client.addEvent(eventToProcess);
                         }
                     }
