@@ -3,8 +3,10 @@ package Peer;
 import Messages.Logger;
 import Networking.MyMulticastSocketWrapper;
 
+import java.nio.file.attribute.FileAttribute;
+
 public class Main {
-    public static boolean debug = true;
+    public static boolean debug = false;
 
     public static void main(String[] args) throws Exception {
 
