@@ -53,7 +53,6 @@ public class ChatClient extends AbstractClient {
             userName = "test " + System.currentTimeMillis() % 100;
         }
         this.CLIENT_ID = generator.nextInt(0, 150000);
-        System.out.println("Client ID: " + CLIENT_ID + " username " + this.userName);
         commonMulticastChannel = new ChatRoom(this.CLIENT_ID, DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
 
         //Default room, no fixed participants
