@@ -160,6 +160,7 @@ public class QueueThread implements QueueManager {
 
                 if (sender == this.client.getID())
                     continue;
+                System.out.println(inbound.toJSONString());
                 System.out.println("Received a message of type + " + inbound.getClass() + " from #" + sender + " Client " + this.client.getID());
 
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
@@ -170,6 +171,7 @@ public class QueueThread implements QueueManager {
                         client.addUsernameMapping(sender, username);
                         client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                         onlineClients.add(sender);
+                        System.out.println("Sending WELCOME " + this.client.getID());
                         AbstractMessage welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
                         commonMulticastChannel.addOutgoingMessage(welcome);
                     }
