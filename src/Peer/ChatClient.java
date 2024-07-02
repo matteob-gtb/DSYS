@@ -10,6 +10,7 @@ import Messages.AnonymousMessages.HelloMessage;
 import Messages.QueueManager;
 import Messages.QueueThread;
 import Networking.MyMulticastSocketWrapper;
+import com.sun.jdi.event.MonitorWaitedEvent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -127,14 +128,15 @@ public class ChatClient extends AbstractClient {
              * as soon as they come, can't be interrupted
              * */
             while (waitingForInput) {
-                if (!eventsToProcess.isEmpty())
+                if (!eventsToProcess.isEmpty()) {
                     currentEvent = eventsToProcess.removeFirst();
+                    if (currentEvent instanceof ReplyToRoomRequestEvent && System.currentTimeMillis() - currentEvent.getCreationTimestamp() > ChatRoom.MAX_ROOM_CREATION_WAIT_MILLI)
+                        currentEvent = null;//discard the event, MOST LIKELY the timeout has already passed
+                }
                 if (reader.ready()) {
                     command = reader.readLine().trim();
                     waitingForInput = false;
-
                 }
-
                 if (currentEvent != null) {
                     Optional<AbstractMessage> eventOutcome = Optional.empty();
                     if (currentEvent.isActionable()) {

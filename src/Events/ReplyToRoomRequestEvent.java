@@ -16,6 +16,13 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
     private final JsonObject msg;
     private final String GROUPNAME;
 
+    public Long getReceptionTimestamp() {
+        return receptionTimestamp;
+    }
+
+    private final Long receptionTimestamp = System.currentTimeMillis();
+
+
     public ReplyToRoomRequestEvent(int roomOwner, int clientID, String GROUPNAME, int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
         super(true);
         this.ownerID = roomOwner;

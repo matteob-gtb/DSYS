@@ -33,7 +33,7 @@ public class ChatRoom {
     //by no means accurate
     private final Long creationTimestamp = System.currentTimeMillis();
     private final String groupName;
-    private final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
+    public final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
     private final static int MIN_SOCKET_RECONNECT_DELAY = 1 * 1000;
 
     private List<AbstractOrderedMessage> observedMessageOrder = new LinkedList<>();
