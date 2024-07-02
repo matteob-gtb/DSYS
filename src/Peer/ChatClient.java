@@ -37,7 +37,7 @@ public class ChatClient extends AbstractClient {
 
 
     public ChatClient() throws Exception {
-        Random generator = new Random(System.currentTimeMillis());
+        Random generator = new Random(System.currentTimeMillis() ^ 125243526);
         reader = new BufferedReader(new InputStreamReader(System.in));
 
 
@@ -82,7 +82,8 @@ public class ChatClient extends AbstractClient {
         room.printMessages();
         String response;
         while (true) {
-            System.out.print("1) Type a message and press Enter to send it\n2)press Enter without typing anything to refresh the chat\n3)q to quit\n>");
+            System.out.println("Client #" + this.CLIENT_ID);
+            System.out.print("1) Type a message and press Enter to send it\n2) Press Enter without typing anything to refresh the chat\n3) q to quit\n>  ");
             try {
                 response = reader.readLine();
                 if (response.equals("q")) break;

@@ -8,7 +8,7 @@ import VectorTimestamp.VectorTimestamp;
 public class DummyMessage extends AbstractOrderedMessage
 {
     public DummyMessage(VectorTimestamp timestamp) {
-        this.vectorTimestamp = timestamp;
+        this.vectorTimestamp =  new VectorTimestamp(timestamp);
     }
 
 

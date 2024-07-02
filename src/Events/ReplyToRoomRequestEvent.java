@@ -13,19 +13,17 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
 
     private final int clientID, roomID, recipientID, ownerID;
     private final String[] acceptableOutcomes;
-    private final JsonObject msg;
     private final String GROUPNAME;
 
 
 
-    public ReplyToRoomRequestEvent(int roomOwner, int clientID, String GROUPNAME, int roomID, int sender, JsonObject prepackagedMessage, String... acceptableOutcomes) {
+    public ReplyToRoomRequestEvent(int roomOwner, int clientID, String GROUPNAME, int roomID, int sender, String... acceptableOutcomes) {
         super(true);
         this.ownerID = roomOwner;
         this.GROUPNAME = GROUPNAME.replace("\\/", "");
         this.clientID = clientID;
         this.roomID = roomID;
         this.recipientID = sender;
-        this.msg = prepackagedMessage;
         this.acceptableOutcomes = acceptableOutcomes;
     }
 

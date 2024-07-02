@@ -160,7 +160,7 @@ public class QueueThread implements QueueManager {
 
                 if (sender == this.client.getID())
                     continue;
-                System.out.println("Received a message of type " + inbound.getClass().getName() + " from #" + sender + " Client " + this.client.getID());
+                //System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
 
                 int roomID = jsonInboundMessage.get(ROOM_ID_PROPERTY_NAME).getAsInt();
                 switch (inbound.messageType) {
@@ -185,7 +185,7 @@ public class QueueThread implements QueueManager {
                     case MESSAGE_TYPE_CREATE_ROOM -> {
                         CreateRoomRequest req = gson.fromJson(jsonInboundMessage, CreateRoomRequest.class);
                         if (!roomsMap.containsKey(req.getRoomID())) { //don't ask the user multiple times
-                            AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, client.getBaseMessageStub(), "y", "n");
+                            AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender,  "y", "n");
                             client.addEvent(eventToProcess);
                         }
                     }

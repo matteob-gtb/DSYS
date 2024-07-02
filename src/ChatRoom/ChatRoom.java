@@ -11,6 +11,7 @@ import VectorTimestamp.VectorTimestamp;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 public class ChatRoom {
     private final int chatID;
@@ -38,7 +39,7 @@ public class ChatRoom {
 
     private List<AbstractOrderedMessage> observedMessageOrder = new LinkedList<>();
     private Set<Integer> participantIDs = new TreeSet<Integer>();
-    private HashMap<Integer, ArrayList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
+    private HashMap<Integer, LinkedList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
     //associate client id to positions in the vector (lookup is probably more efficient)
     private HashMap<Integer, Integer> clientVectorIndex;
@@ -49,54 +50,84 @@ public class ChatRoom {
 
         var clientMessageList = perParticipantMessageQueue.get(inbound.getSenderID());
         //TODO check if not inserted
-        clientMessageList.add(inbound);
-        clientMessageList.sort(new RoomMulticastMessage.RoomMulticastMessageComparator());
 
-        //Insertion sort if detected as stale or old i.e. ts(m) < this.currentTimestamp
-        System.out.println("Detected old message, reconciling the state");
-        if (inbound.getTimestamp().lessThan(this.lastMessageTimestamp)) {
+        //check if it can be delivered right now
+        boolean inserted = false;
+
+        //Insertion if detected as stale or old i.e. ts(m) < this.currentTimestamp
+        // if (inbound.getTimestamp().lessThan(this.lastMessageTimestamp)) {
+
+        //Case 1) I can directly deliver it in causal order
+        if (this.lastMessageTimestamp.comesBefore(inbound.getTimestamp())) {
+            inserted = true;
+            observedMessageOrder.add(inbound);
+            this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, inbound.getTimestamp());
+
+            //check the queues if something can now be deliverd
+            for (LinkedList<RoomMulticastMessage> queue : perParticipantMessageQueue.values()) {
+                while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
+                    AbstractOrderedMessage message = queue.removeFirst();
+                    observedMessageOrder.add(message);
+                    this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, message.getTimestamp());
+                }
+            }
+
+        } else {
+            //Case 2) it's an old message so i have to insert it in the right place
             ListIterator<AbstractOrderedMessage> listIterator = observedMessageOrder.listIterator();
             AbstractOrderedMessage current = null;
             while (listIterator.hasNext()) {
                 current = listIterator.next();
                 if (current.getTimestamp().comesBefore(inbound.getTimestamp())) {
-                    //listIterator.add(new DummyMessage(this.lastMessageTimestamp));
                     listIterator.add(inbound);
-                    this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, inbound.getTimestamp());
-                    listIterator.add(new DummyMessage(this.lastMessageTimestamp));
+                    inserted = true;
+//                    if (this.lastMessageTimestamp.lessThanOrEqual(current.getTimestamp())) {
+//                        this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, inbound.getTimestamp());
+//                    }
+                    //listIterator.add(new DummyMessage(this.lastMessageTimestamp));
 
                 }
             }
-
         }
+        if (!inserted) {
+            //case 3) it's a new message that i can't deliver yet
+            clientMessageList.add(inbound);
+            //TODO insert without sorting everything again
+            clientMessageList.sort(new RoomMulticastMessage.RoomMulticastMessageComparator(clientVectorIndex.get(inbound.getSenderID())));
+        }
+
+        if (inserted) System.out.println("Message delivered to the client");
+        else System.out.println("Message not delivered to the client, queued until the missing message is received");
+
         //Sorts only by the vector timestamp of the CLIENT in the CLIENT's queue, ensuring essentially FIFO ordering of the message
-        //causality is not enforced here
+        //causality is not enforced that way
         //check in all queues if any message can now be received
-        Collection<ArrayList<RoomMulticastMessage>> queues = perParticipantMessageQueue.values();
-
-        for (ArrayList<RoomMulticastMessage> queue : queues) {
-            while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
-//                System.out.println("Comparing " + queue.getFirst().getTimestamp());
-//                System.out.println("Comparing " + this.lastMessageTimestamp);
-//                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
-                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
-
-                observedMessageOrder.add(queue.getFirst());
-
-                this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
-
-                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
-
-                queue.removeFirst();
-            }
-
-        }
+//        Collection<ArrayList<RoomMulticastMessage>> queues = perParticipantMessageQueue.values();
+//        for (ArrayList<RoomMulticastMessage> queue : queues) {
+//            while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
+////                System.out.println("Comparing " + queue.getFirst().getTimestamp());
+////                System.out.println("Comparing " + this.lastMessageTimestamp);
+////                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
+//                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
+//
+//                System.out.println("Updating queues");
+//
+//                observedMessageOrder.add(queue.getFirst());
+//
+//                this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
+//
+//                //observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
+//
+//                queue.removeFirst();
+//            }
+//
+//        }
 
     }
 
 
     public void printMessages() {
-        System.out.println("Chat room messages as observed by client #" + chatID);
+        System.out.println("Chat room #" + this.chatID);
         observedMessageOrder.
                 stream().
                 filter(msg -> !(msg instanceof DummyMessage)).
@@ -105,7 +136,6 @@ public class ChatRoom {
 
     public void forceFinalizeRoom(Set<Integer> participantIDs) {
         System.out.println("Room " + this.chatID + " has been finalized");
-        System.out.println("Participants " + participantIDs);
         this.participantIDs = participantIDs;
         this.roomFinalized = true;
         this.clientVectorIndex = new HashMap<>(participantIDs.size());
@@ -113,9 +143,8 @@ public class ChatRoom {
 
         final AtomicReference<Integer> k = new AtomicReference<>(0);
         this.participantIDs.stream().sorted().forEach(participantID -> {
-            perParticipantMessageQueue.put(participantID, new ArrayList<>());
+            perParticipantMessageQueue.put(participantID, new LinkedList<>());
             clientVectorIndex.put(participantID, k.getAndAccumulate(1, Integer::sum));
-            System.out.println("Client " + participantID + " has been finalized : index " + k.get());
         });
     }
 
@@ -128,7 +157,7 @@ public class ChatRoom {
             final AtomicReference<Integer> k = new AtomicReference<>();
             k.set(0);
             participantIDs.forEach(id -> {
-                perParticipantMessageQueue.put(id, new ArrayList<RoomMulticastMessage>());
+                perParticipantMessageQueue.put(id, new LinkedList<>());
                 clientVectorIndex.put(id, k.getAndAccumulate(1, Integer::sum));
                 System.out.println("Client " + id + " has been finalized : index " + k.get());
             });

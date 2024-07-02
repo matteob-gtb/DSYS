@@ -14,8 +14,14 @@ public class VectorTimestamp implements Timestamp {
     //immutable
     private final int[] rawTimestamp;
 
+
+    //copy constructor
+    public VectorTimestamp(VectorTimestamp toCopy) {
+        this.rawTimestamp = Arrays.copyOf(toCopy.rawTimestamp, toCopy.rawTimestamp.length);
+    }
+
     public VectorTimestamp(int[] rawTimestamp) {
-        this.rawTimestamp = rawTimestamp;
+        this.rawTimestamp = Arrays.copyOf(rawTimestamp, rawTimestamp.length);
     }
 
     public static VectorTimestamp merge(VectorTimestamp first, VectorTimestamp other) {

@@ -13,12 +13,17 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
 
 
     public static class RoomMulticastMessageComparator implements Comparator<RoomMulticastMessage> {
+        private final int positionToCompare;
+        public RoomMulticastMessageComparator(int positionToCompare){
+            this.positionToCompare = positionToCompare;;
+        }
+
 
         @Override
         public int compare(RoomMulticastMessage o1, RoomMulticastMessage o2) {
             if (o1.getSenderID() != o2.getSenderID())
                 throw new RuntimeException("Use Vector clock comparison for this");
-            return Integer.compare(o1.getTimestamp().getValueAtPosition(o1.getSenderID()), o2.getTimestamp().getValueAtPosition(o2.getSenderID()));
+            return Integer.compare(o1.getTimestamp().getValueAtPosition(positionToCompare), o2.getTimestamp().getValueAtPosition(positionToCompare));
         }
 
         @Override
