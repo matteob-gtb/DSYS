@@ -9,6 +9,7 @@ import Messages.AnonymousMessages.RoomFinalizedMessage;
 import Messages.Room.AbstractOrderedMessage;
 import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
+import Peer.ChatClient;
 import VectorTimestamp.VectorTimestamp;
 
 import java.sql.Timestamp;
@@ -78,6 +79,14 @@ public class ChatRoom {
         boolean inserted = false;
         //check, for every queue that a message can be delivered
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
+            //The ACK was lost,re-send the ack
+            AckMessage ack = new AckMessage(
+                    ChatClient.ID,
+                    inbound.getSenderID(),
+                    inbound.getTimestamp(),
+                    this.chatID
+            );
+            outGoingMessageQueue.add(ack);
             Logger.writeLog("Not delivered");
             return;
         }
@@ -93,8 +102,8 @@ public class ChatRoom {
             }
         }
 
-        if (inserted) System.out.println("Message delivered to the client");
-        else System.out.println("Message not delivered to the client, queued until the missing message is received");
+//        if (inserted) System.out.println("Message delivered to the client");
+//        else System.out.println("Message not delivered to the client, queued until the missing message is received");
 
 
         Logger.writeLog(writeCurrentTime() +
