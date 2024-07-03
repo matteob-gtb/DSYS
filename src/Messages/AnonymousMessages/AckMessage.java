@@ -14,10 +14,11 @@ public class AckMessage extends AbstractOrderedMessage {
 
     private final int recipientID;
 
-    public AckMessage(int sender, int recipient, VectorTimestamp t) {
+    public AckMessage(int sender, int recipient, VectorTimestamp t,int roomID) {
         this.messageType = Constants.MESSAGE_TYPE_ACK;
         this.recipientID = recipient;
         this.senderID = sender;
         this.vectorTimestamp = t;
+        this.roomID = roomID;
     }
 }

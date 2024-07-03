@@ -10,7 +10,6 @@ import Messages.AnonymousMessages.HelloMessage;
 import Messages.QueueManager;
 import Messages.QueueThread;
 import Networking.MyMulticastSocketWrapper;
-import com.sun.jdi.event.MonitorWaitedEvent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -78,7 +77,7 @@ public class ChatClient extends AbstractClient {
 
     public void joinRoom(ChatRoom room) {
         currentRoom = room;
-        print("Joining Chat #" + currentRoom.getChatID());
+        print("Joining Chat #" + currentRoom.getRoomId());
         room.printMessages();
         String response;
         while (true) {
@@ -103,11 +102,11 @@ public class ChatClient extends AbstractClient {
         queueManager.getRooms().forEach(
                 room -> {
                     if (room.isRoomFinalized()) {
-                        System.out.println("Room #" + room.getChatID() + " - Status [" + room.getStatusString() + "]");
+                        System.out.println("Room #" + room.getRoomId() + " - Status [" + room.getStatusString() + "]");
                         room.getParticipantIDs().forEach(
                                 id -> System.out.println("      Participant #" + id));
                     } else {
-                        System.out.println("Room #" + room.getChatID() + " - Not Finalized Yet");
+                        System.out.println("Room #" + room.getRoomId() + " - Not Finalized Yet");
                     }
 
                 }
@@ -216,8 +215,8 @@ public class ChatClient extends AbstractClient {
                                 ID = Integer.parseInt(nextLine);
                                 ChatRoom room = new ChatRoom(CLIENT_ID, ID, MyMulticastSocketWrapper.getNewGroupName());
                                 room.addParticipant(this.CLIENT_ID);
-                                System.out.println("Created room with id #" + room.getChatID() + " groupname " + room.getRoomAddress());
-                                AbstractMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, room.getChatID(), room.getRoomAddress());
+                                System.out.println("Created room with id #" + room.getRoomId() + " groupname " + room.getRoomAddress());
+                                AbstractMessage outMsg = new CreateRoomRequest(this.CLIENT_ID, room.getRoomId(), room.getRoomAddress());
                                 queueManager.registerRoom(room);
                                 currentRoom.addOutgoingMessage(outMsg);
                                 print("Sent room creation request to online peers,waiting for responses...");
@@ -316,7 +315,7 @@ public class ChatClient extends AbstractClient {
 
     public void showRoomInfo(ChatRoom room) {
         print("Current participants " + Arrays.toString(room.getParticipants()));
-        print("Type a message and hit Enter to send it in the current room #" + room.getChatID());
+        print("Type a message and hit Enter to send it in the current room #" + room.getRoomId());
     }
 
     public ChatRoom getDefaultRoom() {

@@ -129,6 +129,9 @@ public abstract class AbstractMessage implements MessageInterface {
                 case MESSAGE_TYPE_ROOM_MESSAGE -> {
                     return jsonDeserializationContext.deserialize(jsonElement, RoomMulticastMessage.class);
                 }
+                case MESSAGE_TYPE_ACK -> {
+                    return jsonDeserializationContext.deserialize(jsonElement, AckMessage.class);
+                }
 
                 default -> throw new RuntimeException("Bad message");
             }

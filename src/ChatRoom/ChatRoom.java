@@ -101,6 +101,7 @@ public class ChatRoom {
             AbstractOrderedMessage msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
             msg.setAckedBy(messageToAck.getSenderID());
             msg.setAcked(messageToAck.getAckedBySize() == this.participantIDs.size());
+            System.out.println("Message acked " + msg.isAcked());
         }
     }
 
@@ -208,7 +209,7 @@ public class ChatRoom {
         this.lastMessageTimestamp = lastMessageTimestamp.increment(clientIndex);
         RoomMulticastMessage out = new RoomMulticastMessage(
                 clientID,
-                this.getChatID(),
+                this.getRoomId(),
                 this.lastMessageTimestamp,
                 payload
         );
@@ -236,7 +237,7 @@ public class ChatRoom {
         return dedicatedRoomSocket;
     }
 
-    public int getChatID() {
+    public int getRoomId() {
         return chatID;
     }
 

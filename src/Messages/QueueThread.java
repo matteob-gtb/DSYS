@@ -35,11 +35,11 @@ public class QueueThread implements QueueManager {
 
     public void deleteRoom(ChatRoom room) {
         //TODO exception maybe not a great idea
-        if (!roomsMap.containsKey(room.getChatID())) throw new RuntimeException("Room doesn't exist");
+        if (!roomsMap.containsKey(room.getRoomId())) throw new RuntimeException("Room doesn't exist");
         synchronized (roomLock) {
-            roomsMap.remove(room.getChatID());
+            roomsMap.remove(room.getRoomId());
             //java moment
-            roomIDs.remove((Integer) room.getChatID());
+            roomIDs.remove((Integer) room.getRoomId());
         }
     }
 
@@ -86,9 +86,9 @@ public class QueueThread implements QueueManager {
 
     public void registerRoom(ChatRoom chatRoom) {
         synchronized (roomLock) {
-            if (roomsMap.containsKey(chatRoom.getChatID())) throw new RuntimeException("Duplicate chat room");
-            roomsMap.put(chatRoom.getChatID(), chatRoom);
-            roomIDs.add(chatRoom.getChatID());
+            if (roomsMap.containsKey(chatRoom.getRoomId())) throw new RuntimeException("Duplicate chat room");
+            roomsMap.put(chatRoom.getRoomId(), chatRoom);
+            roomIDs.add(chatRoom.getRoomId());
         }
     }
 
@@ -100,7 +100,7 @@ public class QueueThread implements QueueManager {
     public QueueThread(AbstractClient client, ChatRoom commonMulticastChannel) throws IOException {
         this.commonMulticastChannel = commonMulticastChannel;
         this.currentSocket = commonMulticastChannel.getDedicatedRoomSocket();
-        this.roomIDs.add(commonMulticastChannel.getChatID());
+        this.roomIDs.add(commonMulticastChannel.getRoomId());
         this.client = client;
         this.currentRoom = commonMulticastChannel;
         registerRoom(currentRoom);
@@ -163,10 +163,10 @@ public class QueueThread implements QueueManager {
                 }
                 int sender = inbound.getSenderID();
                 int roomID = inbound.getRoomID();
+
+                System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
                 if (sender == this.client.getID())
                     continue;
-                //System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
-
                 switch (inbound.messageType) {
                     //Actionable messages
                     case MESSAGE_TYPE_HELLO -> {
@@ -220,6 +220,13 @@ public class QueueThread implements QueueManager {
                             if (!(inbound instanceof RoomMulticastMessage))
                                 throw new RuntimeException("Illegal Message Type");
                             dedicatedRoom.addIncomingMessage((RoomMulticastMessage) inbound);
+                            AckMessage message = new AckMessage(
+                                    this.client.getID(),
+                                    inbound.getSenderID(),
+                                    ((RoomMulticastMessage) inbound).getTimestamp(),
+                                    dedicatedRoom.getRoomId()
+                            );
+                            dedicatedRoom.addOutgoingMessage(message);
                         }
                     }
                     case MESSAGE_TYPE_ACK -> {
