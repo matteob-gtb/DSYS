@@ -93,10 +93,14 @@ public class ChatRoom {
 
     public synchronized void ackMessage(AckMessage messageToAck) {
         if (this.chatID == DEFAULT_GROUP_ROOMID) return;
+
+        System.out.println("Acking " + messageToAck);
+        System.out.println("Messages in the queue" + outGoingMessageQueue);
         var toAckSameTimestamp = outGoingMessageQueue.stream().filter(
                 m -> ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
         ).toList();
-        if (toAckSameTimestamp.size() != 1) System.out.println("ERROR, multiple messages with the same timestamp");
+        System.out.println(toAckSameTimestamp);
+        if (toAckSameTimestamp.size() > 1) System.out.println("ERROR, multiple messages with the same timestamp");
         else {
             AbstractOrderedMessage msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
             msg.setAckedBy(messageToAck.getSenderID());
@@ -175,19 +179,20 @@ public class ChatRoom {
 
 
     public synchronized void updateOutQueue() {
-        MessageInterface out;
-        if (outGoingMessageQueue.get(0).isSent()) {
-            out = outGoingMessageQueue.remove(0);
-//            if (out instanceof RoomMulticastMessage)
-//                this.ownVectorTimestamp = ((RoomMulticastMessage) out).getTimestamp();
-        }
+        MessageInterface out = outGoingMessageQueue.get(0);
+        if (out instanceof AbstractOrderedMessage) {
+            if (((AbstractOrderedMessage) out).isAcked()) {
+                outGoingMessageQueue.remove(0);
+            }
+        } else if (out.isSent()) outGoingMessageQueue.remove(0);
     }
 
     public synchronized List<AbstractMessage> getOutgoingMessages() {
         return outGoingMessageQueue.stream().filter(
-                message -> message.isSent()
-                        &&
-                        (message instanceof AbstractOrderedMessage) ? ((AbstractOrderedMessage) message).isAcked() : true).toList();
+                        message -> !message.isSent()
+                                || (message instanceof AbstractOrderedMessage ? !(((AbstractOrderedMessage) message).isAcked()) : false)
+                ).
+                toList();
     }
 
     public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {
