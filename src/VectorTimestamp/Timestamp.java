@@ -14,6 +14,7 @@ public interface Timestamp {
     //checks if it can be delivered given the current client's timestamp
     boolean comesBefore(Timestamp other);
 
+    boolean isConcurrent(Timestamp other);
 
     public int getValueAtPosition(int position);
 

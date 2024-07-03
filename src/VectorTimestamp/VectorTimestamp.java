@@ -138,6 +138,13 @@ public class VectorTimestamp implements Timestamp {
     }
 
     @Override
+    public boolean isConcurrent(Timestamp other) {
+        if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
+        VectorTimestamp otherV = (VectorTimestamp) other;
+        return !otherV.lessThan(this) && !this.lessThan(otherV);
+    }
+
+    @Override
     public int getValueAtPosition(int position) {
         return rawTimestamp[position];
     }

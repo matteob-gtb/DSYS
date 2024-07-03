@@ -58,6 +58,12 @@ public class ChatRoom {
         // if (inbound.getTimestamp().lessThan(this.lastMessageTimestamp)) {
 
         //Case 1) I can directly deliver it in causal order
+
+        //Case 1) Message can just be delivered
+
+
+        System.out.println("Trying to insert " + inbound.getTimestamp().toString());
+
         if (this.lastMessageTimestamp.comesBefore(inbound.getTimestamp())) {
             inserted = true;
             observedMessageOrder.add(inbound);
@@ -72,8 +78,10 @@ public class ChatRoom {
                 }
             }
 
-        } else {
-            //Case 2) it's an old message so i have to insert it in the right place
+        } else if (inbound.getTimestamp().isConcurrent(this.lastMessageTimestamp)) {
+            System.out.println("Case 2");
+            //Case 2) it's an old message so i have to insert it in the right place or
+            //it's just concurrent so i can place it wherever i want
             ListIterator<AbstractOrderedMessage> listIterator = observedMessageOrder.listIterator();
             AbstractOrderedMessage current = null;
             while (listIterator.hasNext()) {
@@ -81,47 +89,26 @@ public class ChatRoom {
                 if (current.getTimestamp().comesBefore(inbound.getTimestamp())) {
                     listIterator.add(inbound);
                     inserted = true;
-//                    if (this.lastMessageTimestamp.lessThanOrEqual(current.getTimestamp())) {
-//                        this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, inbound.getTimestamp());
-//                    }
-                    //listIterator.add(new DummyMessage(this.lastMessageTimestamp));
+                    AbstractOrderedMessage last = current;
+                    //Update all the following messages to reconcile the state
+                    for (; listIterator.hasNext(); current = listIterator.next()) {
+                        current.setTimestamp(VectorTimestamp.merge(last.getTimestamp(), current.getTimestamp()));
+                    }
 
                 }
             }
+            this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, observedMessageOrder.get(observedMessageOrder.size() - 1).getTimestamp());
+
         }
         if (!inserted) {
             //case 3) it's a new message that i can't deliver yet
             clientMessageList.add(inbound);
-            //TODO insert without sorting everything again
             clientMessageList.sort(new RoomMulticastMessage.RoomMulticastMessageComparator(clientVectorIndex.get(inbound.getSenderID())));
         }
 
         if (inserted) System.out.println("Message delivered to the client");
         else System.out.println("Message not delivered to the client, queued until the missing message is received");
 
-        //Sorts only by the vector timestamp of the CLIENT in the CLIENT's queue, ensuring essentially FIFO ordering of the message
-        //causality is not enforced that way
-        //check in all queues if any message can now be received
-//        Collection<ArrayList<RoomMulticastMessage>> queues = perParticipantMessageQueue.values();
-//        for (ArrayList<RoomMulticastMessage> queue : queues) {
-//            while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
-////                System.out.println("Comparing " + queue.getFirst().getTimestamp());
-////                System.out.println("Comparing " + this.lastMessageTimestamp);
-////                System.out.println("Result " + this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp()));
-//                observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
-//
-//                System.out.println("Updating queues");
-//
-//                observedMessageOrder.add(queue.getFirst());
-//
-//                this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, queue.getFirst().getTimestamp());
-//
-//                //observedMessageOrder.add(new DummyMessage(this.lastMessageTimestamp));
-//
-//                queue.removeFirst();
-//            }
-//
-//        }
 
     }
 
@@ -132,6 +119,7 @@ public class ChatRoom {
                 stream().
                 filter(msg -> !(msg instanceof DummyMessage)).
                 forEach(msg -> System.out.println("     " + msg.toChatString()));
+        System.out.println("Current Timestamp " + this.lastMessageTimestamp);
     }
 
     public void forceFinalizeRoom(Set<Integer> participantIDs) {

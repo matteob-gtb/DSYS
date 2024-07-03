@@ -8,7 +8,8 @@ public class AbstractOrderedMessage extends AbstractMessage {
 
     protected VectorTimestamp vectorTimestamp;
 
-    public AbstractOrderedMessage() {}
+    public AbstractOrderedMessage() {
+    }
 
     public AbstractOrderedMessage(int clientID, int messageType, int roomID) {
         super(clientID, messageType, roomID);
@@ -18,9 +19,13 @@ public class AbstractOrderedMessage extends AbstractMessage {
         return this.vectorTimestamp;
     }
 
-    public boolean equals(Object other){
-        if(other == null) return false;
-        if(!(other instanceof AbstractOrderedMessage)) return false;
+    public void setTimestamp(VectorTimestamp vectorTimestamp) {
+        this.vectorTimestamp = vectorTimestamp;
+    }
+
+    public boolean equals(Object other) {
+        if (other == null) return false;
+        if (!(other instanceof AbstractOrderedMessage)) return false;
         AbstractOrderedMessage otherMessage = (AbstractOrderedMessage) other;
         return this.senderID == otherMessage.senderID
                 && this.messageType == otherMessage.messageType &&
