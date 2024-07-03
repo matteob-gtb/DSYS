@@ -47,6 +47,9 @@ public class ChatRoom {
     private HashMap<Integer, Integer> clientVectorIndex;
 
     public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
+
+        //TODO detect duplicates by each client i looking at the i-th index of its timestamp
+
         boolean inserted = false;
         //check, for every queue that a message can be delivered
         incomingMessageQueue.add(inbound);
@@ -205,7 +208,6 @@ public class ChatRoom {
                 this.getParticipantIDs(),
                 this.getDedicatedRoomSocket().getMCastAddress().toString()
         );
-
         defaultChannel.addOutgoingMessage(msg);
     }
 
