@@ -235,7 +235,6 @@ public class QueueThread implements QueueManager {
                         }
                         case MESSAGE_TYPE_ACK -> {
                             AckMessage m = (AckMessage) inbound;
-                            System.out.println(m.getRecipientID() + " - " + this.client.getID());
                             if (m.getRecipientID() != this.client.getID()) break;
                             synchronized (roomLock) {
                                 ChatRoom dedicatedRoom = roomsMap.get(roomID);
