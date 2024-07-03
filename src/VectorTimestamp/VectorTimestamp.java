@@ -81,6 +81,12 @@ public class VectorTimestamp implements Timestamp {
         return !foundStrictlyGreater;
     }
 
+    public boolean equals(Object other) {
+        if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
+        VectorTimestamp otherV = (VectorTimestamp) other;
+        return Arrays.equals(this.rawTimestamp, otherV.rawTimestamp);
+    }
+
 
     /**
      * @param other

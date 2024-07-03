@@ -37,11 +37,11 @@ public class ChatRoom {
     private final Long creationTimestamp = System.currentTimeMillis();
     private final String groupName;
 
-    private List<AbstractOrderedMessage> observedMessageOrder = new LinkedList<>();
+    private Set<AbstractOrderedMessage> observedMessageOrder = new LinkedHashSet<>();
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, LinkedList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
-    private LinkedList<RoomMulticastMessage> incomingMessageQueue = new LinkedList<>();
+    private Set<RoomMulticastMessage> incomingMessageQueue = new LinkedHashSet<>();
 
     //associate client id to positions in the vector (lookup is probably more efficient)
     private HashMap<Integer, Integer> clientVectorIndex;
@@ -50,7 +50,7 @@ public class ChatRoom {
         boolean inserted = false;
         //check, for every queue that a message can be delivered
         incomingMessageQueue.add(inbound);
-        ListIterator<RoomMulticastMessage> iterator = incomingMessageQueue.listIterator();
+        Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
             RoomMulticastMessage message = iterator.next();
             if (this.lastMessageTimestamp.canDeliver(message.getTimestamp())) {
@@ -94,19 +94,22 @@ public class ChatRoom {
     public synchronized void ackMessage(AckMessage messageToAck) {
         if (this.chatID == DEFAULT_GROUP_ROOMID) return;
 
-        System.out.println("Acking " + messageToAck.toJSONString());
-        outGoingMessageQueue.forEach(m -> System.out.println(m.toJSONString()));
-        var toAckSameTimestamp = outGoingMessageQueue.stream().filter(
-                m -> !((AbstractOrderedMessage) m).shouldRetransmit() && ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
-        ).toList();
-        toAckSameTimestamp.forEach(m -> System.out.println(m.toJSONString()));
 
-        if (toAckSameTimestamp.size() != 1) System.out.println("ERROR, multiple messages with the same timestamp");
+        var toAckSameTimestamp = outGoingMessageQueue.stream().filter(
+                m -> ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
+        ).toList();
+
+        AbstractOrderedMessage msg = null;
+        if (toAckSameTimestamp.size() != 1) System.out.println("ERROR ");
         else {
-            AbstractOrderedMessage msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
-            msg.setAckedBy(messageToAck.getSenderID());
-            msg.setAcked(messageToAck.getAckedBySize() == this.participantIDs.size());
-            System.out.println("Message acked " + msg.shouldRetransmit());
+            msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
+            msg.addAckedBy(messageToAck.getSenderID());
+            msg.setAcked(msg.getAckedBySize() == this.participantIDs.size() - 1);
+        }
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -178,6 +181,10 @@ public class ChatRoom {
     public synchronized void updateOutQueue() {
         MessageInterface out = outGoingMessageQueue.get(0);
         if (out instanceof AbstractOrderedMessage) {
+            if(out instanceof AckMessage) { //no need to ack acks
+                outGoingMessageQueue.remove(0);
+                return;
+            }
             if (out.isSent() && ((AbstractOrderedMessage) out).shouldRetransmit()) {
                 outGoingMessageQueue.remove(0);
             }
@@ -186,9 +193,9 @@ public class ChatRoom {
 
     public synchronized List<AbstractMessage> getOutgoingMessages() {
         return outGoingMessageQueue.stream().filter(
-                        message -> !message.isSent()
-                                || (message instanceof AbstractOrderedMessage ? (((AbstractOrderedMessage) message).shouldRetransmit()) : false)
-                ).toList();
+                message -> !message.isSent()
+                        || (message instanceof AbstractOrderedMessage ? (((AbstractOrderedMessage) message).shouldRetransmit()) : false)
+        ).toList();
     }
 
     public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {

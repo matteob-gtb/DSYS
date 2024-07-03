@@ -44,7 +44,7 @@ public class AbstractOrderedMessage extends AbstractMessage {
         return ackedBy.size();
     }
 
-    public void setAckedBy(int ID) {
+    public void addAckedBy(int ID) {
         this.ackedBy.add(ID);
     }
 

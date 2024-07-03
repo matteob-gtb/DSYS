@@ -12,11 +12,12 @@ import static utils.Constants.MESSAGE_TYPE_ROOM_MESSAGE;
 public class RoomMulticastMessage extends AbstractOrderedMessage {
 
 
-
     public static class RoomMulticastMessageComparator implements Comparator<RoomMulticastMessage> {
         private final int positionToCompare;
-        public RoomMulticastMessageComparator(int positionToCompare){
-            this.positionToCompare = positionToCompare;;
+
+        public RoomMulticastMessageComparator(int positionToCompare) {
+            this.positionToCompare = positionToCompare;
+            ;
         }
 
 
@@ -27,10 +28,7 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
             return Integer.compare(o1.getTimestamp().getValueAtPosition(positionToCompare), o2.getTimestamp().getValueAtPosition(positionToCompare));
         }
 
-        @Override
-        public boolean equals(Object obj) {
-            return false;
-        }
+
     }
 
 
@@ -41,8 +39,8 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
 
 
     public RoomMulticastMessage(int clientID,
-                                int roomID, VectorTimestamp vectorTimestamp,String payload) {
-        super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID );
+                                int roomID, VectorTimestamp vectorTimestamp, String payload) {
+        super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
         this.payload = payload;
         this.vectorTimestamp = vectorTimestamp;
     }
@@ -67,7 +65,13 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
     }
 
     public String toChatString() {
-        return "Client [" + this.senderID + "] wrote : [" + this.payload + "] - " + this.vectorTimestamp.toString() +"\n";
+        return "Client [" + this.senderID + "] wrote : [" + this.payload + "] - " + this.vectorTimestamp.toString() + "\n";
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof RoomMulticastMessage)) return false;
+        RoomMulticastMessage other = (RoomMulticastMessage) o;
+        return this.senderID == other.senderID && this.getTimestamp().equals(other.getTimestamp());
     }
 
 }
