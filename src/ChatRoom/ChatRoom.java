@@ -13,6 +13,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
+import static utils.Constants.MAX_ROOM_CREATION_WAIT_MILLI;
+import static utils.Constants.MIN_SOCKET_RECONNECT_DELAY;
+
 public class ChatRoom {
     private final int chatID;
 
@@ -34,8 +37,6 @@ public class ChatRoom {
     //by no means accurate
     private final Long creationTimestamp = System.currentTimeMillis();
     private final String groupName;
-    public final static int MAX_ROOM_CREATION_WAIT_MILLI = 5 * 1000;
-    private final static int MIN_SOCKET_RECONNECT_DELAY = 1 * 1000;
 
     private List<AbstractOrderedMessage> observedMessageOrder = new LinkedList<>();
     private Set<Integer> participantIDs = new TreeSet<Integer>();
