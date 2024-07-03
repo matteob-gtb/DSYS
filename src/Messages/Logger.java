@@ -31,12 +31,15 @@ public class Logger {
     public static void writeLog(String input) {
         try {
             if (writer != null) {
+                writer.newLine();
                 String[] lines = input.split("\\r?\\n");
                 for (String line : lines) {
                     writer.write(line);
                     writer.newLine();
                 }
-                 writer.flush();
+                writer.newLine();
+
+                writer.flush();
             } else {
                 System.out.println("Il file non è aperto. Apri il file prima di scrivere.");
             }

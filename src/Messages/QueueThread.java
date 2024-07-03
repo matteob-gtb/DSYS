@@ -15,6 +15,7 @@ import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
+import Peer.ChatClient;
 import com.google.gson.*;
 
 import java.util.*;
@@ -165,80 +166,83 @@ public class QueueThread implements QueueManager {
                 int sender = inbound.getSenderID();
                 int roomID = inbound.getRoomID();
 
-                System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
-                if (sender == this.client.getID())
-                    continue;
-                switch (inbound.messageType) {
-                    //Actionable messages
-                    case MESSAGE_TYPE_HELLO -> {
-                        String username = inbound.username;
-                        client.addUsernameMapping(sender, username);
-                        client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
-                        onlineClients.add(sender);
-                        AbstractMessage welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
-                        commonMulticastChannel.addOutgoingMessage(welcome);
-                    }
-                    case MESSAGE_TYPE_WELCOME -> {
-                        String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
-                        client.addEvent(new GenericNotifyEvent(prompt));
-                        onlineClients.add(sender);
-                    }
-                    case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
-                        //if false i haven't created the room
-                        if (roomsMap.containsKey(inbound.getRoomID())) {
-                            client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
-                            addParticipantToRoom(roomID, sender);
-                        }
-                    }
-                    case MESSAGE_TYPE_CREATE_ROOM -> {
-                        CreateRoomRequest req = (CreateRoomRequest) inbound;
 
-                        if (!roomsMap.containsKey(req.getRoomID())) { //don't ask the user multiple times
-                            AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, "y", "n");
-                            client.addEvent(eventToProcess);
+                if (sender != ChatClient.ID) {
+
+                    System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
+
+                    switch (inbound.messageType) {
+                        //Actionable messages
+                        case MESSAGE_TYPE_HELLO -> {
+                            String username = inbound.username;
+                            client.addUsernameMapping(sender, username);
+                            client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
+                            onlineClients.add(sender);
+                            AbstractMessage welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
+                            commonMulticastChannel.addOutgoingMessage(welcome);
                         }
-                    }
-                    case MESSAGE_TYPE_ROOM_FINALIZED -> {
-                        synchronized (roomLock) {
-                            RoomFinalizedMessage fin = (RoomFinalizedMessage) inbound;
-                            ChatRoom room = roomsMap.get(roomID);
-                            if (room == null) {
-                                System.out.println("Non-existent room, missed the CREATE_ROOM_MESSAGE");
-                            } else {
-                                if (!fin.getParticipantIds().contains(client.getID()) && roomsMap.containsKey(roomID)) {
-                                    //Something went wrong, we can't access the room
-                                    deleteRoom(room);
+                        case MESSAGE_TYPE_WELCOME -> {
+                            String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
+                            client.addEvent(new GenericNotifyEvent(prompt));
+                            onlineClients.add(sender);
+                        }
+                        case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
+                            //if false i haven't created the room
+                            if (roomsMap.containsKey(inbound.getRoomID())) {
+                                client.addEvent(new GenericNotifyEvent("Client #" + sender + " agreed to participate in the chat room"));
+                                addParticipantToRoom(roomID, sender);
+                            }
+                        }
+                        case MESSAGE_TYPE_CREATE_ROOM -> {
+                            CreateRoomRequest req = (CreateRoomRequest) inbound;
+
+                            if (!roomsMap.containsKey(req.getRoomID())) { //don't ask the user multiple times
+                                AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, "y", "n");
+                                client.addEvent(eventToProcess);
+                            }
+                        }
+                        case MESSAGE_TYPE_ROOM_FINALIZED -> {
+                            synchronized (roomLock) {
+                                RoomFinalizedMessage fin = (RoomFinalizedMessage) inbound;
+                                ChatRoom room = roomsMap.get(roomID);
+                                if (room == null) {
+                                    System.out.println("Non-existent room, missed the CREATE_ROOM_MESSAGE");
                                 } else {
-                                    room.forceFinalizeRoom(fin.getParticipantIds());
-                                    client.addEvent(new GenericNotifyEvent("Room " + room.getRoomId() + " has been finalized"));
+                                    if (!fin.getParticipantIds().contains(client.getID()) && roomsMap.containsKey(roomID)) {
+                                        //Something went wrong, we can't access the room
+                                        deleteRoom(room);
+                                    } else {
+                                        room.forceFinalizeRoom(fin.getParticipantIds());
+                                        client.addEvent(new GenericNotifyEvent("Room " + room.getRoomId() + " has been finalized"));
+                                    }
                                 }
                             }
                         }
-                    }
-                    case MESSAGE_TYPE_ROOM_MESSAGE -> {
-                        synchronized (roomLock) {
-                            ChatRoom dedicatedRoom = roomsMap.get(roomID);
-                            if (!(inbound instanceof RoomMulticastMessage))
-                                throw new RuntimeException("Illegal Message Type");
-                            dedicatedRoom.addIncomingMessage((RoomMulticastMessage) inbound);
-                            AckMessage message = new AckMessage(
-                                    this.client.getID(),
-                                    inbound.getSenderID(),
-                                    ((RoomMulticastMessage) inbound).getTimestamp(),
-                                    dedicatedRoom.getRoomId()
-                            );
-                            dedicatedRoom.addOutgoingMessage(message);
+                        case MESSAGE_TYPE_ROOM_MESSAGE -> {
+                            synchronized (roomLock) {
+                                ChatRoom dedicatedRoom = roomsMap.get(roomID);
+                                if (!(inbound instanceof RoomMulticastMessage))
+                                    throw new RuntimeException("Illegal Message Type");
+                                dedicatedRoom.addIncomingMessage((RoomMulticastMessage) inbound);
+                                AckMessage ackMessage = new AckMessage(
+                                        this.client.getID(),
+                                        inbound.getSenderID(),
+                                        ((RoomMulticastMessage) inbound).getTimestamp(),
+                                        dedicatedRoom.getRoomId()
+                                );
+                                dedicatedRoom.addOutgoingMessage(ackMessage);
+                            }
+                        }
+                        case MESSAGE_TYPE_ACK -> {
+                            AckMessage m = (AckMessage) inbound;
+                            System.out.println(m.getRecipientID() + " - " + this.client.getID());
+                            if (m.getRecipientID() != this.client.getID()) break;
+                            synchronized (roomLock) {
+                                ChatRoom dedicatedRoom = roomsMap.get(roomID);
+                                dedicatedRoom.ackMessage((AckMessage) inbound);
+                            }
                         }
                     }
-                    case MESSAGE_TYPE_ACK -> {
-                        AckMessage m = (AckMessage) inbound;
-                        if (m.getRecipientID() != this.client.getID()) break;
-                        synchronized (roomLock) {
-                            ChatRoom dedicatedRoom = roomsMap.get(roomID);
-                            dedicatedRoom.ackMessage((AckMessage) inbound);
-                        }
-                    }
-                    //append to relevant queue
                 }
                 try {
                     Thread.sleep(QUEUE_THREAD_SLEEP_MIN_MS);

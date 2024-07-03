@@ -2,6 +2,7 @@ package ChatRoom;
 
 import Messages.AbstractMessage;
 import Messages.AnonymousMessages.AckMessage;
+import Messages.Logger;
 import Messages.Room.DummyMessage;
 import Messages.MessageInterface;
 import Messages.AnonymousMessages.RoomFinalizedMessage;
@@ -10,9 +11,14 @@ import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import VectorTimestamp.VectorTimestamp;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.stream.Collectors.toList;
 import static utils.Constants.*;
 
 public class ChatRoom {
@@ -46,12 +52,35 @@ public class ChatRoom {
     //associate client id to positions in the vector (lookup is probably more efficient)
     private HashMap<Integer, Integer> clientVectorIndex;
 
+
+    public static String writeCurrentTime() {
+        LocalTime currentTime = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        return (currentTime.format(formatter));
+    }
+
     public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
 
-        //TODO detect duplicates by each client i looking at the i-th index of its timestamp
+        Logger.writeLog(writeCurrentTime() +
+                " BEFORE message queue status " + Arrays.toString(incomingMessageQueue.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
+        );
+
+        Logger.writeLog(
+                writeCurrentTime() +
+                        " BEFORE observed message order status " + Arrays.toString(observedMessageOrder.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
+        );
+
+        Logger.writeLog(
+                writeCurrentTime() +
+                        " BEFORE received message " + inbound.toJSONString()
+        );
 
         boolean inserted = false;
         //check, for every queue that a message can be delivered
+        if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
+            Logger.writeLog("Not delivered");
+            return;
+        }
         incomingMessageQueue.add(inbound);
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
@@ -66,6 +95,17 @@ public class ChatRoom {
 
         if (inserted) System.out.println("Message delivered to the client");
         else System.out.println("Message not delivered to the client, queued until the missing message is received");
+
+
+        Logger.writeLog(writeCurrentTime() +
+                " AFTER message queue status " + Arrays.toString(incomingMessageQueue.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
+        );
+
+        Logger.writeLog(
+                writeCurrentTime() +
+                        " AFTER observed message order status " + Arrays.toString(observedMessageOrder.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
+        );
+
 
     }
 
@@ -98,22 +138,29 @@ public class ChatRoom {
         if (this.chatID == DEFAULT_GROUP_ROOMID) return;
 
 
+        Logger.writeLog(writeCurrentTime() +
+                " ACK " + messageToAck.toJSONString());
+
+        Logger.writeLog(writeCurrentTime() +
+                " RECEIVED ACK outgoing queue " + Arrays.toString(outGoingMessageQueue.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
+        );
+
+
         var toAckSameTimestamp = outGoingMessageQueue.stream().filter(
-                m -> ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
+                m -> m.getSenderID() == messageToAck.getRecipientID() && ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
         ).toList();
 
         AbstractOrderedMessage msg = null;
-        if (toAckSameTimestamp.size() != 1) System.out.println("ERROR ");
-        else {
+        if (toAckSameTimestamp.size() != 1) {
+            Logger.writeLog(writeCurrentTime() +
+                    " ERROR,same ts(m) " + Arrays.toString(toAckSameTimestamp.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
+            );
+        } else {
             msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
             msg.addAckedBy(messageToAck.getSenderID());
             msg.setAcked(msg.getAckedBySize() == this.participantIDs.size() - 1);
         }
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+
     }
 
     public boolean finalizeRoom() {
@@ -158,15 +205,10 @@ public class ChatRoom {
         this.lastReconnectAttempt = System.currentTimeMillis();
         boolean exceptionThrown = false;
         try {
-           /* dedicatedRoomSocket.close();
-            dedicatedRoomSocket = new MyMulticastSocketWrapper(this.groupName);*/
             dedicatedRoomSocket.probeConnection();
         } catch (Exception e) {
             exceptionThrown = true;
-            //System.out.print("Reconnect attempt failed,trying later...  ");
         }
-        //no exception thrown -> connection re-established
-        //System.out.println("Reconnect attempt completed");
         this.onlineStatus = !exceptionThrown;
 
     }
@@ -182,23 +224,18 @@ public class ChatRoom {
 
 
     public synchronized void updateOutQueue() {
-        MessageInterface out = outGoingMessageQueue.get(0);
-        if (out instanceof AbstractOrderedMessage) {
-            if(out instanceof AckMessage) { //no need to ack acks
-                outGoingMessageQueue.remove(0);
-                return;
+        ListIterator<AbstractMessage> iterator = outGoingMessageQueue.listIterator();
+        AbstractMessage out = null;
+        while (iterator.hasNext()) {
+            out = iterator.next();
+            if (out instanceof AckMessage || !out.shouldRetransmit()) { //no need to ack acks
+                iterator.remove();
             }
-            if (out.isSent() && ((AbstractOrderedMessage) out).shouldRetransmit()) {
-                outGoingMessageQueue.remove(0);
-            }
-        } else if (out.isSent()) outGoingMessageQueue.remove(0);
+        }
     }
 
     public synchronized List<AbstractMessage> getOutgoingMessages() {
-        return outGoingMessageQueue.stream().filter(
-                message -> !message.isSent()
-                        || (message instanceof AbstractOrderedMessage ? (((AbstractOrderedMessage) message).shouldRetransmit()) : false)
-        ).toList();
+        return outGoingMessageQueue.stream().filter(AbstractMessage::shouldRetransmit).toList();
     }
 
     public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {
@@ -211,7 +248,7 @@ public class ChatRoom {
         defaultChannel.addOutgoingMessage(msg);
     }
 
-    public void sendInRoomMessage(String payload, int clientID) {
+    public synchronized void sendInRoomMessage(String payload, int clientID) {
         //Client id mapping --> sort
         //E.G. clients 1231,456246,215 will have index 215 -> 0,1231 ->1,456246->3 in the vector timestamp array
 
@@ -228,11 +265,11 @@ public class ChatRoom {
         outGoingMessageQueue.add(out);
     }
 
-    public void addOutgoingMessage(AbstractMessage message) {
+    public synchronized void addOutgoingMessage(AbstractMessage message) {
         outGoingMessageQueue.add(message);
     }
 
-    public void setRoomFinalized(boolean roomFinalized) {
+    public synchronized void setRoomFinalized(boolean roomFinalized) {
         this.roomFinalized = roomFinalized;
     }
 
@@ -272,8 +309,5 @@ public class ChatRoom {
         return participantIDs.add(participantID);
     }
 
-    public int getMessageCount() {
-        return observedMessageOrder.size();
-    }
 
 }

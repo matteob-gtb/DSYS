@@ -29,6 +29,8 @@ public class ChatClient extends AbstractClient {
     private ChatRoom currentRoom = null;
     private QueueManager queueManager;
     private ChatRoom commonMulticastChannel;
+    public static int ID = -1;
+
 
     public void print(String message) {
         System.out.println(message);
@@ -53,6 +55,7 @@ public class ChatClient extends AbstractClient {
             userName = "test " + System.currentTimeMillis() % 100;
         }
         this.CLIENT_ID = generator.nextInt(0, 150000);
+        ID = this.CLIENT_ID;
         commonMulticastChannel = new ChatRoom(this.CLIENT_ID, DEFAULT_GROUP_ROOMID, COMMON_GROUPNAME);
 
         //Default room, no fixed participants
@@ -130,7 +133,7 @@ public class ChatClient extends AbstractClient {
             while (waitingForInput) {
                 if (!eventsToProcess.isEmpty()) {
                     currentEvent = eventsToProcess.remove(0);
-                    if (currentEvent instanceof ReplyToRoomRequestEvent && System.currentTimeMillis() - currentEvent.getCreationTimestamp() >  MAX_ROOM_CREATION_WAIT_MILLI)
+                    if (currentEvent instanceof ReplyToRoomRequestEvent && System.currentTimeMillis() - currentEvent.getCreationTimestamp() > MAX_ROOM_CREATION_WAIT_MILLI)
                         currentEvent = null;//discard the event, MOST LIKELY the timeout has already passed
                 }
                 if (reader.ready()) {

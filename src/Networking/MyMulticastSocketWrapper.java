@@ -83,6 +83,7 @@ public class MyMulticastSocketWrapper {
     public boolean receive(DatagramPacket packet) {
         try {
             socket.receive(packet);
+
             return true;
         } catch (SocketTimeoutException e) {
             return false;
@@ -101,7 +102,6 @@ public class MyMulticastSocketWrapper {
             System.out.println("IO exception");
         }
     }
-
 
 
     public boolean sendPacket(AbstractMessage message) {

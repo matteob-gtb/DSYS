@@ -1,6 +1,7 @@
 package Messages.Room;
 
 import Messages.AbstractMessage;
+import Peer.ChatClient;
 import VectorTimestamp.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -65,7 +66,7 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
     }
 
     public String toChatString() {
-        return "Client [" + this.senderID + "] wrote : [" + this.payload + "] - " + this.vectorTimestamp.toString() + "\n";
+        return "Client [" + (this.senderID == ChatClient.ID ? " me " : this.senderID) + "] wrote : [" + this.payload + "] - " + this.vectorTimestamp.toString() + "\n";
     }
 
     public boolean equals(Object o) {

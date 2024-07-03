@@ -15,11 +15,15 @@ public abstract class AbstractMessage implements MessageInterface {
     protected int messageType = -1;
     protected int senderID;
     protected String username = null;
+    @Expose(serialize = false, deserialize = false)
+    protected transient boolean sent = false;
 
-
-
-    //-1 if it's not meant to be a room message
     protected int roomID;
+
+
+    public boolean shouldRetransmit() {
+        return !sent;
+    }
 
     public void setPayload(String rawPayload) {
         this.payload = rawPayload;
@@ -39,18 +43,9 @@ public abstract class AbstractMessage implements MessageInterface {
 
 
     @Override
-    public boolean isSent() {
-        return sent;
-    }
-
-    @Override
     public void setSent(boolean sent) {
         this.sent = sent;
     }
-
-    @Expose(serialize = false, deserialize = false)
-    private boolean sent = false;
-
 
 
     public int getSenderID() {
