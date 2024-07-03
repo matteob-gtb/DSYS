@@ -11,5 +11,8 @@ public interface MessageInterface {
 
     void setSent(boolean sent);
 
+
+    public boolean canDelete();
+
     public boolean shouldRetransmit();
 }

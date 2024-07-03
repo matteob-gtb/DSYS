@@ -228,7 +228,7 @@ public class ChatRoom {
         AbstractMessage out = null;
         while (iterator.hasNext()) {
             out = iterator.next();
-            if (out instanceof AckMessage || !out.shouldRetransmit()) { //no need to ack acks
+            if (out instanceof AckMessage || out.canDelete()) { //no need to ack acks
                 iterator.remove();
             }
         }

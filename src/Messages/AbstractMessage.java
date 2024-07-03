@@ -25,6 +25,10 @@ public abstract class AbstractMessage implements MessageInterface {
         return !sent;
     }
 
+    public boolean canDelete() {
+        return sent;
+    }
+
     public void setPayload(String rawPayload) {
         this.payload = rawPayload;
     }

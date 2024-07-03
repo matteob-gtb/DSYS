@@ -16,6 +16,8 @@ public interface Timestamp {
 
     boolean isConcurrent(Timestamp other);
 
+
+
     public int getValueAtPosition(int position);
 
 }

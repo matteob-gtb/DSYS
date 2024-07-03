@@ -21,7 +21,7 @@ public class AbstractOrderedMessage extends AbstractMessage {
     }
 
     @Expose(serialize = false, deserialize = false)
-    protected   Long milliTimestamp;
+    protected Long milliTimestamp;
     @Expose(serialize = false, deserialize = false)
     private boolean acked = false;
     @Expose(serialize = false, deserialize = false)
@@ -37,6 +37,10 @@ public class AbstractOrderedMessage extends AbstractMessage {
     public boolean shouldRetransmit() {
         //if acked is false wait at least MIN_RETR
         return !sent || !acked && (System.currentTimeMillis() - milliTimestamp > MIN_RETRANSMIT_WAIT);
+    }
+
+    public boolean canDelete() {
+        return sent && acked;
     }
 
 
