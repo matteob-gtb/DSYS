@@ -94,18 +94,19 @@ public class ChatRoom {
     public synchronized void ackMessage(AckMessage messageToAck) {
         if (this.chatID == DEFAULT_GROUP_ROOMID) return;
 
-        System.out.println("Acking " + messageToAck);
-        System.out.println("Messages in the queue" + outGoingMessageQueue);
+        System.out.println("Acking " + messageToAck.toJSONString());
+        outGoingMessageQueue.forEach(m -> System.out.println(m.toJSONString()));
         var toAckSameTimestamp = outGoingMessageQueue.stream().filter(
-                m -> ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
+                m -> !((AbstractOrderedMessage) m).shouldRetransmit() && ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
         ).toList();
-        System.out.println(toAckSameTimestamp);
-        if (toAckSameTimestamp.size() > 1) System.out.println("ERROR, multiple messages with the same timestamp");
+        toAckSameTimestamp.forEach(m -> System.out.println(m.toJSONString()));
+
+        if (toAckSameTimestamp.size() != 1) System.out.println("ERROR, multiple messages with the same timestamp");
         else {
             AbstractOrderedMessage msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
             msg.setAckedBy(messageToAck.getSenderID());
             msg.setAcked(messageToAck.getAckedBySize() == this.participantIDs.size());
-            System.out.println("Message acked " + msg.isAcked());
+            System.out.println("Message acked " + msg.shouldRetransmit());
         }
     }
 
@@ -122,11 +123,7 @@ public class ChatRoom {
                 clientVectorIndex.put(id, k.getAndAccumulate(1, Integer::sum));
                 System.out.println("Client " + id + " has been finalized : index " + k.get());
             });
-            System.out.println("Room finalized,participants: ");
-            System.out.println(participantIDs);
-            if (participantIDs.isEmpty()) {
-                System.out.println("The room is empty...");
-            }
+
             return true;
         }
         return false;
@@ -181,7 +178,7 @@ public class ChatRoom {
     public synchronized void updateOutQueue() {
         MessageInterface out = outGoingMessageQueue.get(0);
         if (out instanceof AbstractOrderedMessage) {
-            if (((AbstractOrderedMessage) out).isAcked()) {
+            if (out.isSent() && ((AbstractOrderedMessage) out).shouldRetransmit()) {
                 outGoingMessageQueue.remove(0);
             }
         } else if (out.isSent()) outGoingMessageQueue.remove(0);
@@ -190,9 +187,8 @@ public class ChatRoom {
     public synchronized List<AbstractMessage> getOutgoingMessages() {
         return outGoingMessageQueue.stream().filter(
                         message -> !message.isSent()
-                                || (message instanceof AbstractOrderedMessage ? !(((AbstractOrderedMessage) message).isAcked()) : false)
-                ).
-                toList();
+                                || (message instanceof AbstractOrderedMessage ? (((AbstractOrderedMessage) message).shouldRetransmit()) : false)
+                ).toList();
     }
 
     public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {
@@ -218,6 +214,7 @@ public class ChatRoom {
                 this.lastMessageTimestamp,
                 payload
         );
+        out.setMilliTimestamp(System.currentTimeMillis());
         observedMessageOrder.add(out);
         outGoingMessageQueue.add(out);
     }

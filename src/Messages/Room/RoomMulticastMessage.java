@@ -12,6 +12,7 @@ import static utils.Constants.MESSAGE_TYPE_ROOM_MESSAGE;
 public class RoomMulticastMessage extends AbstractOrderedMessage {
 
 
+
     public static class RoomMulticastMessageComparator implements Comparator<RoomMulticastMessage> {
         private final int positionToCompare;
         public RoomMulticastMessageComparator(int positionToCompare){

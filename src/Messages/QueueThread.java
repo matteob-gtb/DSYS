@@ -10,6 +10,7 @@ import Messages.AnonymousMessages.AckMessage;
 import Messages.AnonymousMessages.CreateRoomRequest;
 import Messages.AnonymousMessages.RoomFinalizedMessage;
 import Messages.AnonymousMessages.WelcomeMessage;
+import Messages.Room.AbstractOrderedMessage;
 import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import Peer.AbstractClient;
@@ -132,8 +133,11 @@ public class QueueThread implements QueueManager {
             }
             if (currentRoom.isOnline()) {
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
+
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
+                    if (m instanceof AbstractOrderedMessage)
+                        ((AbstractOrderedMessage) m).setMilliTimestamp(System.currentTimeMillis());
                     if (!sendOutcome) {
                         currentRoom.setOffline(true);
                         client.addEvent(new GenericNotifyEvent("Detected network loss"));
@@ -153,9 +157,6 @@ public class QueueThread implements QueueManager {
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
                 try {
                     JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();
-
-
-                    //TODO deserialize based on the type of the message
                     inbound = gson.fromJson(jsonInboundMessage, AbstractMessage.class);
                 } catch (Exception e) {
                     System.out.println("Bad message detected");
@@ -209,7 +210,7 @@ public class QueueThread implements QueueManager {
                                     deleteRoom(room);
                                 } else {
                                     room.forceFinalizeRoom(fin.getParticipantIds());
-
+                                    client.addEvent(new GenericNotifyEvent("Room " + room.getRoomId() + " has been finalized"));
                                 }
                             }
                         }

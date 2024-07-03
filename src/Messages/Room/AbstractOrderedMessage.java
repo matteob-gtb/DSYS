@@ -7,8 +7,26 @@ import com.google.gson.annotations.Expose;
 import java.util.HashSet;
 import java.util.Set;
 
+import static utils.Constants.MIN_RETRANSMIT_WAIT;
+
 
 public class AbstractOrderedMessage extends AbstractMessage {
+
+    public Long getMilliTimestamp() {
+        return milliTimestamp;
+    }
+
+    public void setMilliTimestamp(Long milliTimestamp) {
+        this.milliTimestamp = milliTimestamp;
+    }
+
+    @Expose(serialize = false, deserialize = false)
+    protected   Long milliTimestamp;
+    @Expose(serialize = false, deserialize = false)
+    private boolean acked = false;
+    @Expose(serialize = false, deserialize = false)
+    private Set<Integer> ackedBy = new HashSet<>();
+
 
     protected VectorTimestamp vectorTimestamp;
 
@@ -16,12 +34,11 @@ public class AbstractOrderedMessage extends AbstractMessage {
         this.acked = acked;
     }
 
-    public boolean isAcked() {
-        return acked;
+    public boolean shouldRetransmit() {
+        //if acked is false wait at least MIN_RETR
+        return !acked && (System.currentTimeMillis() - milliTimestamp > MIN_RETRANSMIT_WAIT);
     }
 
-    @Expose(serialize = false, deserialize = false)
-    private boolean acked = false;
 
     public Integer getAckedBySize() {
         return ackedBy.size();
@@ -31,25 +48,20 @@ public class AbstractOrderedMessage extends AbstractMessage {
         this.ackedBy.add(ID);
     }
 
-    @Expose(serialize = false, deserialize = false)
-    private Set<Integer> ackedBy = new HashSet<>();
-
-
 
     public AbstractOrderedMessage() {
     }
 
     public AbstractOrderedMessage(int clientID, int messageType, int roomID) {
+
         super(clientID, messageType, roomID);
+        this.milliTimestamp = System.currentTimeMillis();
     }
 
     public VectorTimestamp getTimestamp() {
         return this.vectorTimestamp;
     }
 
-    public void setTimestamp(VectorTimestamp vectorTimestamp) {
-        this.vectorTimestamp = vectorTimestamp;
-    }
 
     public boolean equals(Object other) {
         if (other == null) return false;

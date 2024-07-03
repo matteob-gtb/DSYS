@@ -2,6 +2,7 @@ package Networking;
 
 import Messages.AbstractMessage;
 import Messages.AnonymousMessages.ProbeMessage;
+import Messages.Room.AbstractOrderedMessage;
 
 import java.io.IOException;
 import java.net.*;
@@ -101,8 +102,12 @@ public class MyMulticastSocketWrapper {
         }
     }
 
+
+
     public boolean sendPacket(AbstractMessage message) {
         String msg = message.toJSONString();
+
+
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
         try {
             socket.send(packet);
