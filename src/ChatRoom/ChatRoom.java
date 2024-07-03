@@ -1,6 +1,7 @@
 package ChatRoom;
 
 import Messages.AbstractMessage;
+import Messages.AnonymousMessages.AckMessage;
 import Messages.Room.DummyMessage;
 import Messages.MessageInterface;
 import Messages.AnonymousMessages.RoomFinalizedMessage;
@@ -11,10 +12,8 @@ import VectorTimestamp.VectorTimestamp;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.IntStream;
 
-import static utils.Constants.MAX_ROOM_CREATION_WAIT_MILLI;
-import static utils.Constants.MIN_SOCKET_RECONNECT_DELAY;
+import static utils.Constants.*;
 
 public class ChatRoom {
     private final int chatID;
@@ -42,78 +41,32 @@ public class ChatRoom {
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, LinkedList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
+    private LinkedList<RoomMulticastMessage> incomingMessageQueue = new LinkedList<>();
+
     //associate client id to positions in the vector (lookup is probably more efficient)
     private HashMap<Integer, Integer> clientVectorIndex;
 
     public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
-        if (!perParticipantMessageQueue.containsKey(inbound.getSenderID()))
-            throw new RuntimeException("Unknown participant ID, something went wrong");
-
-        var clientMessageList = perParticipantMessageQueue.get(inbound.getSenderID());
-        //TODO check if not inserted
-
-        //check if it can be delivered right now
         boolean inserted = false;
-
-        //Insertion if detected as stale or old i.e. ts(m) < this.currentTimestamp
-        // if (inbound.getTimestamp().lessThan(this.lastMessageTimestamp)) {
-
-        //Case 1) I can directly deliver it in causal order
-
-        //Case 1) Message can just be delivered
-
-
-        System.out.println("Trying to insert " + inbound.getTimestamp().toString());
-
-        if (this.lastMessageTimestamp.comesBefore(inbound.getTimestamp())) {
-            inserted = true;
-            observedMessageOrder.add(inbound);
-            this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, inbound.getTimestamp());
-
-            //check the queues if something can now be deliverd
-            for (LinkedList<RoomMulticastMessage> queue : perParticipantMessageQueue.values()) {
-                while (!queue.isEmpty() && this.lastMessageTimestamp.comesBefore(queue.getFirst().getTimestamp())) {
-                    AbstractOrderedMessage message = queue.removeFirst();
-                    observedMessageOrder.add(message);
-                    this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, message.getTimestamp());
-                }
+        //check, for every queue that a message can be delivered
+        incomingMessageQueue.add(inbound);
+        ListIterator<RoomMulticastMessage> iterator = incomingMessageQueue.listIterator();
+        while (iterator.hasNext()) {
+            RoomMulticastMessage message = iterator.next();
+            if (this.lastMessageTimestamp.canDeliver(message.getTimestamp())) {
+                inserted = true;
+                observedMessageOrder.add(message);
+                iterator.remove();
+                lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
             }
-
-        } else if (inbound.getTimestamp().isConcurrent(this.lastMessageTimestamp)) {
-            System.out.println("Case 2");
-            //Case 2) it's an old message so i have to insert it in the right place or
-            //it's just concurrent so i can place it wherever i want
-            ListIterator<AbstractOrderedMessage> listIterator = observedMessageOrder.listIterator();
-            AbstractOrderedMessage current = null;
-            while (listIterator.hasNext()) {
-                current = listIterator.next();
-                if (current.getTimestamp().comesBefore(inbound.getTimestamp())) {
-                    listIterator.add(inbound);
-                    inserted = true;
-                    AbstractOrderedMessage last = current;
-                    //Update all the following messages to reconcile the state
-                    for (; listIterator.hasNext(); current = listIterator.next()) {
-                        current.setTimestamp(VectorTimestamp.merge(last.getTimestamp(), current.getTimestamp()));
-                    }
-
-                }
-            }
-            this.lastMessageTimestamp = VectorTimestamp.merge(this.lastMessageTimestamp, observedMessageOrder.get(observedMessageOrder.size() - 1).getTimestamp());
-
-        }
-        if (!inserted) {
-            //case 3) it's a new message that i can't deliver yet
-            clientMessageList.add(inbound);
-            clientMessageList.sort(new RoomMulticastMessage.RoomMulticastMessageComparator(clientVectorIndex.get(inbound.getSenderID())));
         }
 
         if (inserted) System.out.println("Message delivered to the client");
         else System.out.println("Message not delivered to the client, queued until the missing message is received");
 
-
     }
 
-
+    //it's just reading it can be not synchronized, temporary discrepancies are ok
     public void printMessages() {
         System.out.println("Chat room #" + this.chatID);
         observedMessageOrder.
@@ -135,6 +88,20 @@ public class ChatRoom {
             perParticipantMessageQueue.put(participantID, new LinkedList<>());
             clientVectorIndex.put(participantID, k.getAndAccumulate(1, Integer::sum));
         });
+    }
+
+
+    public synchronized void ackMessage(AckMessage messageToAck) {
+        if (this.chatID == DEFAULT_GROUP_ROOMID) return;
+        var toAckSameTimestamp = outGoingMessageQueue.stream().filter(
+                m -> ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
+        ).toList();
+        if (toAckSameTimestamp.size() != 1) System.out.println("ERROR, multiple messages with the same timestamp");
+        else {
+            AbstractOrderedMessage msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
+            msg.setAckedBy(messageToAck.getSenderID());
+            msg.setAcked(messageToAck.getAckedBySize() == this.participantIDs.size());
+        }
     }
 
     public boolean finalizeRoom() {
@@ -203,20 +170,23 @@ public class ChatRoom {
     private boolean roomFinalized = false; //finalized 60 seconds after the initial room creation request was acked
     private VectorTimestamp ownVectorTimestamp;
     private MyMulticastSocketWrapper dedicatedRoomSocket = null;
-    private List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
+    private final List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
 
 
-    public void updateOutQueue() {
+    public synchronized void updateOutQueue() {
         MessageInterface out;
         if (outGoingMessageQueue.get(0).isSent()) {
             out = outGoingMessageQueue.remove(0);
-            if (out instanceof RoomMulticastMessage)
-                this.ownVectorTimestamp = ((RoomMulticastMessage) out).getTimestamp();
+//            if (out instanceof RoomMulticastMessage)
+//                this.ownVectorTimestamp = ((RoomMulticastMessage) out).getTimestamp();
         }
     }
 
-    public Optional<AbstractMessage> getOutgoingMessage() {
-        return outGoingMessageQueue.stream().filter(message -> !message.isSent()).findFirst();
+    public synchronized List<AbstractMessage> getOutgoingMessages() {
+        return outGoingMessageQueue.stream().filter(
+                message -> message.isSent()
+                        &&
+                        (message instanceof AbstractOrderedMessage) ? ((AbstractOrderedMessage) message).isAcked() : true).toList();
     }
 
     public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {

@@ -6,6 +6,7 @@ import java.net.*;
 import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Events.GenericNotifyEvent;
+import Messages.AnonymousMessages.AckMessage;
 import Messages.AnonymousMessages.CreateRoomRequest;
 import Messages.AnonymousMessages.RoomFinalizedMessage;
 import Messages.AnonymousMessages.WelcomeMessage;
@@ -130,9 +131,9 @@ public class QueueThread implements QueueManager {
 
             }
             if (currentRoom.isOnline()) {
-                Optional<AbstractMessage> nextMsg = currentRoom.getOutgoingMessage();
-                nextMsg.ifPresent(messageInterface -> {
-                    boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(messageInterface);
+                List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
+                nextMsg.forEach(m -> {
+                    boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
                     if (!sendOutcome) {
                         currentRoom.setOffline(true);
                         client.addEvent(new GenericNotifyEvent("Detected network loss"));
@@ -219,6 +220,14 @@ public class QueueThread implements QueueManager {
                             if (!(inbound instanceof RoomMulticastMessage))
                                 throw new RuntimeException("Illegal Message Type");
                             dedicatedRoom.addIncomingMessage((RoomMulticastMessage) inbound);
+                        }
+                    }
+                    case MESSAGE_TYPE_ACK -> {
+                        AckMessage m = (AckMessage) inbound;
+                        if (m.getRecipientID() != this.client.getID()) break;
+                        synchronized (roomLock) {
+                            ChatRoom dedicatedRoom = roomsMap.get(roomID);
+                            dedicatedRoom.ackMessage((AckMessage) inbound);
                         }
                     }
                     //append to relevant queue

@@ -2,11 +2,39 @@ package Messages.Room;
 
 import Messages.AbstractMessage;
 import VectorTimestamp.VectorTimestamp;
+import com.google.gson.annotations.Expose;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class AbstractOrderedMessage extends AbstractMessage {
 
     protected VectorTimestamp vectorTimestamp;
+
+    public void setAcked(boolean acked) {
+        this.acked = acked;
+    }
+
+    public boolean isAcked() {
+        return acked;
+    }
+
+    @Expose(serialize = false, deserialize = false)
+    private boolean acked = false;
+
+    public Integer getAckedBySize() {
+        return ackedBy.size();
+    }
+
+    public void setAckedBy(int ID) {
+        this.ackedBy.add(ID);
+    }
+
+    @Expose(serialize = false, deserialize = false)
+    private Set<Integer> ackedBy = new HashSet<>();
+
+
 
     public AbstractOrderedMessage() {
     }
