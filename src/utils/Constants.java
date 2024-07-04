@@ -20,7 +20,7 @@ public class Constants {
 
     public static final int QUEUE_THREAD_SLEEP_MIN_MS = 100;
     public static final int CLIENT_SLEEP_MS = 15;
-    public final static int MAX_ROOM_CREATION_WAIT_MS = 5 * 1000;
+    public final static int MAX_ROOM_CREATION_WAIT_MS = 10 * 1000;
     public final static int MIN_SOCKET_RECONNECT_DELAY_MS = 300;
     public final static int MIN_RETRANSMIT_WAIT_MS = 500;
 

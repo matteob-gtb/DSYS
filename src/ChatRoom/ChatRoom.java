@@ -77,18 +77,17 @@ public class ChatRoom {
                         " BEFORE received message " + inbound.toJSONString()
         );
 
-        boolean inserted = false;
         //check, for every queue that a message can be delivered
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
-            //The ACK was lost,re-send the ack
-            AckMessage ack = new AckMessage(
-                    ChatClient.ID,
-                    inbound.getSenderID(),
-                    inbound.getTimestamp(),
-                    this.chatID
-            );
-            outGoingMessageQueue.add(ack);
-            Logger.writeLog("Not delivered");
+            //The ACK was lost, just re-send the ack
+//            AckMessage ack = new AckMessage(
+//                    ChatClient.ID,
+//                    inbound.getSenderID(),
+//                    inbound.getTimestamp(),
+//                    this.chatID
+//            );
+//            outGoingMessageQueue.add(ack);
+//            Logger.writeLog("Not delivered");
             return;
         }
         incomingMessageQueue.add(inbound);
@@ -96,7 +95,6 @@ public class ChatRoom {
         while (iterator.hasNext()) {
             RoomMulticastMessage message = iterator.next();
             if (this.lastMessageTimestamp.canDeliver(message.getTimestamp())) {
-                inserted = true;
                 observedMessageOrder.add(message);
                 iterator.remove();
                 lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
@@ -130,6 +128,11 @@ public class ChatRoom {
             System.out.println("Current Timestamp " + this.lastMessageTimestamp);
         }
     }
+
+    public void sendRawMessageNoQueue(AbstractMessage message) {
+        this.dedicatedRoomSocket.sendPacket(message);
+    }
+
 
     public void forceFinalizeRoom(Set<Integer> participantIDs) {
         System.out.println("Room " + this.chatID + " has been finalized");

@@ -143,7 +143,7 @@ public class QueueThread implements QueueManager {
 
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
-                    System.out.println("Sending message " + m.getClass().getCanonicalName());
+                    System.out.println("Sending message " + m.getClass().getCanonicalName() + " in room #" + currentRoom.getRoomId());
                     if (m instanceof AbstractOrderedMessage)
                         ((AbstractOrderedMessage) m).setMilliTimestamp(System.currentTimeMillis());
                     if (!sendOutcome) {
@@ -237,7 +237,7 @@ public class QueueThread implements QueueManager {
                                         ((RoomMulticastMessage) inbound).getTimestamp(),
                                         dedicatedRoom.getRoomId()
                                 );
-                                dedicatedRoom.addOutgoingMessage(ackMessage);
+                                dedicatedRoom.sendRawMessageNoQueue(ackMessage);
                             }
                         }
                         case MESSAGE_TYPE_ACK -> {
