@@ -18,7 +18,7 @@ public class MyMulticastSocketWrapper {
     private boolean connected = false;
     private static Set<String> usedGroupNames = new HashSet<>();
     private final static int DEFAULT_TIMEOUT = 250;
-
+    public static String hostAddress;
     private Long lastConnectionAttemptEpoch = -1L;
 
 
@@ -134,6 +134,7 @@ public class MyMulticastSocketWrapper {
                     networkInterface = NetworkInterface.getByInetAddress(address);
                     System.out.println("Selected interface: " + networkInterface.getName());
                     System.out.println("Client address : " + address.getHostAddress());
+                    hostAddress = address.getHostAddress();
                     found = true;
                     break;
                 }
