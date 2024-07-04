@@ -16,6 +16,8 @@ import Networking.MyMulticastSocketWrapper;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
 import Peer.ChatClient;
+import VectorTimestamp.Timestamp;
+import VectorTimestamp.VectorTimestamp;
 import com.google.gson.*;
 
 import java.util.*;
@@ -143,7 +145,10 @@ public class QueueThread implements QueueManager {
 
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
-                    System.out.println("Sending message " + m.getClass().getSimpleName() + " in room #" + currentRoom.getRoomId());
+                    String t = "";
+                    if (m instanceof RoomMulticastMessage)
+                        t = ((RoomMulticastMessage) m).getTimestamp().toString();
+                    System.out.println("Sending message " + m.getClass().getSimpleName() + " in room #" + currentRoom.getRoomId() + " " + t);
                     if (m instanceof AbstractOrderedMessage)
                         ((AbstractOrderedMessage) m).setMilliTimestamp(System.currentTimeMillis());
                     if (!sendOutcome) {
