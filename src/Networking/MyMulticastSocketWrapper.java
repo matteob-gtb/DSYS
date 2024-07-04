@@ -153,11 +153,29 @@ public class MyMulticastSocketWrapper {
             boolean socketCreated = false;
             while (!socketCreated) {
                 try {
+
+
+
+
+
                     SocketAddress socketAddress = new InetSocketAddress(this.roomGroup, GROUP_PORT);
                     socket = new MulticastSocket(GROUP_PORT);
                     socket.setSoTimeout(DEFAULT_TIMEOUT);
 
-                    socket.joinGroup(socketAddress, networkInterface);
+                    //socket.joinGroup(socketAddress, networkInterface);
+
+                    Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+                    while (interfaces.hasMoreElements()) {
+                        NetworkInterface networkInterface = interfaces.nextElement();
+
+                        // Check if the interface supports multicast
+                        if (networkInterface.supportsMulticast()) {
+                            System.out.println("Joining group on interface: " + networkInterface.getName());
+                            socket.joinGroup(new InetSocketAddress(roomGroup, GROUP_PORT), networkInterface);
+                        }
+                    }
+
+
                     socketCreated = true;
                     connected = true;
                 } catch (SocketException e) {
