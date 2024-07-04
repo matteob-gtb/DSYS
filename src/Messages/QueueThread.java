@@ -136,9 +136,11 @@ public class QueueThread implements QueueManager {
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
                     String t = "";
+
                     if (m instanceof RoomMulticastMessage)
                         t = ((RoomMulticastMessage) m).getTimestamp().toString();
                     System.out.println("Sending message " + m.getClass().getSimpleName() + " in room #" + currentRoom.getRoomId() + " " + t);
+
                     if (m instanceof AbstractOrderedMessage)
                         ((AbstractOrderedMessage) m).setMilliTimestamp(System.currentTimeMillis());
                     if (!sendOutcome) {
@@ -156,7 +158,6 @@ public class QueueThread implements QueueManager {
             //check for incoming packets
             AbstractMessage inbound = null;
             if (packetReceived) {
-
                 String jsonString = new String(packet.getData(), 0, packet.getLength());
                 try {
                     JsonObject jsonInboundMessage = JsonParser.parseString(jsonString).getAsJsonObject();

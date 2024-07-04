@@ -83,12 +83,11 @@ public class MyMulticastSocketWrapper {
     public boolean receive(DatagramPacket packet) {
         try {
             socket.receive(packet);
-
             return true;
         } catch (SocketTimeoutException e) {
             return false;
         } catch (IOException e) {
-            System.out.println("IO exception");
+            System.out.println("Network problems");
             return false;
         }
 
