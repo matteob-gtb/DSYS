@@ -124,6 +124,12 @@ public class QueueThread implements QueueManager {
                 currentRoom.updateInQueue();
 
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
+
+                if (System.currentTimeMillis() - last > 5000) {
+                    System.out.println("Outgoing messages :" + nextMsg.size());
+                    last = System.currentTimeMillis();
+                }
+
                 if (nextMsg.isEmpty()) { //all messages acked, delete the room
                     if (currentRoom.isScheduledForDeletion()) {
                         currentRoom.displayWarningMessage();
@@ -139,6 +145,7 @@ public class QueueThread implements QueueManager {
 
                     if (m instanceof AbstractOrderedMessage)
                         t = ((AbstractOrderedMessage) m).getTimestamp().toString();
+
                     System.out.println("Sending message " + m.getClass().getSimpleName() + " in room #" + currentRoom.getRoomId() + " " + t);
 
                     if (m instanceof AbstractOrderedMessage)
