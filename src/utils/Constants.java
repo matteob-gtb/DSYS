@@ -29,5 +29,5 @@ public class Constants {
     public static final int MESSAGE_TYPE_ACK = 103;
     public static final int MESSAGE_TYPE_CONNECTION_PROBE = 1337;
 
-    public static final String COMMON_GROUPNAME = "224.1.1.1";
+    public static final String COMMON_GROUPNAME = "224.0.0.1";
 }
