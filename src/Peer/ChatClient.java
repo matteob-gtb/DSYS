@@ -262,7 +262,7 @@ public class ChatClient extends AbstractClient {
                                 System.out.println("Sent a ROOM_DELETE message, waiting to empty the queues to delete the room");
                                 room.scheduleDeletion(true);
                             } else System.out.println("You are not the owner");
-
+                            break;
                         }
                     }
 
