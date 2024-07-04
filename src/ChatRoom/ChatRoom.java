@@ -61,6 +61,20 @@ public class ChatRoom {
         return (currentTime.format(formatter));
     }
 
+
+    public synchronized void updateInQueue() {
+        Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
+        while (iterator.hasNext()) {
+            RoomMulticastMessage message = iterator.next();
+            if (this.lastMessageTimestamp.canDeliver(message.getTimestamp())) {
+                observedMessageOrder.add(message);
+                iterator.remove();
+                lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
+            }
+        }
+    }
+
+
     public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
 
         Logger.writeLog(writeCurrentTime() +
@@ -211,6 +225,7 @@ public class ChatRoom {
     public String getStatusString() {
         return this.onlineStatus ? "online" : "offline";
     }
+
 
 
     public void getBackOnline() {

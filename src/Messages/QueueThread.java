@@ -132,6 +132,10 @@ public class QueueThread implements QueueManager {
             }
 
             if (currentRoom.isOnline()) {
+
+                //check if any queued messages can now be delivered
+                currentRoom.updateInQueue();
+
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
                 if (nextMsg.isEmpty()) { //all messages acked, delete the room
