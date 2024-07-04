@@ -137,8 +137,8 @@ public class QueueThread implements QueueManager {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
                     String t = "";
 
-                    if (m instanceof RoomMulticastMessage)
-                        t = ((RoomMulticastMessage) m).getTimestamp().toString();
+                    if (m instanceof AbstractOrderedMessage)
+                        t = ((AbstractOrderedMessage) m).getTimestamp().toString();
                     System.out.println("Sending message " + m.getClass().getSimpleName() + " in room #" + currentRoom.getRoomId() + " " + t);
 
                     if (m instanceof AbstractOrderedMessage)
