@@ -133,6 +133,7 @@ public class QueueThread implements QueueManager {
 
             }
             if (currentRoom.isOnline()) {
+                System.out.println("Current room " + currentRoom.isOnline());
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
                 nextMsg.forEach(m -> {
