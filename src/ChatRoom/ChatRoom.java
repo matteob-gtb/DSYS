@@ -41,7 +41,7 @@ public class ChatRoom {
     private final Long creationTimestamp = System.currentTimeMillis();
     private final String groupName;
 
-    private Set<AbstractOrderedMessage> observedMessageOrder = new LinkedHashSet<>();
+    private final Set<AbstractOrderedMessage> observedMessageOrder = Collections.synchronizedSet(new LinkedHashSet<>());
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, LinkedList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
@@ -122,11 +122,13 @@ public class ChatRoom {
     //it's just reading it can be not synchronized, temporary discrepancies are ok
     public void printMessages() {
         System.out.println("Chat room #" + this.chatID);
-        observedMessageOrder.
-                stream().
-                filter(msg -> !(msg instanceof DummyMessage)).
-                forEach(msg -> System.out.println("     " + msg.toChatString()));
-        System.out.println("Current Timestamp " + this.lastMessageTimestamp);
+        synchronized (observedMessageOrder) {
+            observedMessageOrder.
+                    stream().
+                    filter(msg -> !(msg instanceof DummyMessage)).
+                    forEach(msg -> System.out.println("     " + msg.toChatString()));
+            System.out.println("Current Timestamp " + this.lastMessageTimestamp);
+        }
     }
 
     public void forceFinalizeRoom(Set<Integer> participantIDs) {
@@ -314,7 +316,7 @@ public class ChatRoom {
         return this.scheduledForDeletion;
     }
 
-    public synchronized void delete(){
+    public synchronized void delete() {
         this.dedicatedRoomSocket.close();
     }
 
