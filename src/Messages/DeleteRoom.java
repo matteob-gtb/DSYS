@@ -14,11 +14,8 @@ public class DeleteRoom extends AbstractOrderedMessage {
         this.roomID = roomID;
         this.senderID = senderID;
         this.vectorTimestamp = new VectorTimestamp(timestamp);
+        this.payload = "This room has been deleted by its owner";
     }
 
-    @Override
-    public boolean canDelete() {
-        sentNTimes++;
-        return sentNTimes == 5;
-    }
+
 }

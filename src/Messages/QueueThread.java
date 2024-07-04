@@ -16,8 +16,6 @@ import Networking.MyMulticastSocketWrapper;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
 import Peer.ChatClient;
-import VectorTimestamp.Timestamp;
-import VectorTimestamp.VectorTimestamp;
 import com.google.gson.*;
 
 import java.util.*;
@@ -26,20 +24,18 @@ import static utils.Constants.*;
 
 public class QueueThread implements QueueManager {
 
-    private final Object roomLock = new Object();
     private Set<Integer> onlineClients = new TreeSet<Integer>();
     private final AbstractClient client;
     private final Map<Integer, ChatRoom> roomsMap = Collections.synchronizedMap(new HashMap<>());
     private ChatRoom commonMulticastChannel;
-    private MyMulticastSocketWrapper currentSocket = null;
     private ChatRoom currentRoom = null;
 
     private List<Integer> roomIDs = Collections.synchronizedList(new ArrayList<>());
     private int currentIDIndex = 0;
 
     public void deleteRoom(ChatRoom room) {
-        if (!roomsMap.containsKey(room.getRoomId())) return;
-        synchronized (roomLock) {
+        synchronized (roomsMap) {
+            if (!roomsMap.containsKey(room.getRoomId())) return;
             roomsMap.remove(room.getRoomId());
             roomIDs.remove((Integer) room.getRoomId());
         }
@@ -47,14 +43,14 @@ public class QueueThread implements QueueManager {
 
 
     private void cycleRooms() {
-        synchronized (roomLock) {
+        synchronized (roomsMap) {
             currentRoom = roomsMap.get(roomIDs.get(currentIDIndex));
             currentIDIndex = currentIDIndex + 1 == roomIDs.size() ? 0 : currentIDIndex + 1;
         }
     }
 
     public void addParticipantToRoom(int roomID, int senderID) {
-        synchronized (roomLock) {
+        synchronized (roomsMap) {
             roomsMap.get(roomID).addParticipant(senderID);
         }
     }
@@ -77,19 +73,12 @@ public class QueueThread implements QueueManager {
     }
 
     public void registerRoom(ChatRoom chatRoom) {
-        synchronized (roomLock) {
+        synchronized (roomsMap) {
             if (roomsMap.containsKey(chatRoom.getRoomId())) throw new RuntimeException("Duplicate chat room");
             roomsMap.put(chatRoom.getRoomId(), chatRoom);
             roomIDs.add(chatRoom.getRoomId());
         }
     }
-
-    public void deleteRoom(int roomID) {
-        roomIDs.remove((Integer) roomID);
-        roomsMap.remove(roomID);
-        cycleRooms();
-    }
-
 
     @Override
     public List<ChatRoom> getRooms() {
@@ -98,7 +87,6 @@ public class QueueThread implements QueueManager {
 
     public QueueThread(AbstractClient client, ChatRoom commonMulticastChannel) throws IOException {
         this.commonMulticastChannel = commonMulticastChannel;
-        this.currentSocket = commonMulticastChannel.getDedicatedRoomSocket();
         this.roomIDs.add(commonMulticastChannel.getRoomId());
         this.client = client;
         this.currentRoom = commonMulticastChannel;
@@ -132,16 +120,14 @@ public class QueueThread implements QueueManager {
             }
 
             if (currentRoom.isOnline()) {
-
                 //check if any queued messages can now be delivered
                 currentRoom.updateInQueue();
 
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
-
                 if (nextMsg.isEmpty()) { //all messages acked, delete the room
                     if (currentRoom.isScheduledForDeletion()) {
-                        currentRoom.displayMessage();
-                        currentRoom.delete();
+                        currentRoom.displayWarningMessage();
+                        currentRoom.cleanup();
                         deleteRoom(currentRoom);
                         continue;
                     }
@@ -218,14 +204,14 @@ public class QueueThread implements QueueManager {
                             }
                         }
                         case MESSAGE_TYPE_ROOM_FINALIZED -> {
-                            synchronized (roomLock) {
+                            synchronized (roomsMap) {
                                 RoomFinalizedMessage fin = (RoomFinalizedMessage) inbound;
                                 ChatRoom room = roomsMap.get(roomID);
                                 if (room == null) {
                                     System.out.println("Non-existent room, missed the CREATE_ROOM_MESSAGE");
                                 } else {
                                     if (!fin.getParticipantIds().contains(client.getID()) && roomsMap.containsKey(roomID)) {
-                                        //Something went wrong, we can't access the room
+                                        //We didn't reply fast enough to the room creation message, we're not participating in the room
                                         deleteRoom(room);
                                     } else {
                                         room.forceFinalizeRoom(fin.getParticipantIds());
@@ -235,7 +221,7 @@ public class QueueThread implements QueueManager {
                             }
                         }
                         case MESSAGE_TYPE_ROOM_MESSAGE -> {
-                            synchronized (roomLock) {
+                            synchronized (roomsMap) {
                                 ChatRoom dedicatedRoom = roomsMap.get(roomID);
                                 if (!(inbound instanceof RoomMulticastMessage))
                                     throw new RuntimeException("Illegal Message Type");
@@ -252,28 +238,25 @@ public class QueueThread implements QueueManager {
                         case MESSAGE_TYPE_ACK -> {
                             AckMessage m = (AckMessage) inbound;
                             if (m.getRecipientID() != this.client.getID()) break;
-                            synchronized (roomLock) {
+                            synchronized (roomsMap) {
                                 ChatRoom dedicatedRoom = roomsMap.get(roomID);
                                 dedicatedRoom.ackMessage((AckMessage) inbound);
                             }
                         }
                         case MESSAGE_TYPE_DELETE_ROOM -> {
-                            System.out.println("Received a DELETE room message");
                             DeleteRoom message = (DeleteRoom) inbound;
                             ChatRoom room = roomsMap.get(message.getRoomID());
                             if (room != null) {
                                 room.scheduleDeletion(false);
+                                AckMessage ackMessage = new AckMessage(ChatClient.ID, inbound.getSenderID(), message.getTimestamp(), room.getRoomId());
+                                room.sendRawMessageNoQueue(ackMessage);
                             } else {
                                 System.out.println("Deleting unknown roomID, ignoring it");
                             }
                         }
                     }
                 }
-                try {
-                    Thread.sleep(QUEUE_THREAD_SLEEP_MIN_MS);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException("I/O thread must not be interrupted");
-                }
+
             }
         }
     }

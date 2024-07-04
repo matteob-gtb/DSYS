@@ -265,8 +265,7 @@ public class ChatClient extends AbstractClient {
 
                         }
                     }
-                    if (toDelete.isPresent())
-                        queueManager.deleteRoom(toDelete.get());
+
                     printAvailableCommands();
                     break;
                 case "5":

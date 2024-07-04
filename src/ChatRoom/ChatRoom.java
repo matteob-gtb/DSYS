@@ -133,7 +133,7 @@ public class ChatRoom {
 
     //it's just reading it can be not synchronized, temporary discrepancies are ok
     public void printMessages() {
-        System.out.println("Chat room #" + this.chatID);
+        System.out.println("Chat room #" + this.chatID + " - Owner #" + this.ownerID);
         synchronized (observedMessageOrder) {
             observedMessageOrder.
                     stream().
@@ -278,7 +278,7 @@ public class ChatRoom {
         //E.G. clients 1231,456246,215 will have index 215 -> 0,1231 ->1,456246->3 in the vector timestamp array
 
         if (scheduledForDeletion) {
-            System.out.println("The room is about to be deleted, not accepting any more messages... ");
+            System.out.println("The room is scheduled for deletion, not accepting any more messages... ");
             return;
         }
 
@@ -334,11 +334,11 @@ public class ChatRoom {
         return this.scheduledForDeletion;
     }
 
-    public synchronized void delete() {
+    public synchronized void cleanup() {
         this.dedicatedRoomSocket.close();
     }
 
-    public synchronized void displayMessage() {
+    public synchronized void displayWarningMessage() {
         observedMessageOrder.clear();
         observedMessageOrder.add(new RoomMulticastMessage(
                 ChatClient.ID,
