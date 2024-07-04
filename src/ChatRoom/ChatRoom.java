@@ -227,7 +227,6 @@ public class ChatRoom {
     }
 
 
-
     public void getBackOnline() {
         if (System.currentTimeMillis() - this.lastReconnectAttempt < MIN_SOCKET_RECONNECT_DELAY_MS) {
             return;
@@ -364,12 +363,10 @@ public class ChatRoom {
             //room deletion causally ordered because why not
             DeleteRoom delete = new DeleteRoom(this.chatID, ChatClient.ID, this.lastMessageTimestamp);
             this.outGoingMessageQueue.add(delete);
-        } else {
-            // once it's scheduled for deletion DO NOT ACCEPT MESSAGES,
-            // wait until  all queues are empty (outgoing messages all acked) then delete the room
-            this.scheduledForDeletion = true;
         }
-
+        // once it's scheduled for deletion DO NOT ACCEPT MESSAGES,
+        // wait until  all queues are empty (outgoing messages all acked) then delete the room
+        this.scheduledForDeletion = true;
     }
 
 
