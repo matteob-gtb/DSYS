@@ -59,16 +59,6 @@ public class QueueThread implements QueueManager {
         }
     }
 
-//    public void sendMessage(MulticastMessage m, int roomID) throws IOException {
-//        InetAddress destination = null;
-//        synchronized (roomLock) {
-//            if (!roomsMap.containsKey(roomID))
-//                throw new RuntimeException("No such room");
-//            destination = roomsMap.get(roomID).getRoomAddress();
-//        }
-//        currentSocket.sendPacket(m);
-//    }
-
 
     @Override
     public Set<Integer> getOnlineClients() {
@@ -153,6 +143,7 @@ public class QueueThread implements QueueManager {
 
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
+                    System.out.println("Sending message " + m.getClass().getCanonicalName());
                     if (m instanceof AbstractOrderedMessage)
                         ((AbstractOrderedMessage) m).setMilliTimestamp(System.currentTimeMillis());
                     if (!sendOutcome) {
