@@ -216,6 +216,7 @@ public class ChatRoom {
         try {
             dedicatedRoomSocket.probeConnection();
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             exceptionThrown = true;
         }
         this.onlineStatus = !exceptionThrown;

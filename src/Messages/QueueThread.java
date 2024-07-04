@@ -122,6 +122,7 @@ public class QueueThread implements QueueManager {
         JsonObject outgoingMessage;
         Gson gson = new GsonBuilder().registerTypeAdapter(AbstractMessage.class, new AbstractMessage.AbstractMessageDeserializer()).create();
         boolean packetReceived = false;
+        long last = 0;
         while (true) {
             packetReceived = false;
             cycleRooms();
@@ -132,11 +133,14 @@ public class QueueThread implements QueueManager {
                 }
 
             }
-            System.out.println("Current room " + currentRoom.isOnline());
+
+            if (System.currentTimeMillis() - last > 2000) {
+                System.out.println("Current room " + currentRoom.isOnline());
+                last = System.currentTimeMillis();
+            }
 
             if (currentRoom.isOnline()) {
-                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
-
+                List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
                     if (m instanceof AbstractOrderedMessage)
