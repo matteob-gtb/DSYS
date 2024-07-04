@@ -237,10 +237,12 @@ public class QueueThread implements QueueManager {
                                         ((RoomMulticastMessage) inbound).getTimestamp(),
                                         dedicatedRoom.getRoomId()
                                 );
+                                System.out.println("Sent ACK");
                                 dedicatedRoom.sendRawMessageNoQueue(ackMessage);
                             }
                         }
                         case MESSAGE_TYPE_ACK -> {
+                            System.out.println("Received ACK");
                             AckMessage m = (AckMessage) inbound;
                             if (m.getRecipientID() != this.client.getID()) break;
                             synchronized (roomLock) {
