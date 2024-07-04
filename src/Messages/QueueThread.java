@@ -134,10 +134,6 @@ public class QueueThread implements QueueManager {
 
             }
 
-            if (System.currentTimeMillis() - last > 2000) {
-                System.out.println("Current room " + currentRoom.isOnline());
-                last = System.currentTimeMillis();
-            }
 
             if (currentRoom.isOnline()) {
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();

@@ -180,7 +180,6 @@ public class MyMulticastSocketWrapper {
                     socketCreated = true;
                     connected = true;
                 } catch (SocketException e) {
-                    System.out.println("Socket exception: " + e.getMessage());
                     connected = false;
 
                 }
