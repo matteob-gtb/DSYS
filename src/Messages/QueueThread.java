@@ -132,9 +132,10 @@ public class QueueThread implements QueueManager {
                 }
 
             }
+            System.out.println("Current room " + currentRoom.isOnline());
+
             if (currentRoom.isOnline()) {
-                System.out.println("Current room " + currentRoom.isOnline());
-                List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
+                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
