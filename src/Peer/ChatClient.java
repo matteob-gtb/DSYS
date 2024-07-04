@@ -91,6 +91,10 @@ public class ChatClient extends AbstractClient {
                 if (response.length() != 0)
                     currentRoom.sendInRoomMessage(response, this.CLIENT_ID);
                 flushConsole();
+                if (room.isScheduledForDeletion()) {
+                    System.out.println("This room is about to be deleted, exiting...");
+                    break;
+                }
                 room.printMessages();
             } catch (IOException e) {
                 System.out.println("Unrecoverable I/O error,shutting down...");
@@ -104,7 +108,7 @@ public class ChatClient extends AbstractClient {
         queueManager.getRooms().forEach(
                 room -> {
                     if (room.isRoomFinalized()) {
-                        System.out.println("Room #" + room.getRoomId() + " - Status [" + room.getStatusString() + "]");
+                        System.out.println("Room #" + room.getRoomId() + " - Status [" + room.getStatusString() + "] - Owner = " + room.getOwnerID());
                         room.getParticipantIDs().forEach(
                                 id -> System.out.println("      Participant #" + id));
                     } else {
@@ -145,7 +149,7 @@ public class ChatClient extends AbstractClient {
                         while (eventOutcome.isEmpty()) {
                             System.out.println(currentEvent.eventPrompt());
                             command = reader.readLine().trim();
-                            System.out.println("Read " + command + " from user");
+                            //System.out.println("Read " + command + " from user");
                             eventOutcome = currentEvent.executeEvent(command);
                             //events can only be broadcasted over the common channel
                             if (eventOutcome.isPresent())
@@ -153,7 +157,6 @@ public class ChatClient extends AbstractClient {
                             if (currentEvent instanceof ReplyToRoomRequestEvent) {
                                 ChatRoom newRoom = ((ReplyToRoomRequestEvent) currentEvent).createRoomReference();
                                 queueManager.registerRoom(newRoom);
-
                             }
                         }
                         command = "x";
@@ -209,7 +212,6 @@ public class ChatClient extends AbstractClient {
                         String nextLine = reader.readLine().trim();
                         if (nextLine.contains("q")) {
                             stopCreatingRoom = true;
-                            flushConsole();
                             printAvailableCommands();
                             break;
                         } else {
@@ -235,8 +237,8 @@ public class ChatClient extends AbstractClient {
 
 
                     break;
-                case "5":
-                    print("Command 'Leave room' received.");
+                case "4":
+                    print("Command 'Delete room' received.");
                     int deleteID = -1;
                     Optional<ChatRoom> toDelete = Optional.empty();
 
@@ -259,8 +261,7 @@ public class ChatClient extends AbstractClient {
                             if (room.canDelete(this.CLIENT_ID)) {
                                 System.out.println("Sent a ROOM_DELETE message, waiting to empty the queues to delete the room");
                                 room.scheduleDeletion(true);
-                            }
-                            else System.out.println("You are not the owner");
+                            } else System.out.println("You are not the owner");
 
                         }
                     }
@@ -268,7 +269,7 @@ public class ChatClient extends AbstractClient {
                         queueManager.deleteRoom(toDelete.get());
                     printAvailableCommands();
                     break;
-                case "6":
+                case "5":
                     print("Command 'List Online Peers' received.");
                     if (queueManager.getOnlineClients().isEmpty())
                         print("No online peer detected yet");
@@ -276,27 +277,20 @@ public class ChatClient extends AbstractClient {
                         queueManager.getOnlineClients().forEach(
                                 id -> System.out.println(" Client #" + id)
                         );
-                        //TODO fix naming
-//                        ArrayList<String> namesList = new ArrayList<>(queueManager.getOnlineClients().size());
-//                        queueManager.getOnlineClients().forEach(
-//                                id -> namesList.add(idUsernameMappings.get(id))
-//                        );
-//                        System.out.println("List of online peers: [" + Arrays.toString(namesList.toArray()) + "]");
                     }
                     break;
-                case "7":
+                case "6":
                     print("Command 'Discover online Peers' received.");
                     announceSelf();
                     print("Sent an HELLO in multicast, waiting for replies...");
                     break;
-                case "8":
+                case "7":
                     System.exit(0);
                     break;
                 default:
                     print("Invalid Command");
                     break;
             }
-
         }
     }
 
@@ -313,12 +307,11 @@ public class ChatClient extends AbstractClient {
                 0. List Commands
                 1. List Online Rooms
                 2. Join Room
-                3. Create Room
+                3. Create Room 
                 4. Delete Room
-                5. Leave Room
-                6. List Online Peers
-                7. Discover Online Peers
-                8. Quit Application
+                5. List Online Peers
+                6. Discover Online Peers
+                7. Quit Application
                 Enter command:""");
         //Flush console
 

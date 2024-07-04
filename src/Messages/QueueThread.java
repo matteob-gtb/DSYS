@@ -36,11 +36,9 @@ public class QueueThread implements QueueManager {
     private int currentIDIndex = 0;
 
     public void deleteRoom(ChatRoom room) {
-        //TODO exception maybe not a great idea
-        if (!roomsMap.containsKey(room.getRoomId())) throw new RuntimeException("Room doesn't exist");
+        if (!roomsMap.containsKey(room.getRoomId())) return;
         synchronized (roomLock) {
             roomsMap.remove(room.getRoomId());
-            //java moment
             roomIDs.remove((Integer) room.getRoomId());
         }
     }
@@ -136,14 +134,16 @@ public class QueueThread implements QueueManager {
 
                 if (nextMsg.isEmpty()) { //all messages acked, delete the room
                     if (currentRoom.isScheduledForDeletion()) {
+                        currentRoom.displayMessage();
                         currentRoom.delete();
+                        deleteRoom(currentRoom);
                         continue;
                     }
                 }
 
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
-                    System.out.println("Sending message " + m.getClass().getCanonicalName() + " in room #" + currentRoom.getRoomId());
+                    System.out.println("Sending message " + m.getClass().getSimpleName() + " in room #" + currentRoom.getRoomId());
                     if (m instanceof AbstractOrderedMessage)
                         ((AbstractOrderedMessage) m).setMilliTimestamp(System.currentTimeMillis());
                     if (!sendOutcome) {
@@ -249,6 +249,7 @@ public class QueueThread implements QueueManager {
                             }
                         }
                         case MESSAGE_TYPE_DELETE_ROOM -> {
+                            System.out.println("Received a DELETE room message");
                             DeleteRoom message = (DeleteRoom) inbound;
                             ChatRoom room = roomsMap.get(message.getRoomID());
                             if (room != null) {

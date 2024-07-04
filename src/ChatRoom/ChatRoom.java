@@ -323,6 +323,14 @@ public class ChatRoom {
         this.dedicatedRoomSocket.close();
     }
 
+    public synchronized void displayMessage() {
+        observedMessageOrder.clear();
+        observedMessageOrder.add(new RoomMulticastMessage(
+                ChatClient.ID,
+                -1,
+                new VectorTimestamp(new int[]{-1}),
+                "This room has been deleted please exit the room by typing q"));
+    }
 
     public boolean addParticipant(Integer participantID) {
         if (roomFinalized || System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MS) //rooms are immutable
@@ -342,7 +350,7 @@ public class ChatRoom {
             DeleteRoom delete = new DeleteRoom(this.chatID, ChatClient.ID, this.lastMessageTimestamp);
             this.outGoingMessageQueue.add(delete);
         } else {
-            // once it's scheduled for deletion DO NOT ACCEPT MESSAGEs,
+            // once it's scheduled for deletion DO NOT ACCEPT MESSAGES,
             // wait until  all queues are empty (outgoing messages all acked) then delete the room
             this.scheduledForDeletion = true;
         }
