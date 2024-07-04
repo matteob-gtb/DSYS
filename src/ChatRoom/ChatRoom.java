@@ -2,9 +2,9 @@ package ChatRoom;
 
 import Messages.AbstractMessage;
 import Messages.AnonymousMessages.AckMessage;
+import Messages.DeleteRoom;
 import Messages.Logger;
 import Messages.Room.DummyMessage;
-import Messages.MessageInterface;
 import Messages.AnonymousMessages.RoomFinalizedMessage;
 import Messages.Room.AbstractOrderedMessage;
 import Messages.Room.RoomMulticastMessage;
@@ -12,14 +12,11 @@ import Networking.MyMulticastSocketWrapper;
 import Peer.ChatClient;
 import VectorTimestamp.VectorTimestamp;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.stream.Collectors.toList;
 import static utils.Constants.*;
 
 public class ChatRoom {
@@ -53,6 +50,10 @@ public class ChatRoom {
     //associate client id to positions in the vector (lookup is probably more efficient)
     private HashMap<Integer, Integer> clientVectorIndex;
 
+    private boolean scheduledForDeletion = false;
+    private boolean roomFinalized = false; //finalized 60 seconds after the initial room creation request was acked
+    private MyMulticastSocketWrapper dedicatedRoomSocket = null;
+    private final List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
 
     public static String writeCurrentTime() {
         LocalTime currentTime = LocalTime.now();
@@ -173,7 +174,7 @@ public class ChatRoom {
     }
 
     public boolean finalizeRoom() {
-        if (!roomFinalized && System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MILLI) {
+        if (!roomFinalized && System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MS) {
             roomFinalized = true;
             lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
             clientVectorIndex = new HashMap<>(participantIDs.size());
@@ -208,7 +209,7 @@ public class ChatRoom {
 
 
     public void getBackOnline() {
-        if (System.currentTimeMillis() - this.lastReconnectAttempt < MIN_SOCKET_RECONNECT_DELAY) {
+        if (System.currentTimeMillis() - this.lastReconnectAttempt < MIN_SOCKET_RECONNECT_DELAY_MS) {
             return;
         }
         this.lastReconnectAttempt = System.currentTimeMillis();
@@ -216,7 +217,7 @@ public class ChatRoom {
         try {
             dedicatedRoomSocket.probeConnection();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+
             exceptionThrown = true;
         }
         this.onlineStatus = !exceptionThrown;
@@ -227,20 +228,14 @@ public class ChatRoom {
         return roomFinalized;
     }
 
-    private boolean roomFinalized = false; //finalized 60 seconds after the initial room creation request was acked
-    private VectorTimestamp ownVectorTimestamp;
-    private MyMulticastSocketWrapper dedicatedRoomSocket = null;
-    private final List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
-
 
     public synchronized void updateOutQueue() {
         ListIterator<AbstractMessage> iterator = outGoingMessageQueue.listIterator();
         AbstractMessage out = null;
         while (iterator.hasNext()) {
             out = iterator.next();
-            if (out instanceof AckMessage || out.canDelete()) { //no need to ack acks
+            if (out.canDelete())
                 iterator.remove();
-            }
         }
     }
 
@@ -248,7 +243,7 @@ public class ChatRoom {
         return outGoingMessageQueue.stream().filter(AbstractMessage::shouldRetransmit).toList();
     }
 
-    public void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {
+    public synchronized void announceRoomFinalized(int clientID, ChatRoom defaultChannel) {
         AbstractMessage msg = new RoomFinalizedMessage(
                 clientID,
                 this.chatID,
@@ -261,6 +256,11 @@ public class ChatRoom {
     public synchronized void sendInRoomMessage(String payload, int clientID) {
         //Client id mapping --> sort
         //E.G. clients 1231,456246,215 will have index 215 -> 0,1231 ->1,456246->3 in the vector timestamp array
+
+        if (scheduledForDeletion) {
+            System.out.println("The room is about to be deleted, not accepting any more messages... ");
+            return;
+        }
 
         int clientIndex = clientVectorIndex.get(clientID);
         this.lastMessageTimestamp = lastMessageTimestamp.increment(clientIndex);
@@ -283,7 +283,7 @@ public class ChatRoom {
         this.roomFinalized = roomFinalized;
     }
 
-    public void setOffline(boolean isOffline) {
+    public synchronized void setOffline(boolean isOffline) {
         this.onlineStatus = !isOffline;
     }
 
@@ -300,23 +300,48 @@ public class ChatRoom {
     }
 
     public ChatRoom(int owner, int chatID, String groupName) {
-        this.ownerID = owner;
+        if (chatID == DEFAULT_GROUP_ROOMID) {
+            this.ownerID = -1; //no one owns the default channel
+        } else this.ownerID = owner;
+
         this.chatID = chatID;
         this.dedicatedRoomSocket = new MyMulticastSocketWrapper(groupName);
         this.onlineStatus = dedicatedRoomSocket.isConnected();
         this.groupName = groupName;
     }
 
+    public boolean isScheduledForDeletion() {
+        return this.scheduledForDeletion;
+    }
 
-    public int[] getParticipants() {
-        return participantIDs.stream().mapToInt(i -> i).toArray();
+    public synchronized void delete(){
+        this.dedicatedRoomSocket.close();
     }
 
 
     public boolean addParticipant(Integer participantID) {
-        if (roomFinalized || System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MILLI) //rooms are immutable
+        if (roomFinalized || System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MS) //rooms are immutable
             return false;
         return participantIDs.add(participantID);
+    }
+
+    public boolean canDelete(int participantID) {
+        return this.getOwnerID() == participantID;
+    }
+
+    public synchronized void scheduleDeletion(boolean iOwnIt) {
+        if (iOwnIt) {
+            int clientIndex = clientVectorIndex.get(ChatClient.ID);
+            this.lastMessageTimestamp = lastMessageTimestamp.increment(clientIndex);
+            //room deletion causally ordered because why not
+            DeleteRoom delete = new DeleteRoom(this.chatID, ChatClient.ID, this.lastMessageTimestamp);
+            this.outGoingMessageQueue.add(delete);
+        } else {
+            // once it's scheduled for deletion DO NOT ACCEPT MESSAGEs,
+            // wait until  all queues are empty (outgoing messages all acked) then delete the room
+            this.scheduledForDeletion = true;
+        }
+
     }
 
 

@@ -14,7 +14,6 @@ import Networking.MyMulticastSocketWrapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -133,7 +132,7 @@ public class ChatClient extends AbstractClient {
             while (waitingForInput) {
                 if (!eventsToProcess.isEmpty()) {
                     currentEvent = eventsToProcess.remove(0);
-                    if (currentEvent instanceof ReplyToRoomRequestEvent && System.currentTimeMillis() - currentEvent.getCreationTimestamp() > MAX_ROOM_CREATION_WAIT_MILLI)
+                    if (currentEvent instanceof ReplyToRoomRequestEvent && System.currentTimeMillis() - currentEvent.getCreationTimestamp() > MAX_ROOM_CREATION_WAIT_MS)
                         currentEvent = null;//discard the event, MOST LIKELY the timeout has already passed
                 }
                 if (reader.ready()) {
@@ -254,7 +253,16 @@ public class ChatClient extends AbstractClient {
                         toDelete = queueManager.getChatRoom(deleteID);
                         if (toDelete.isEmpty())
                             System.out.println("Room not found");
-                        else break;
+                        else {
+                            //delete room
+                            ChatRoom room = toDelete.get();
+                            if (room.canDelete(this.CLIENT_ID)) {
+                                System.out.println("Sent a ROOM_DELETE message, waiting to empty the queues to delete the room");
+                                room.scheduleDeletion(true);
+                            }
+                            else System.out.println("You are not the owner");
+
+                        }
                     }
                     if (toDelete.isPresent())
                         queueManager.deleteRoom(toDelete.get());
@@ -316,10 +324,6 @@ public class ChatClient extends AbstractClient {
 
     }
 
-    public void showRoomInfo(ChatRoom room) {
-        print("Current participants " + Arrays.toString(room.getParticipants()));
-        print("Type a message and hit Enter to send it in the current room #" + room.getRoomId());
-    }
 
     public ChatRoom getDefaultRoom() {
         return commonMulticastChannel;

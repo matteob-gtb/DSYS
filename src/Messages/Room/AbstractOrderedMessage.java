@@ -7,7 +7,7 @@ import com.google.gson.annotations.Expose;
 import java.util.HashSet;
 import java.util.Set;
 
-import static utils.Constants.MIN_RETRANSMIT_WAIT;
+import static utils.Constants.MIN_RETRANSMIT_WAIT_MS;
 
 
 public class AbstractOrderedMessage extends AbstractMessage {
@@ -36,7 +36,7 @@ public class AbstractOrderedMessage extends AbstractMessage {
 
     public boolean shouldRetransmit() {
         //if acked is false wait at least MIN_RETR
-        return !sent || !acked && (System.currentTimeMillis() - milliTimestamp > MIN_RETRANSMIT_WAIT);
+        return !sent || !acked && (System.currentTimeMillis() - milliTimestamp > MIN_RETRANSMIT_WAIT_MS);
     }
 
     public boolean canDelete() {

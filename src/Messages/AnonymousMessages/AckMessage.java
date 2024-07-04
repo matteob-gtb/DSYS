@@ -21,4 +21,9 @@ public class AckMessage extends AbstractOrderedMessage {
         this.vectorTimestamp = t;
         this.roomID = roomID;
     }
+
+    public boolean canDelete(){
+        return true; //acks are not stored
+    }
+
 }

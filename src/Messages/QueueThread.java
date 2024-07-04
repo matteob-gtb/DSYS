@@ -94,6 +94,13 @@ public class QueueThread implements QueueManager {
         }
     }
 
+    public void deleteRoom(int roomID) {
+        roomIDs.remove((Integer) roomID);
+        roomsMap.remove(roomID);
+        cycleRooms();
+    }
+
+
     @Override
     public List<ChatRoom> getRooms() {
         return new ArrayList<>(this.roomsMap.values());
@@ -134,9 +141,16 @@ public class QueueThread implements QueueManager {
 
             }
 
-
             if (currentRoom.isOnline()) {
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
+
+                if (nextMsg.isEmpty()) { //all messages acked, delete the room
+                    if (currentRoom.isScheduledForDeletion()) {
+                        currentRoom.delete();
+                        continue;
+                    }
+                }
+
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
                     if (m instanceof AbstractOrderedMessage)
@@ -241,6 +255,15 @@ public class QueueThread implements QueueManager {
                             synchronized (roomLock) {
                                 ChatRoom dedicatedRoom = roomsMap.get(roomID);
                                 dedicatedRoom.ackMessage((AckMessage) inbound);
+                            }
+                        }
+                        case MESSAGE_TYPE_DELETE_ROOM -> {
+                            DeleteRoom message = (DeleteRoom) inbound;
+                            ChatRoom room = roomsMap.get(message.getRoomID());
+                            if (room != null) {
+                                room.scheduleDeletion(false);
+                            } else {
+                                System.out.println("Deleting unknown roomID, ignoring it");
                             }
                         }
                     }

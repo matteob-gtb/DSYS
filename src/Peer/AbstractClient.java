@@ -7,8 +7,6 @@ import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.util.*;
 
-import static utils.Constants.MESSAGE_PROPERTY_FIELD_CLIENTID;
-
 public abstract class AbstractClient {
     protected String userName;
 
@@ -41,11 +39,7 @@ public abstract class AbstractClient {
         idUsernameMappings.put(userID, username);
     }
 
-    public JsonObject getBaseMessageStub() {
-        JsonObject msg = new JsonObject();
-        msg.addProperty(MESSAGE_PROPERTY_FIELD_CLIENTID, CLIENT_ID);
-        return msg;
-    }
+
 
 
 }
