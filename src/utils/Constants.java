@@ -17,8 +17,10 @@ public class Constants {
     public static final int MESSAGE_TYPE_ACK = 103;
     public static final int MESSAGE_TYPE_CONNECTION_PROBE = 1337;
     public static final int MESSAGE_TYPE_DELETE_ROOM = 1333;
+    public final static int SOCKET_DEFAULT_TIMEOUT_MS = 10;
 
-    public static final int QUEUE_THREAD_SLEEP_MIN_MS = 100;
+    //it already waits for the socket timeout
+    public static final int QUEUE_THREAD_SLEEP_MIN_MS = 1;
     public static final int CLIENT_SLEEP_MS = 15;
     public final static int MAX_ROOM_CREATION_WAIT_MS = 10 * 1000;
     public final static int MIN_SOCKET_RECONNECT_DELAY_MS = 300;

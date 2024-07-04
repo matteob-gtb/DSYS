@@ -10,6 +10,7 @@ import java.util.*;
 
 import static java.lang.System.exit;
 import static utils.Constants.GROUP_PORT;
+import static utils.Constants.SOCKET_DEFAULT_TIMEOUT_MS;
 
 //self-contained socket
 public class MyMulticastSocketWrapper {
@@ -17,8 +18,7 @@ public class MyMulticastSocketWrapper {
     private MulticastSocket socket; //multicast or normal UDP
     private boolean connected = false;
     private static Set<String> usedGroupNames = new HashSet<>();
-    private final static int DEFAULT_TIMEOUT = 250;
-    public static String hostAddress;
+     public static String hostAddress;
     private Long lastConnectionAttemptEpoch = -1L;
 
 
@@ -161,7 +161,7 @@ public class MyMulticastSocketWrapper {
 
                     SocketAddress socketAddress = new InetSocketAddress(this.roomGroup, GROUP_PORT);
                     socket = new MulticastSocket(GROUP_PORT);
-                    socket.setSoTimeout(DEFAULT_TIMEOUT);
+                    socket.setSoTimeout(SOCKET_DEFAULT_TIMEOUT_MS);
 
                     //socket.joinGroup(socketAddress, networkInterface);
 
