@@ -102,21 +102,21 @@ public class VectorTimestamp implements Timestamp {
                 ).findFirst().isPresent();
         return !foundStrictlyLess;
     }
-
-    /**
-     * @param other
-     * @return
-     */
-    @Override
-    public boolean equal(Timestamp other) {
-        if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
-        VectorTimestamp otherV = (VectorTimestamp) other;
-        boolean foundDiff =
-                IntStream.range(0, otherV.rawTimestamp.length).mapToObj(
-                        i -> otherV.rawTimestamp[i] != this.rawTimestamp[i]
-                ).findFirst().isPresent();
-        return !foundDiff;
-    }
+//
+//    /**
+//     * @param other
+//     * @return
+//     */
+//    @Override
+//    public boolean equals(Timestamp other) {
+//        if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
+//        VectorTimestamp otherV = (VectorTimestamp) other;
+//        boolean foundDiff =
+//                IntStream.range(0, otherV.rawTimestamp.length).mapToObj(
+//                        i -> otherV.rawTimestamp[i] != this.rawTimestamp[i]
+//                ).findFirst().isPresent();
+//        return !foundDiff;
+//    }
 
     @Override
     public boolean canDeliver(Timestamp other) {

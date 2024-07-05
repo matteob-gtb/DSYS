@@ -9,8 +9,6 @@ public interface Timestamp {
 
     boolean greaterThanOrEqual(Timestamp other);
 
-    boolean equal(Timestamp other);
-
     //checks if it can be delivered given the current client's timestamp
     boolean canDeliver(Timestamp other);
 

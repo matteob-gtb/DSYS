@@ -110,7 +110,9 @@ public class ChatRoom {
         System.out.println("INCOMINMG");
         incomingMessageQueue.forEach(m ->
                 {
-                    System.out.println(m.getTimestamp().equal(inbound.getTimestamp()));
+                    System.out.println(inbound.toJSONString());
+                    System.out.println(m.toJSONString());
+                    System.out.println(m.getTimestamp().equals(inbound.getTimestamp()));
                     System.out.println(inbound.equals(m));
                     System.out.println(m.toJSONString());
                     System.out.println(inbound.toJSONString());
@@ -120,7 +122,7 @@ public class ChatRoom {
 
         observedMessageOrder.forEach(m ->
                 {
-                    System.out.println(m.getTimestamp().equal(inbound.getTimestamp()));
+                    System.out.println(m.getTimestamp().equals(inbound.getTimestamp()));
                     System.out.println(inbound.equals(m));
                     System.out.println(m.toJSONString());
                     System.out.println(inbound.toJSONString());
