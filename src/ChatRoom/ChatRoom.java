@@ -78,7 +78,7 @@ public class ChatRoom {
         }
         if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
             if (howManyUpdatesWithoutDelivery > 150) {
-                 if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
+                if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
                     System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
 
                     //Fail to deliver, the sender MIGHT be dead --> request a retransmission
@@ -111,6 +111,23 @@ public class ChatRoom {
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
             return;
         }
+        System.out.println("\n\n-------------------------");
+
+        System.out.println("Adding incoming message " + inbound.toJSONString());
+        System.out.println("Observed");
+        observedMessageOrder.forEach(m -> {
+            System.out.println(m.toJSONString());
+            System.out.println("equals " + m.equals(inbound));
+            System.out.println("tsm equals " + m.getTimestamp().equals(inbound.getTimestamp()));
+        });
+        System.out.println("\n\n-------------------------");
+
+        try {
+            Thread.sleep(10000);
+        } catch (
+                Exception e) {
+        }
+
 
         incomingMessageQueue.add(inbound);
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();

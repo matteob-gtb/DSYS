@@ -147,7 +147,7 @@ public class ChatClient extends AbstractClient {
                     Optional<AbstractMessage> eventOutcome = Optional.empty();
                     if (currentEvent.isActionable()) {
                         while (eventOutcome.isEmpty()) {
-                            System.out.println(currentEvent.eventPrompt());
+                            System.out.print(currentEvent.eventPrompt());
                             command = reader.readLine().trim();
                             //System.out.println("Read " + command + " from user");
                             eventOutcome = currentEvent.executeEvent(command);
