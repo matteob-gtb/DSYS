@@ -43,7 +43,7 @@ public class ChatRoom {
     private final Long creationTimestamp = System.currentTimeMillis();
     private final String groupName;
 
-    private final Set<AbstractOrderedMessage> observedMessageOrder = Collections.synchronizedSet(new LinkedHashSet<>());
+    private final Set<RoomMulticastMessage> observedMessageOrder = Collections.synchronizedSet(new LinkedHashSet<>());
     private Set<Integer> participantIDs = new TreeSet<Integer>();
     private HashMap<Integer, LinkedList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
@@ -107,6 +107,7 @@ public class ChatRoom {
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
             return;
         }
+        System.out.println(incomingMessageQueue.contains(inbound) + " - " + observedMessageOrder.contains(inbound));
         System.out.println("Adding to the inbound queue " + inbound.toJSONString());
         incomingMessageQueue.add(inbound);
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
@@ -128,7 +129,6 @@ public class ChatRoom {
         synchronized (observedMessageOrder) {
             observedMessageOrder.
                     stream().
-                    filter(msg -> !(msg instanceof DummyMessage)).
                     forEach(msg -> System.out.println("     " + msg.toChatString()));
             System.out.println("Current Timestamp " + this.lastMessageTimestamp);
         }
