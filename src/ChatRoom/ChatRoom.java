@@ -77,9 +77,8 @@ public class ChatRoom {
             }
         }
         if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
-            if (howManyUpdatesWithoutDelivery > 5) {
-                incomingMessageQueue.forEach(message -> System.out.println(message.toJSONString()));
-                if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
+            if (howManyUpdatesWithoutDelivery > 150) {
+                 if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
                     System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
 
                     //Fail to deliver, the sender MIGHT be dead --> request a retransmission
