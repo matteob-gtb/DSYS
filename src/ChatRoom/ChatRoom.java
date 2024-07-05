@@ -76,7 +76,8 @@ public class ChatRoom {
             }
         }
         if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
-            System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() +  " - " + queueSizeBefore);
+            System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
+            incomingMessageQueue.forEach(message -> System.out.println(message.toJSONString()));
             if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
                 //Fail to deliver, the sender MIGHT be dead --> request a retransmission
                 RequestRetransmission rto = new RequestRetransmission(
@@ -101,33 +102,12 @@ public class ChatRoom {
 
     public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
 
-        Logger.writeLog(writeCurrentTime() +
-                " BEFORE message queue status " + Arrays.toString(incomingMessageQueue.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
-        );
-
-        Logger.writeLog(
-                writeCurrentTime() +
-                        " BEFORE observed message order status " + Arrays.toString(observedMessageOrder.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
-        );
-
-        Logger.writeLog(
-                writeCurrentTime() +
-                        " BEFORE received message " + inbound.toJSONString()
-        );
 
         //check, for every queue that a message can be delivered
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
-            //The ACK was lost, just re-send the ack
-//            AckMessage ack = new AckMessage(
-//                    ChatClient.ID,
-//                    inbound.getSenderID(),
-//                    inbound.getTimestamp(),
-//                    this.chatID
-//            );
-//            outGoingMessageQueue.add(ack);
-//            Logger.writeLog("Not delivered");
             return;
         }
+        System.out.println("Adding to the inbound queue " + inbound.toJSONString());
         incomingMessageQueue.add(inbound);
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
@@ -138,19 +118,6 @@ public class ChatRoom {
                 lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
             }
         }
-
-//        if (inserted) System.out.println("Message delivered to the client");
-//        else System.out.println("Message not delivered to the client, queued until the missing message is received");
-
-
-        Logger.writeLog(writeCurrentTime() +
-                " AFTER message queue status " + Arrays.toString(incomingMessageQueue.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
-        );
-
-        Logger.writeLog(
-                writeCurrentTime() +
-                        " AFTER observed message order status " + Arrays.toString(observedMessageOrder.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
-        );
 
 
     }
