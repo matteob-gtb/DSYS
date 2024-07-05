@@ -98,15 +98,6 @@ public class ChatRoom {
     //return them with ACKED equal to true, they don't have to be acked again, only one client lost the message
     public synchronized List<RoomMulticastMessage> getObservedMessagesFrom(VectorTimestamp timestamp) {
 
-        observedMessageOrder.stream().
-                forEach(m -> {
-                    System.out.println(m.toJSONString());
-                    System.out.println(m.getTimestamp().greaterThanOrEqual(timestamp));
-                    System.out.println(m.getTimestamp().lessThan(timestamp));
-                    System.out.println(m.getTimestamp().lessThanOrEqual(timestamp));
-                    System.out.println(m.getTimestamp().greaterThan(timestamp));
-                    System.out.println("--");
-                });
         return observedMessageOrder.stream().
                 filter(message -> message.getTimestamp().greaterThanOrEqual(timestamp)).
                 map(RoomMulticastMessage::new).

@@ -41,6 +41,7 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
     public RoomMulticastMessage(RoomMulticastMessage toCopy) {
         super(toCopy.senderID, MESSAGE_TYPE_ROOM_MESSAGE, toCopy.roomID);
         vectorTimestamp = new VectorTimestamp(toCopy.vectorTimestamp);
+        this.payload = toCopy.payload;
         this.acked = true;
     }
 
