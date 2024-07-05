@@ -107,8 +107,27 @@ public class ChatRoom {
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
             return;
         }
-        System.out.println(incomingMessageQueue.contains(inbound) + " - " + observedMessageOrder.contains(inbound));
+        incomingMessageQueue.forEach(m ->
+                {
+                    System.out.println(m.getTimestamp().equal(inbound.getTimestamp()));
+                    System.out.println(inbound.equals(m));
+                    System.out.println(m.toJSONString());
+                    System.out.println(inbound.toJSONString());
+                }
+        );
+        observedMessageOrder.forEach(m ->
+                {
+                    System.out.println(m.getTimestamp().equal(inbound.getTimestamp()));
+                    System.out.println(inbound.equals(m));
+                    System.out.println(m.toJSONString());
+                    System.out.println(inbound.toJSONString());
+                }
+        );
+
+        System.out.println();
         System.out.println("Adding to the inbound queue " + inbound.toJSONString());
+        System.out.println(incomingMessageQueue.contains(inbound) + " - " + observedMessageOrder.contains(inbound));
+        System.out.println();
         incomingMessageQueue.add(inbound);
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
