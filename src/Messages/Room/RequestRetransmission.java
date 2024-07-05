@@ -8,7 +8,6 @@ import utils.Constants;
 public class RequestRetransmission extends AbstractOrderedMessage {
     public RequestRetransmission(int senderID, int roomID, VectorTimestamp lastAvailableTimestam) {
         super(senderID, Constants.MESSAGE_TYPE_REQUEST_RTO, roomID);
-        System.out.println("Sending a retransmission request");
         this.vectorTimestamp = lastAvailableTimestam;
     }
 

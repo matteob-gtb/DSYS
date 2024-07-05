@@ -76,6 +76,7 @@ public class ChatRoom {
             }
         }
         if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
+            System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() +  " - " + queueSizeBefore);
             if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
                 //Fail to deliver, the sender MIGHT be dead --> request a retransmission
                 RequestRetransmission rto = new RequestRetransmission(
