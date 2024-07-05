@@ -39,7 +39,7 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
      */
 
     public String eventPrompt() {
-        return "\n\nClient #" + this.recipientID + " asked to join room #" + this.roomID + "\nDo you want to join [y/n]\n>  ?";
+        return "\n\nClient #" + this.recipientID + " asked to join room #" + this.roomID + "\nDo you want to join [y/n]?\n>  ";
     }
 
     /**

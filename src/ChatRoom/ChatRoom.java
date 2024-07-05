@@ -119,6 +119,11 @@ public class ChatRoom {
             System.out.println(m.toJSONString());
             System.out.println("equals " + m.equals(inbound));
             System.out.println("tsm equals " + m.getTimestamp().equals(inbound.getTimestamp()));
+            System.out.println(observedMessageOrder.contains(m));
+            System.out.println(observedMessageOrder.contains(inbound));
+            System.out.println(observedMessageOrder.contains(m.hashCode()));
+            System.out.println(observedMessageOrder.contains(inbound.hashCode()));
+
         });
         System.out.println("\n\n-------------------------");
 
