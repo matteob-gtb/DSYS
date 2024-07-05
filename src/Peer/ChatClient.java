@@ -4,11 +4,11 @@ package Peer;
 import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Events.ReplyToRoomRequestEvent;
-import Messages.AbstractMessage;
-import Messages.AnonymousMessages.CreateRoomRequest;
-import Messages.AnonymousMessages.HelloMessage;
-import Messages.QueueManager;
-import Messages.QueueThread;
+import Messages.CommonMulticastMessages.AbstractMessage;
+import Messages.CommonMulticastMessages.AnonymousMessages.CreateRoomRequest;
+import Messages.CommonMulticastMessages.AnonymousMessages.HelloMessage;
+import Messages.Handler.QueueManager;
+import Messages.Handler.QueueThread;
 import Networking.MyMulticastSocketWrapper;
 
 import java.io.BufferedReader;

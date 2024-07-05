@@ -1,6 +1,5 @@
-package Messages.Room;
+package Messages.CommonMulticastMessages.Room;
 
-import Messages.AbstractMessage;
 import Peer.ChatClient;
 import VectorTimestamp.*;
 import com.google.gson.Gson;

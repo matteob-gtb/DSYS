@@ -1,4 +1,4 @@
-package Messages;
+package Messages.Handler;
 
 import ChatRoom.ChatRoom;
 

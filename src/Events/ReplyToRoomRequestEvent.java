@@ -1,10 +1,9 @@
 package Events;
 
 import ChatRoom.ChatRoom;
-import Messages.AbstractMessage;
-import Messages.AnonymousMessages.AcceptRoomRequest;
-import Messages.AnonymousMessages.RefuseRoomRequest;
-import com.google.gson.JsonObject;
+import Messages.CommonMulticastMessages.AbstractMessage;
+import Messages.CommonMulticastMessages.AnonymousMessages.AcceptRoomRequest;
+import Messages.CommonMulticastMessages.AnonymousMessages.RefuseRoomRequest;
 
 import java.util.Arrays;
 import java.util.Optional;

@@ -1,6 +1,6 @@
-package Messages;
+package Messages.CommonMulticastMessages.AnonymousMessages;
 
-import Messages.Room.AbstractOrderedMessage;
+import Messages.CommonMulticastMessages.Room.AbstractOrderedMessage;
 import VectorTimestamp.VectorTimestamp;
 
 import static utils.Constants.MESSAGE_TYPE_DELETE_ROOM;

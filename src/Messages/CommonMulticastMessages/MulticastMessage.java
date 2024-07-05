@@ -1,4 +1,4 @@
-package Messages;
+package Messages.CommonMulticastMessages;
 
 import com.google.gson.*;
 

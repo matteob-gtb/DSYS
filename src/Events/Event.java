@@ -1,6 +1,6 @@
 package Events;
 
-import Messages.AbstractMessage;
+import Messages.CommonMulticastMessages.AbstractMessage;
 
 import java.util.Optional;
 

@@ -1,6 +1,5 @@
-package Messages.Room;
+package Messages.CommonMulticastMessages.Room;
 
-import Messages.AbstractMessage;
 import VectorTimestamp.VectorTimestamp;
 import utils.Constants;
 

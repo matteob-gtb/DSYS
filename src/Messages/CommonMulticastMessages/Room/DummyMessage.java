@@ -1,6 +1,5 @@
-package Messages.Room;
+package Messages.CommonMulticastMessages.Room;
 
-import Messages.AbstractMessage;
 import VectorTimestamp.VectorTimestamp;
 
 //only used to record previous values of the timestamp at the receiver value,

@@ -1,4 +1,4 @@
-package Messages;
+package Messages.Handler;
 
 import java.io.IOException;
 import java.net.*;
@@ -6,14 +6,11 @@ import java.net.*;
 import ChatRoom.ChatRoom;
 import Events.AbstractEvent;
 import Events.GenericNotifyEvent;
-import Messages.AnonymousMessages.AckMessage;
-import Messages.AnonymousMessages.CreateRoomRequest;
-import Messages.AnonymousMessages.RoomFinalizedMessage;
-import Messages.AnonymousMessages.WelcomeMessage;
-import Messages.Room.AbstractOrderedMessage;
-import Messages.Room.RequestRetransmission;
-import Messages.Room.RoomMulticastMessage;
-import Networking.MyMulticastSocketWrapper;
+import Messages.CommonMulticastMessages.AnonymousMessages.*;
+import Messages.CommonMulticastMessages.AbstractMessage;
+import Messages.CommonMulticastMessages.Room.AbstractOrderedMessage;
+import Messages.CommonMulticastMessages.Room.RequestRetransmission;
+import Messages.CommonMulticastMessages.Room.RoomMulticastMessage;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
 import Peer.ChatClient;
@@ -175,10 +172,10 @@ public class QueueThread implements QueueManager {
 
                     //System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
 
-                    switch (inbound.messageType) {
+                    switch (inbound.getMessageType()) {
                         //Actionable messages
                         case MESSAGE_TYPE_HELLO -> {
-                            String username = inbound.username;
+                            String username = inbound.getUsername();
                             client.addUsernameMapping(sender, username);
                             client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                             onlineClients.add(sender);
@@ -201,7 +198,7 @@ public class QueueThread implements QueueManager {
                             CreateRoomRequest req = (CreateRoomRequest) inbound;
 
                             if (!roomsMap.containsKey(req.getRoomID())) { //don't ask the user multiple times
-                                AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.senderID, this.client.getID(), req.getGroupname(), roomID, sender, "y", "n");
+                                AbstractEvent eventToProcess = new ReplyToRoomRequestEvent(req.getSenderID(), this.client.getID(), req.getGroupname(), roomID, sender, "y", "n");
                                 client.addEvent(eventToProcess);
                             }
                         }

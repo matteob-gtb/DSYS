@@ -1,14 +1,12 @@
 package Networking;
 
-import Messages.AbstractMessage;
-import Messages.AnonymousMessages.ProbeMessage;
-import Messages.Room.AbstractOrderedMessage;
+import Messages.CommonMulticastMessages.AbstractMessage;
+import Messages.CommonMulticastMessages.AnonymousMessages.ProbeMessage;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
 
-import static java.lang.System.exit;
 import static utils.Constants.GROUP_PORT;
 import static utils.Constants.SOCKET_DEFAULT_TIMEOUT_MS;
 

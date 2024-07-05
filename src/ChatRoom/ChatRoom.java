@@ -1,14 +1,12 @@
 package ChatRoom;
 
-import Messages.AbstractMessage;
-import Messages.AnonymousMessages.AckMessage;
-import Messages.DeleteRoom;
-import Messages.Logger;
-import Messages.Room.DummyMessage;
-import Messages.AnonymousMessages.RoomFinalizedMessage;
-import Messages.Room.AbstractOrderedMessage;
-import Messages.Room.RequestRetransmission;
-import Messages.Room.RoomMulticastMessage;
+import Messages.CommonMulticastMessages.AbstractMessage;
+import Messages.CommonMulticastMessages.AnonymousMessages.AckMessage;
+import Messages.CommonMulticastMessages.AnonymousMessages.DeleteRoom;
+import Messages.CommonMulticastMessages.AnonymousMessages.RoomFinalizedMessage;
+import Messages.CommonMulticastMessages.Room.AbstractOrderedMessage;
+import Messages.CommonMulticastMessages.Room.RequestRetransmission;
+import Messages.CommonMulticastMessages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import Peer.ChatClient;
 import VectorTimestamp.VectorTimestamp;
@@ -161,12 +159,6 @@ public class ChatRoom {
         if (this.chatID == DEFAULT_GROUP_ROOMID) return;
 
 
-        Logger.writeLog(writeCurrentTime() +
-                " ACK " + messageToAck.toJSONString());
-
-        Logger.writeLog(writeCurrentTime() +
-                " RECEIVED ACK outgoing queue " + Arrays.toString(outGoingMessageQueue.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
-        );
 
 
         var toAckSameTimestamp = outGoingMessageQueue.stream().filter(
@@ -175,9 +167,7 @@ public class ChatRoom {
 
         AbstractOrderedMessage msg = null;
         if (toAckSameTimestamp.size() != 1) {
-            Logger.writeLog(writeCurrentTime() +
-                    " ERROR,same ts(m) " + Arrays.toString(toAckSameTimestamp.stream().map(AbstractMessage::toJSONString).toArray(String[]::new))
-            );
+
         } else {
             msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
             msg.addAckedBy(messageToAck.getSenderID());

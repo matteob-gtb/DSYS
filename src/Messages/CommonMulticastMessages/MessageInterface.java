@@ -1,7 +1,4 @@
-package Messages;
-
-import ChatRoom.ChatRoom;
-import com.google.gson.JsonObject;
+package Messages.CommonMulticastMessages;
 
 public interface MessageInterface {
     String toJSONString();
@@ -11,6 +8,9 @@ public interface MessageInterface {
 
     void setSent(boolean sent);
 
+    public String getUsername();
+
+    public int getMessageType();
 
     public boolean canDelete();
 

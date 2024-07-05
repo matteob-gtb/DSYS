@@ -1,7 +1,6 @@
-package Messages.AnonymousMessages;
+package Messages.CommonMulticastMessages.AnonymousMessages;
 
-import Messages.AbstractMessage;
-import Messages.Room.AbstractOrderedMessage;
+import Messages.CommonMulticastMessages.Room.AbstractOrderedMessage;
 import VectorTimestamp.VectorTimestamp;
 import utils.Constants;
 

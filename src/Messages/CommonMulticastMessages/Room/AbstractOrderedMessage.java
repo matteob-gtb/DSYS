@@ -1,6 +1,6 @@
-package Messages.Room;
+package Messages.CommonMulticastMessages.Room;
 
-import Messages.AbstractMessage;
+import Messages.CommonMulticastMessages.AbstractMessage;
 import VectorTimestamp.VectorTimestamp;
 import com.google.gson.annotations.Expose;
 

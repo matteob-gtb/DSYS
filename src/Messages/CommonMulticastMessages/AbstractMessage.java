@@ -1,9 +1,8 @@
-package Messages;
+package Messages.CommonMulticastMessages;
 
-import Messages.AnonymousMessages.*;
-import Messages.Room.RequestRetransmission;
-import Messages.Room.RoomMulticastMessage;
-import VectorTimestamp.VectorTimestamp;
+import Messages.CommonMulticastMessages.AnonymousMessages.*;
+import Messages.CommonMulticastMessages.Room.RequestRetransmission;
+import Messages.CommonMulticastMessages.Room.RoomMulticastMessage;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 
@@ -34,6 +33,9 @@ public abstract class AbstractMessage implements MessageInterface {
         this.payload = rawPayload;
     }
 
+    public String getUsername() {
+        return username;
+    }
 
     public Gson gson() {
         GsonBuilder builder = new GsonBuilder();
@@ -61,6 +63,9 @@ public abstract class AbstractMessage implements MessageInterface {
         return roomID;
     }
 
+    public int getMessageType() {
+        return messageType;
+    }
 
     public AbstractMessage() {
     }
@@ -90,7 +95,7 @@ public abstract class AbstractMessage implements MessageInterface {
         return String.format("Message Type: %s, Sender: %s, Payload: %s", messageTypeStr, sender, payload);
     }
 
-    static class AbstractMessageDeserializer implements JsonDeserializer<AbstractMessage> {
+    public static class AbstractMessageDeserializer implements JsonDeserializer<AbstractMessage> {
 
 
         @Override

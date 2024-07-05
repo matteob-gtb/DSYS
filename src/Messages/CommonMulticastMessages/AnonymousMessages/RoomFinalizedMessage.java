@@ -1,6 +1,6 @@
-package Messages.AnonymousMessages;
+package Messages.CommonMulticastMessages.AnonymousMessages;
 
-import Messages.AbstractMessage;
+import Messages.CommonMulticastMessages.AbstractMessage;
 import utils.Constants;
 
 import java.util.Set;
