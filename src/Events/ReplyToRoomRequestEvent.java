@@ -16,7 +16,6 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
     private final String GROUPNAME;
 
 
-
     public ReplyToRoomRequestEvent(int roomOwner, int clientID, String GROUPNAME, int roomID, int sender, String... acceptableOutcomes) {
         super(true);
         this.ownerID = roomOwner;
@@ -56,15 +55,14 @@ public class ReplyToRoomRequestEvent extends AbstractEvent {
         Optional<String> foundMatch = Arrays.stream(acceptableOutcomes).filter(x -> x.contains(command)).findFirst();
         if (foundMatch.isEmpty())
             return Optional.empty();
-        int type = -1;
         AbstractMessage outcome = null;
-        if (command.equals("y")) {
+        if (command.equalsIgnoreCase("y")) {
             System.out.println("Accepted the invitation to room " + this.roomID);
-            outcome = new AcceptRoomRequest(this.clientID,this.roomID);
-        } else {
+            outcome = new AcceptRoomRequest(this.clientID, this.roomID);
+        } else if (command.equalsIgnoreCase("n")) {
             System.out.println("Refused the invitation to room " + this.roomID);
-            outcome = new RefuseRoomRequest(this.clientID,this.roomID);
+            outcome = new RefuseRoomRequest(this.clientID, this.roomID);
         }
-        return Optional.of(outcome);
+        return Optional.ofNullable(outcome);
     }
 }

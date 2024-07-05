@@ -152,11 +152,12 @@ public class ChatClient extends AbstractClient {
                             //System.out.println("Read " + command + " from user");
                             eventOutcome = currentEvent.executeEvent(command);
                             //events can only be broadcasted over the common channel
-                            if (eventOutcome.isPresent())
+                            if (eventOutcome.isPresent()) {
                                 commonMulticastChannel.addOutgoingMessage(eventOutcome.get());
-                            if (currentEvent instanceof ReplyToRoomRequestEvent) {
-                                ChatRoom newRoom = ((ReplyToRoomRequestEvent) currentEvent).createRoomReference();
-                                queueManager.registerRoom(newRoom);
+                                if (currentEvent instanceof ReplyToRoomRequestEvent) {
+                                    ChatRoom newRoom = ((ReplyToRoomRequestEvent) currentEvent).createRoomReference();
+                                    queueManager.registerRoom(newRoom);
+                                }
                             }
                         }
                         command = "x";
