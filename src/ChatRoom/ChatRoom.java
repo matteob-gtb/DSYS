@@ -106,27 +106,10 @@ public class ChatRoom {
 
     public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
 
-
         //check, for every queue that a message can be delivered
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
             return;
         }
-        System.out.println("\n\n-------------------------");
-
-        System.out.println("Adding incoming message " + inbound.toJSONString());
-        System.out.println("Observed");
-        observedMessageOrder.forEach(m -> {
-            System.out.println(m.toJSONString());
-            System.out.println("equals " + m.equals(inbound));
-            System.out.println("tsm equals " + m.getTimestamp().equals(inbound.getTimestamp()));
-            System.out.println(observedMessageOrder.contains(m));
-            System.out.println(observedMessageOrder.contains(inbound));
-            System.out.println(m.hashCode());
-            System.out.println(inbound.hashCode());
-
-        });
-        System.out.println("\n\n-------------------------");
-
 
         incomingMessageQueue.add(inbound);
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();

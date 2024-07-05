@@ -53,18 +53,11 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
     }
 
 
-    /**
-     * @param o the object to be compared.
-     * @return
-     */
-
     public VectorTimestamp getTimestamp() {
         return vectorTimestamp;
     }
 
-    /**
-     * @return
-     */
+
     @Override
     public Gson gson() {
         GsonBuilder builder = new GsonBuilder();

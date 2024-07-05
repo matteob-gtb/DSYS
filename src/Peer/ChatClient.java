@@ -312,7 +312,8 @@ public class ChatClient extends AbstractClient {
                 5. List Online Peers
                 6. Discover Online Peers
                 7. Quit Application
-                Enter command:""");
+                Enter a command:
+                >  """);
         //Flush console
 
     }
