@@ -7,6 +7,7 @@ import Messages.Logger;
 import Messages.Room.DummyMessage;
 import Messages.AnonymousMessages.RoomFinalizedMessage;
 import Messages.Room.AbstractOrderedMessage;
+import Messages.Room.RequestRetransmission;
 import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import Peer.ChatClient;
@@ -16,6 +17,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
@@ -30,7 +32,7 @@ public class ChatRoom {
 
     private final int ownerID;
     private boolean onlineStatus;
-    private Long lastReconnectAttempt = 0L;
+    private Long lastReconnectAttempt = 0L, lastRTORequest = 0L;
 
     public Long getCreationTimestamp() {
         return creationTimestamp;
@@ -63,6 +65,7 @@ public class ChatRoom {
 
 
     public synchronized void updateInQueue() {
+        int queueSizeBefore = incomingMessageQueue.size();
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
             RoomMulticastMessage message = iterator.next();
@@ -72,6 +75,26 @@ public class ChatRoom {
                 lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
             }
         }
+        if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
+            if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
+                //Fail to deliver, the sender MIGHT be dead --> request a retransmission
+                RequestRetransmission rto = new RequestRetransmission(
+                        ChatClient.ID,
+                        this.chatID,
+                        this.lastMessageTimestamp
+                );
+                addOutgoingMessage(rto);
+                lastRTORequest = System.currentTimeMillis();
+            }
+        }
+    }
+
+    //return them with ACKED equal to true, they don't have to be acked again, only one client lost the message
+    public synchronized List<RoomMulticastMessage> getObservedMessagesFrom(VectorTimestamp timestamp) {
+        return observedMessageOrder.stream().
+                filter(message -> message.getTimestamp().greaterThanOrEqual(timestamp)).
+                map(message -> new RoomMulticastMessage((RoomMulticastMessage) message)).
+                collect(Collectors.toList());
     }
 
 

@@ -18,7 +18,6 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
 
         public RoomMulticastMessageComparator(int positionToCompare) {
             this.positionToCompare = positionToCompare;
-            ;
         }
 
 
@@ -36,6 +35,13 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
     public RoomMulticastMessage(int clientID, int roomID) {
         super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
         vectorTimestamp = null;
+    }
+
+    //Copies are not meant to be acked again
+    public RoomMulticastMessage(RoomMulticastMessage toCopy) {
+        super(toCopy.senderID, MESSAGE_TYPE_ROOM_MESSAGE, toCopy.roomID);
+        vectorTimestamp = new VectorTimestamp(toCopy.vectorTimestamp);
+        this.acked = true;
     }
 
 

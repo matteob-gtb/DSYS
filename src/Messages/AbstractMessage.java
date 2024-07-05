@@ -1,6 +1,7 @@
 package Messages;
 
 import Messages.AnonymousMessages.*;
+import Messages.Room.RequestRetransmission;
 import Messages.Room.RoomMulticastMessage;
 import VectorTimestamp.VectorTimestamp;
 import com.google.gson.*;
@@ -133,6 +134,9 @@ public abstract class AbstractMessage implements MessageInterface {
                 }
                 case MESSAGE_TYPE_DELETE_ROOM -> {
                     return jsonDeserializationContext.deserialize(jsonElement, DeleteRoom.class);
+                }
+                case MESSAGE_TYPE_REQUEST_RTO -> {
+                    return jsonDeserializationContext.deserialize(jsonElement, RequestRetransmission.class);
                 }
                 default -> throw new RuntimeException("Unknown message type, deserialization aborted");
             }

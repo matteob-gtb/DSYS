@@ -18,6 +18,7 @@ public class Constants {
     public static final int MESSAGE_TYPE_CONNECTION_PROBE = 1337;
     public static final int MESSAGE_TYPE_DELETE_ROOM = 1333;
     public final static int SOCKET_DEFAULT_TIMEOUT_MS = 10;
+    public final static int MESSAGE_TYPE_REQUEST_RTO = 44;
 
     //it already waits for the socket timeout
     public static final int QUEUE_THREAD_SLEEP_MIN_MS = 1;
@@ -25,6 +26,7 @@ public class Constants {
     public final static int MAX_ROOM_CREATION_WAIT_MS = 10 * 1000;
     public final static int MIN_SOCKET_RECONNECT_DELAY_MS = 300;
     public final static int MIN_RETRANSMIT_WAIT_MS = 3000;
+    public final static int MIN_RTO_REQUEST_WAIT_MS = 10*1000;
 
     public static final String COMMON_GROUPNAME = "224.0.0.1";
 

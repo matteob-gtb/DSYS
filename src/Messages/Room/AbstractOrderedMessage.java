@@ -12,6 +12,18 @@ import static utils.Constants.MIN_RETRANSMIT_WAIT_MS;
 
 public class AbstractOrderedMessage extends AbstractMessage {
 
+
+    @Expose(serialize = false, deserialize = false)
+    protected transient Long milliTimestamp;
+    @Expose(serialize = false, deserialize = false)
+    protected transient boolean acked = false;
+    @Expose(serialize = false, deserialize = false)
+    private  transient Set<Integer> ackedBy = new HashSet<>();
+
+
+    protected VectorTimestamp vectorTimestamp;
+
+
     public Long getMilliTimestamp() {
         return milliTimestamp;
     }
@@ -19,16 +31,6 @@ public class AbstractOrderedMessage extends AbstractMessage {
     public void setMilliTimestamp(Long milliTimestamp) {
         this.milliTimestamp = milliTimestamp;
     }
-
-    @Expose(serialize = false, deserialize = false)
-    protected Long milliTimestamp;
-    @Expose(serialize = false, deserialize = false)
-    private boolean acked = false;
-    @Expose(serialize = false, deserialize = false)
-    private Set<Integer> ackedBy = new HashSet<>();
-
-
-    protected VectorTimestamp vectorTimestamp;
 
     public void setAcked(boolean acked) {
         this.acked = acked;

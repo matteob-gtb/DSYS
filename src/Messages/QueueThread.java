@@ -11,6 +11,7 @@ import Messages.AnonymousMessages.CreateRoomRequest;
 import Messages.AnonymousMessages.RoomFinalizedMessage;
 import Messages.AnonymousMessages.WelcomeMessage;
 import Messages.Room.AbstractOrderedMessage;
+import Messages.Room.RequestRetransmission;
 import Messages.Room.RoomMulticastMessage;
 import Networking.MyMulticastSocketWrapper;
 import Peer.AbstractClient;
@@ -103,10 +104,8 @@ public class QueueThread implements QueueManager {
         System.out.println("QueueThread Online");
         byte[] buffer = new byte[1024];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        MulticastMessage nextMessage = null;
-        JsonObject outgoingMessage;
         Gson gson = new GsonBuilder().registerTypeAdapter(AbstractMessage.class, new AbstractMessage.AbstractMessageDeserializer()).create();
-        boolean packetReceived = false;
+        boolean packetReceived;
         long last = 0;
         while (true) {
             packetReceived = false;
@@ -143,10 +142,10 @@ public class QueueThread implements QueueManager {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
                     String t = "";
 
-                    if (m instanceof AbstractOrderedMessage)
-                        t = ((AbstractOrderedMessage) m).getTimestamp().toString();
-
-                    //System.out.println("Sending message " + m.getClass().getSimpleName() + " in room #" + currentRoom.getRoomId() + " " + t);
+//                    if (m instanceof AbstractOrderedMessage)
+//                        t = ((AbstractOrderedMessage) m).getTimestamp().toString();
+//
+//                    System.out.println("Sending message " + m.getClass().getSimpleName() + " in room #" + currentRoom.getRoomId() + " " + t);
 
                     if (m instanceof AbstractOrderedMessage)
                         ((AbstractOrderedMessage) m).setMilliTimestamp(System.currentTimeMillis());
@@ -253,14 +252,26 @@ public class QueueThread implements QueueManager {
                         }
                         case MESSAGE_TYPE_DELETE_ROOM -> {
                             DeleteRoom message = (DeleteRoom) inbound;
-                            ChatRoom room = roomsMap.get(message.getRoomID());
-                            if (room != null) {
-                                room.scheduleDeletion(false);
-                                AckMessage ackMessage = new AckMessage(ChatClient.ID, inbound.getSenderID(), message.getTimestamp(), room.getRoomId());
-                                room.sendRawMessageNoQueue(ackMessage);
-                            } else {
-                                System.out.println("Deleting unknown roomID, ignoring it");
+                            synchronized (roomsMap) {
+                                ChatRoom room = roomsMap.get(message.getRoomID());
+                                if (room != null) {
+                                    room.scheduleDeletion(false);
+                                    AckMessage ackMessage = new AckMessage(ChatClient.ID, inbound.getSenderID(), message.getTimestamp(), room.getRoomId());
+                                    room.sendRawMessageNoQueue(ackMessage);
+                                }
                             }
+                        }
+                        case MESSAGE_TYPE_REQUEST_RTO -> {
+                            RequestRetransmission rto = (RequestRetransmission) inbound;
+
+                            System.out.println("Received a RTO request with timestamp " + rto.getTimestamp().toString());
+
+                            synchronized (roomsMap) {
+                                ChatRoom dedicatedRoom = roomsMap.get(rto.getRoomID());
+                                List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(rto.getTimestamp());
+                                toRetransmit.forEach(dedicatedRoom::addOutgoingMessage);
+                            }
+
                         }
                     }
                 }
