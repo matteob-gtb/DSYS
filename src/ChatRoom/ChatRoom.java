@@ -99,7 +99,7 @@ public class ChatRoom {
     public synchronized List<RoomMulticastMessage> getObservedMessagesFrom(VectorTimestamp timestamp) {
         return observedMessageOrder.stream().
                 filter(message -> message.getTimestamp().greaterThanOrEqual(timestamp)).
-                map(message -> new RoomMulticastMessage((RoomMulticastMessage) message)).
+                map(RoomMulticastMessage::new).
                 collect(Collectors.toList());
     }
 
