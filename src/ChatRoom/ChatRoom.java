@@ -63,6 +63,7 @@ public class ChatRoom {
         return (currentTime.format(formatter));
     }
 
+    private int howManyUpdatesWithoutDelivery = 0;
 
     public synchronized void updateInQueue() {
         int queueSizeBefore = incomingMessageQueue.size();
@@ -76,18 +77,22 @@ public class ChatRoom {
             }
         }
         if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
-            System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
-            incomingMessageQueue.forEach(message -> System.out.println(message.toJSONString()));
-            if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
-                //Fail to deliver, the sender MIGHT be dead --> request a retransmission
-                RequestRetransmission rto = new RequestRetransmission(
-                        ChatClient.ID,
-                        this.chatID,
-                        this.lastMessageTimestamp
-                );
-                addOutgoingMessage(rto);
-                lastRTORequest = System.currentTimeMillis();
-            }
+            if (howManyUpdatesWithoutDelivery > 5) {
+                incomingMessageQueue.forEach(message -> System.out.println(message.toJSONString()));
+                if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
+                    System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
+
+                    //Fail to deliver, the sender MIGHT be dead --> request a retransmission
+                    RequestRetransmission rto = new RequestRetransmission(
+                            ChatClient.ID,
+                            this.chatID,
+                            this.lastMessageTimestamp
+                    );
+                    addOutgoingMessage(rto);
+                    lastRTORequest = System.currentTimeMillis();
+                }
+                howManyUpdatesWithoutDelivery = 0;
+            } else howManyUpdatesWithoutDelivery++;
         }
     }
 
@@ -107,28 +112,7 @@ public class ChatRoom {
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
             return;
         }
-        System.out.println("INCOMINMG");
-        incomingMessageQueue.forEach(m ->
-                {
-                    System.out.println(m.getTimestamp().equals(inbound.getTimestamp()));
-                    System.out.println("c1 " + inbound.equals(m));
-                    System.out.println(m.toJSONString());
-                    System.out.println("c1 " + inbound.toJSONString());
-                }
-        );
-        System.out.println("OBSERVED");
 
-        observedMessageOrder.forEach(m ->
-                {
-
-                    System.out.println(m.getTimestamp().equals(inbound.getTimestamp()));
-                    System.out.println("c2 " + inbound.equals(m));
-                    System.out.println(m.toJSONString());
-                    System.out.println("c2 " + inbound.toJSONString());
-                }
-        );
-        System.out.println("Adding to the inbound queue " + inbound.toJSONString());
-        System.out.println(incomingMessageQueue.contains(inbound) + " - " + observedMessageOrder.contains(inbound));
         incomingMessageQueue.add(inbound);
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
