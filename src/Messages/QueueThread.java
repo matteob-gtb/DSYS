@@ -123,11 +123,6 @@ public class QueueThread implements QueueManager {
                 currentRoom.updateInQueue();
 
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
-//
-//                if (System.currentTimeMillis() - last > 5000) {
-//                    System.out.println("Outgoing messages :" + nextMsg.size());
-//                    last = System.currentTimeMillis();
-//                }
 
                 if (nextMsg.isEmpty()) { //all messages acked, delete the room
                     if (currentRoom.isScheduledForDeletion()) {
