@@ -45,8 +45,8 @@ public class VectorTimestamp implements Timestamp {
         if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
         VectorTimestamp otherV = (VectorTimestamp) other;
         boolean foundGreaterOrEqual =
-                IntStream.range(0, otherV.rawTimestamp.length).mapToObj(
-                        i -> otherV.rawTimestamp[i] > this.rawTimestamp[i]
+                IntStream.range(0, otherV.rawTimestamp.length).filter(
+                        i -> otherV.rawTimestamp[i] <= this.rawTimestamp[i]
                 ).findFirst().isPresent();
         return !foundGreaterOrEqual;
     }
@@ -60,8 +60,8 @@ public class VectorTimestamp implements Timestamp {
         if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
         VectorTimestamp otherV = (VectorTimestamp) other;
         boolean foundLessOrEqual =
-                IntStream.range(0, otherV.rawTimestamp.length).mapToObj(
-                        i -> otherV.rawTimestamp[i] < this.rawTimestamp[i]
+                IntStream.range(0, otherV.rawTimestamp.length).filter(
+                        i -> otherV.rawTimestamp[i] >= this.rawTimestamp[i]
                 ).findFirst().isPresent();
         return !foundLessOrEqual;
     }
@@ -75,8 +75,8 @@ public class VectorTimestamp implements Timestamp {
         if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
         VectorTimestamp otherV = (VectorTimestamp) other;
         boolean foundStrictlyGreater =
-                IntStream.range(0, otherV.rawTimestamp.length).mapToObj(
-                        i -> otherV.rawTimestamp[i] >= this.rawTimestamp[i]
+                IntStream.range(0, otherV.rawTimestamp.length).filter(
+                        index -> otherV.rawTimestamp[index] < rawTimestamp[index]
                 ).findFirst().isPresent();
         return !foundStrictlyGreater;
     }
@@ -93,8 +93,8 @@ public class VectorTimestamp implements Timestamp {
         if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
         VectorTimestamp otherV = (VectorTimestamp) other;
         boolean foundStrictlyLess =
-                IntStream.range(0, otherV.rawTimestamp.length).mapToObj(
-                        i -> otherV.rawTimestamp[i] <= this.rawTimestamp[i]
+                IntStream.range(0, otherV.rawTimestamp.length).filter(
+                        i -> otherV.rawTimestamp[i] > this.rawTimestamp[i]
                 ).findFirst().isPresent();
         return !foundStrictlyLess;
     }

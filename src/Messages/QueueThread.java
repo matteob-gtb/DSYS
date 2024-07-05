@@ -263,6 +263,9 @@ public class QueueThread implements QueueManager {
                             System.out.println("Replying with >");
                             synchronized (roomsMap) {
                                 ChatRoom dedicatedRoom = roomsMap.get(rto.getRoomID());
+
+
+
                                 List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(rto.getTimestamp());
                                 toRetransmit.stream().map(
                                         m -> m.getTimestamp()
