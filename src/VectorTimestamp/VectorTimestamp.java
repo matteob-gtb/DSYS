@@ -160,4 +160,7 @@ public class VectorTimestamp implements Timestamp {
     }
 
 
+    public int hashCode() {
+        return Arrays.hashCode(this.rawTimestamp);
+    }
 }

@@ -81,4 +81,10 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
         return this.senderID == other.senderID && this.getTimestamp().equals(other.getTimestamp());
     }
 
+
+    public int hashCode() {
+        return this.senderID ^ vectorTimestamp.hashCode();
+    }
+
+
 }
