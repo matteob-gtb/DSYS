@@ -107,6 +107,7 @@ public class ChatRoom {
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
             return;
         }
+        System.out.println("INCOMINMG");
         incomingMessageQueue.forEach(m ->
                 {
                     System.out.println(m.getTimestamp().equal(inbound.getTimestamp()));
@@ -115,6 +116,8 @@ public class ChatRoom {
                     System.out.println(inbound.toJSONString());
                 }
         );
+        System.out.println("OBSERVED");
+
         observedMessageOrder.forEach(m ->
                 {
                     System.out.println(m.getTimestamp().equal(inbound.getTimestamp()));
@@ -124,7 +127,8 @@ public class ChatRoom {
                 }
         );
 
-        System.out.println();
+        System.out.println("-"
+        );
         System.out.println("Adding to the inbound queue " + inbound.toJSONString());
         System.out.println(incomingMessageQueue.contains(inbound) + " - " + observedMessageOrder.contains(inbound));
         System.out.println();
