@@ -127,12 +127,6 @@ public class ChatRoom {
         });
         System.out.println("\n\n-------------------------");
 
-        try {
-            Thread.sleep(10000);
-        } catch (
-                Exception e) {
-        }
-
 
         incomingMessageQueue.add(inbound);
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
