@@ -204,8 +204,8 @@ public class QueueThread implements QueueManager {
 
                 //ignore my messages
                 if (sender != ChatClient.ID) {
-
-                    System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
+                    if (!(inbound instanceof HeartbeatMessage))
+                        System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
 
                     switch (inbound.getMessageType()) {
                         //Actionable messages

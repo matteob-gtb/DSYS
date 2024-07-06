@@ -15,5 +15,10 @@ public class HeartbeatMessage extends AbstractMessage {
         return o instanceof HeartbeatMessage;
     }
 
+    //send only once
+    public boolean canDelete() {
+        return true;
+    }
+
 
 }
