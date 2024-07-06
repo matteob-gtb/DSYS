@@ -43,7 +43,6 @@ public class ChatRoom {
 
     private final Set<RoomMulticastMessage> observedMessageOrder = Collections.synchronizedSet(new LinkedHashSet<>());
     private Set<Integer> participantIDs = new TreeSet<Integer>();
-    private HashMap<Integer, LinkedList<RoomMulticastMessage>> perParticipantMessageQueue = new HashMap<>();
 
     private Set<RoomMulticastMessage> incomingMessageQueue = new LinkedHashSet<>();
 
@@ -146,7 +145,6 @@ public class ChatRoom {
 
         final AtomicReference<Integer> k = new AtomicReference<>(0);
         this.participantIDs.stream().sorted().forEach(participantID -> {
-            perParticipantMessageQueue.put(participantID, new LinkedList<>());
             clientVectorIndex.put(participantID, k.getAndAccumulate(1, Integer::sum));
         });
     }
@@ -180,7 +178,6 @@ public class ChatRoom {
             final AtomicReference<Integer> k = new AtomicReference<>();
             k.set(0);
             participantIDs.forEach(id -> {
-                perParticipantMessageQueue.put(id, new LinkedList<>());
                 clientVectorIndex.put(id, k.getAndAccumulate(1, Integer::sum));
                 System.out.println("Client " + id + " has been finalized : index " + k.get());
             });
