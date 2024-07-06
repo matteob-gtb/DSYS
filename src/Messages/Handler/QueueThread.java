@@ -159,13 +159,6 @@ public class QueueThread implements QueueManager {
                 currentRoom.updateInQueue();
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
-                if (System.currentTimeMillis() - last > 1500) {
-                    System.out.println("Outqueue size : " + nextMsg.size());
-                    nextMsg.stream().filter(
-                            m -> m instanceof AbstractOrderedMessage
-                    ).forEach(m -> System.out.println(((AbstractOrderedMessage) m).getTimestamp()));
-                    last = System.currentTimeMillis();
-                }
 
                 if (currentRoom.isScheduledForDeletion() && nextMsg.isEmpty()) {
                     //all messages acked, delete the room
@@ -206,11 +199,10 @@ public class QueueThread implements QueueManager {
                 }
                 int sender = inbound.getSenderID();
                 int roomID = inbound.getRoomID();
-
-                //ignore my messages
                 if (sender != ChatClient.ID) {
-                    if (!(inbound instanceof HeartbeatMessage))
-                        System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
+                    //ignore my messages
+//                    if (!(inbound instanceof HeartbeatMessage))
+//                        System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
 
                     switch (inbound.getMessageType()) {
                         //Actionable messages
@@ -290,7 +282,6 @@ public class QueueThread implements QueueManager {
                         case MESSAGE_TYPE_ACK -> {
                             AckMessage m = (AckMessage) inbound;
                             if (m.getRecipientID() != this.client.getID()) break;
-                            System.out.println("Received ACK for " + m.getTimestamp().toString());
                             synchronized (roomsMap) {
                                 ChatRoom dedicatedRoom = roomsMap.get(roomID);
                                 dedicatedRoom.ackMessage((AckMessage) inbound);
@@ -314,8 +305,6 @@ public class QueueThread implements QueueManager {
                         case MESSAGE_TYPE_REQUEST_RTO -> {
                             RequestRetransmission rto = (RequestRetransmission) inbound;
 
-                            System.out.println("Received a RTO request with timestamp " + rto.getTimestamp().toString());
-                            System.out.println("Replying with >");
                             synchronized (roomsMap) {
                                 ChatRoom dedicatedRoom = roomsMap.get(rto.getRoomID());
 
