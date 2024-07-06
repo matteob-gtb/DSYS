@@ -124,14 +124,14 @@ public class ChatRoom {
     }
 
     //it's just reading it can be not synchronized, temporary discrepancies are ok
-    public void printMessages() {
+    public String getMessages() {
         System.out.println("Chat room #" + this.chatID + " - Owner #" + this.ownerID);
+        StringBuilder sb = new StringBuilder(observedMessageOrder.size() * 10);
         synchronized (observedMessageOrder) {
-            observedMessageOrder.
-                    stream().
-                    forEach(msg -> System.out.println("     " + msg.toChatString()));
-            System.out.println("Current Timestamp " + this.lastMessageTimestamp);
+            observedMessageOrder.forEach(msg -> sb.append("\t \t").append(msg.toChatString()).append("\n"));
         }
+        sb.append("Current Timestamp ").append(this.lastMessageTimestamp);
+        return sb.toString();
     }
 
     public void sendRawMessageNoQueue(AbstractMessage message) {

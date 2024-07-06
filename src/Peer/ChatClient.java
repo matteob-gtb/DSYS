@@ -80,7 +80,7 @@ public class ChatClient extends AbstractClient {
     public void joinRoom(ChatRoom room) {
         currentRoom = room;
         print("Joining Chat #" + currentRoom.getRoomId());
-        room.printMessages();
+        room.getMessages();
         String response;
         while (true) {
             System.out.println("Client #" + this.CLIENT_ID);
@@ -95,7 +95,12 @@ public class ChatClient extends AbstractClient {
                     System.out.println("This room is about to be deleted, exiting...");
                     break;
                 }
-                room.printMessages();
+                System.out.println(room.getMessages());
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             } catch (IOException e) {
                 System.out.println("Unrecoverable I/O error,shutting down...");
                 System.exit(1);

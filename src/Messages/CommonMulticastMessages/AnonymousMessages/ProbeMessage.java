@@ -5,7 +5,8 @@ import utils.Constants;
 
 public class ProbeMessage extends AbstractMessage {
 
-    public ProbeMessage() {
+    public ProbeMessage(int clientID) {
+        this.senderID = clientID;
         this.messageType = Constants.MESSAGE_TYPE_CONNECTION_PROBE;
     }
 

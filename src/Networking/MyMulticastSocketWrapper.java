@@ -3,6 +3,7 @@ package Networking;
 import Messages.CommonMulticastMessages.AbstractMessage;
 import Messages.CommonMulticastMessages.AnonymousMessages.AckMessage;
 import Messages.CommonMulticastMessages.AnonymousMessages.ProbeMessage;
+import Peer.ChatClient;
 
 import java.io.IOException;
 import java.net.*;
@@ -190,7 +191,7 @@ public class MyMulticastSocketWrapper {
 
 
     public void probeConnection() throws IOException {
-        byte[] buffer = new ProbeMessage().toJSONString().getBytes();
+        byte[] buffer = new ProbeMessage(ChatClient.ID).toJSONString().getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, this.roomGroup, GROUP_PORT);
         socket.send(packet);
     }
