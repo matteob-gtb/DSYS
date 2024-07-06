@@ -20,6 +20,9 @@ public class Constants {
     public final static int SOCKET_DEFAULT_TIMEOUT_MS = 10;
     public final static int MESSAGE_TYPE_REQUEST_RTO = 44;
     public final static int MESSAGE_TYPE_HEARTBEAT = 55;
+    public final static int HEARTBEAT_INTERVAL_MS = 5000;
+
+
     //it already waits for the socket timeout
     public static final int CLIENT_SLEEP_MS = 15;
     public final static int MAX_ROOM_CREATION_WAIT_MS = 12 * 1000;

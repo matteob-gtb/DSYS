@@ -122,10 +122,10 @@ public class QueueThread implements QueueManager {
     }
 
     private Long lastHeartBeat = 0L;
-    private final static int HEARTBEAT_INTERVAL_MS = 3000;
 
     public void sendHeartBeat() {
-        if (System.currentTimeMillis() - lastHeartBeat < HEARTBEAT_INTERVAL_MS) return;
+        if (System.currentTimeMillis() - lastHeartBeat < HEARTBEAT_INTERVAL_MS
+                || !commonMulticastChannel.isOnline()) return;
         lastHeartBeat = System.currentTimeMillis();
         HeartbeatMessage hello = new HeartbeatMessage(
                 this.client.getID(),

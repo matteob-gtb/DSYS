@@ -174,7 +174,6 @@ public class ChatClient extends AbstractClient {
                 }
                 Thread.sleep(CLIENT_SLEEP_MS);
             }
-            flushConsole();
             switch (command.toLowerCase()) {
                 case "x":
                     break;
