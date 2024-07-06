@@ -40,7 +40,6 @@ public class ChatClient extends AbstractClient {
         Random generator = new Random(System.currentTimeMillis() ^ 125243526);
         reader = new BufferedReader(new InputStreamReader(System.in));
 
-
         if (!Main.debug)
             while (true) {
                 System.out.print("Enter your username: > ");
@@ -74,6 +73,7 @@ public class ChatClient extends AbstractClient {
                 this.userName
         );
         //username only in HELLO messages
+        System.out.println("Sending HELLO in multicast...");
         currentRoom.addOutgoingMessage(welcomeMessage);
     }
 
