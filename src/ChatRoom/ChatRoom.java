@@ -77,11 +77,27 @@ public class ChatRoom {
             if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
                 System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
 
+                //send the last acked timestamp
+
+                int myIndexInVector = clientVectorIndex.get(ChatClient.ID);
+
+                //list of messages that I sent and that were acked by at least 1 peer
+                List<RoomMulticastMessage> timestamp = new ArrayList<>(observedMessageOrder.stream().filter(
+                        message -> message.getSenderID() == ChatClient.ID
+                                && message.getAckedBySize() > 0
+                ).toList());
+                //find the latest, i.e. the one that has the highest ts(m)[i] where i is my index
+                timestamp.sort(Comparator.comparingInt(m -> m.getTimestamp().getValueAtPosition(myIndexInVector)));
+                VectorTimestamp oldestTimestamp;
+                if (!timestamp.isEmpty()) {
+                    oldestTimestamp = timestamp.get(timestamp.size() - 1).getTimestamp();
+                } else oldestTimestamp = new VectorTimestamp(new int[this.participantIDs.size()]);
+
                 //Fail to deliver, the sender MIGHT be dead --> request a retransmission
                 RequestRetransmission rto = new RequestRetransmission(
                         ChatClient.ID,
                         this.chatID,
-                        this.lastMessageTimestamp
+                        oldestTimestamp
                 );
                 addOutgoingMessage(rto);
                 lastRTORequest = System.currentTimeMillis();
