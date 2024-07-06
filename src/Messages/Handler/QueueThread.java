@@ -324,9 +324,9 @@ public class QueueThread implements QueueManager {
 //                                VectorTimestamp toCompare = new VectorTimestamp(newTimestamp);
 
                                 List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(rto.getTimestamp());
-                                toRetransmit.stream().map(
-                                        m -> m.getTimestamp()
-                                ).forEach(System.out::println);
+//                                toRetransmit.stream().map(
+//                                        m -> m.getTimestamp()
+//                                ).forEach(System.out::println);
                                 toRetransmit.forEach(dedicatedRoom::addOutgoingMessage);
                             }
 

@@ -92,7 +92,6 @@ public class ChatRoom {
                 if (!timestamp.isEmpty()) {
                     oldestTimestamp = timestamp.get(timestamp.size() - 1).getTimestamp();
                 } else oldestTimestamp = new VectorTimestamp(new int[this.participantIDs.size()]);
-
                 //Fail to deliver, the sender MIGHT be dead --> request a retransmission
                 RequestRetransmission rto = new RequestRetransmission(
                         ChatClient.ID,
@@ -100,6 +99,7 @@ public class ChatRoom {
                         oldestTimestamp
                 );
                 addOutgoingMessage(rto);
+                System.out.println("Failing to deliver messages, asking for a RTO from " + oldestTimestamp.toString());
                 lastRTORequest = System.currentTimeMillis();
             }
 
@@ -231,7 +231,7 @@ public class ChatRoom {
         } catch (Exception e) {
             exceptionThrown = true;
         }
-        if(!exceptionThrown) System.out.println("Connection re-established");
+        if (!exceptionThrown) System.out.println("Connection re-established");
         this.onlineStatus = !exceptionThrown;
 
     }
