@@ -17,12 +17,13 @@ import Peer.ChatClient;
 import com.google.gson.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static utils.Constants.*;
 
 public class QueueThread implements QueueManager {
 
-    private Set<Integer> onlineClients = new TreeSet<Integer>();
+    private final Map<Integer, Long> onlineClientsLastHeard = Collections.synchronizedMap(new HashMap<>());
     private final AbstractClient client;
     private final Map<Integer, ChatRoom> roomsMap = Collections.synchronizedMap(new HashMap<>());
     private ChatRoom commonMulticastChannel;
@@ -56,7 +57,9 @@ public class QueueThread implements QueueManager {
 
     @Override
     public Set<Integer> getOnlineClients() {
-        return onlineClients;
+        synchronized (onlineClientsLastHeard) {
+            return new HashSet<>(onlineClientsLastHeard.keySet());
+        }
     }
 
     /**
@@ -91,6 +94,19 @@ public class QueueThread implements QueueManager {
         registerRoom(currentRoom);
     }
 
+    private final static Long MAX_HELLO_INTERVAL_MS = 3000L;
+
+    private void updateOnlineClients() {
+        synchronized (onlineClientsLastHeard) {
+            Collection<Integer> idsToRemove = onlineClientsLastHeard.entrySet().
+                    stream().
+                    filter(entry -> System.currentTimeMillis() - entry.getValue() > MAX_HELLO_INTERVAL_MS).
+                    map(Map.Entry::getKey).
+                    toList();
+            idsToRemove.forEach(id -> onlineClientsLastHeard.remove(id));
+        }
+    }
+
 
     /**
      * The thread takes care of the queue, waits for messages on the socket and is in charge
@@ -118,10 +134,11 @@ public class QueueThread implements QueueManager {
             if (currentRoom.isOnline()) {
                 //check if any queued messages can now be delivered
                 currentRoom.updateInQueue();
-
+                updateOnlineClients();
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
-                if (nextMsg.isEmpty()) { //all messages acked, delete the room
+                if (nextMsg.isEmpty()) {
+                    //all messages acked, delete the room
                     if (currentRoom.isScheduledForDeletion()) {
                         currentRoom.displayWarningMessage();
                         currentRoom.cleanup();
@@ -133,11 +150,6 @@ public class QueueThread implements QueueManager {
                 nextMsg.forEach(m -> {
                     boolean sendOutcome = currentRoom.getDedicatedRoomSocket().sendPacket(m);
                     String t = "";
-
-//                    if (m instanceof AbstractOrderedMessage)
-//                        t = ((AbstractOrderedMessage) m).getTimestamp().toString();
-//
-//                    System.out.println("Sending message " + m.getClass().getSimpleName() + " in room #" + currentRoom.getRoomId() + " " + t);
 
                     if (m instanceof AbstractOrderedMessage)
                         ((AbstractOrderedMessage) m).setMilliTimestamp(System.currentTimeMillis());
@@ -167,7 +179,7 @@ public class QueueThread implements QueueManager {
                 int sender = inbound.getSenderID();
                 int roomID = inbound.getRoomID();
 
-
+                //ignore my messages
                 if (sender != ChatClient.ID) {
 
                     //System.out.println("Received " + inbound.getClass().getName() + " from #" + sender);
@@ -178,14 +190,18 @@ public class QueueThread implements QueueManager {
                             String username = inbound.getUsername();
                             client.addUsernameMapping(sender, username);
                             client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
-                            onlineClients.add(sender);
+                            synchronized (onlineClientsLastHeard) {
+                                onlineClientsLastHeard.put(sender, System.currentTimeMillis());
+                            }
                             AbstractMessage welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
                             commonMulticastChannel.addOutgoingMessage(welcome);
                         }
                         case MESSAGE_TYPE_WELCOME -> {
                             String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
                             client.addEvent(new GenericNotifyEvent(prompt));
-                            onlineClients.add(sender);
+                            synchronized (onlineClientsLastHeard) {
+                                onlineClientsLastHeard.put(sender, System.currentTimeMillis());
+                            }
                         }
                         case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
                             //if false i haven't created the room

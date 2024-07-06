@@ -7,7 +7,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        MyMulticastSocketWrapper.setupInterfaces();
+        //MyMulticastSocketWrapper.setupInterfaces();
         ChatClient client = new ChatClient();
         client.announceSelf();
         client.mainLoop();

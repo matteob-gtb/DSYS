@@ -61,8 +61,6 @@ public class ChatRoom {
         return (currentTime.format(formatter));
     }
 
-    private int howManyUpdatesWithoutDelivery = 0;
-
     public synchronized void updateInQueue() {
         int queueSizeBefore = incomingMessageQueue.size();
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
@@ -75,29 +73,28 @@ public class ChatRoom {
             }
         }
         if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
-            if (howManyUpdatesWithoutDelivery > 150) {
-                if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
-                    System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
+            if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
+                System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
 
-                    //Fail to deliver, the sender MIGHT be dead --> request a retransmission
-                    RequestRetransmission rto = new RequestRetransmission(
-                            ChatClient.ID,
-                            this.chatID,
-                            this.lastMessageTimestamp
-                    );
-                    addOutgoingMessage(rto);
-                    lastRTORequest = System.currentTimeMillis();
-                }
-                howManyUpdatesWithoutDelivery = 0;
-            } else howManyUpdatesWithoutDelivery++;
+                //Fail to deliver, the sender MIGHT be dead --> request a retransmission
+                RequestRetransmission rto = new RequestRetransmission(
+                        ChatClient.ID,
+                        this.chatID,
+                        this.lastMessageTimestamp
+                );
+                addOutgoingMessage(rto);
+                lastRTORequest = System.currentTimeMillis();
+            }
+
         }
+
     }
 
     //return them with ACKED equal to true, they don't have to be acked again, only one client lost the message
     public synchronized List<RoomMulticastMessage> getObservedMessagesFrom(VectorTimestamp timestamp) {
 
         return observedMessageOrder.stream().
-                filter(message -> message.getTimestamp().greaterThanOrEqual(timestamp)).
+                filter(message -> timestamp.canDeliver(message.getTimestamp())).
                 map(RoomMulticastMessage::new).
                 collect(Collectors.toList());
     }
@@ -157,8 +154,6 @@ public class ChatRoom {
 
     public synchronized void ackMessage(AckMessage messageToAck) {
         if (this.chatID == DEFAULT_GROUP_ROOMID) return;
-
-
 
 
         var toAckSameTimestamp = outGoingMessageQueue.stream().filter(
