@@ -101,9 +101,9 @@ public class QueueThread implements QueueManager {
                     room -> {
                         sb.append("\t");
                         if (room.isRoomFinalized()) {
-                            sb.append("Room #").append(room.getRoomId()).append(" Online : [").append(room.isOnline()).append("] ");
+                            sb.append("Room #").append(room.getRoomId()).append(" Online : [").append(room.isOnline()).append("] \n");
                             synchronized (onlineClientsLastHeard) {
-                                room.getParticipantIDs().stream().filter(id -> id != ChatClient.ID).forEach(pid -> sb.append("Client #").append(pid).append(onlineClientsLastHeard.get(pid)));
+                                room.getParticipantIDs().stream().filter(id -> id != ChatClient.ID).forEach(pid -> sb.append("\t\tClient #").append(pid).append(" Last Heard [s] -> ") .append(((float)System.currentTimeMillis() -  onlineClientsLastHeard.get(pid))/1000).append("\n"));
                             }
                         } else sb.append("Room #").append(room.getRoomId()).append(" not finalized yet");
                         sb.append("\n");

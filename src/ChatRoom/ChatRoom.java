@@ -195,6 +195,7 @@ public class ChatRoom {
             participantIDs.forEach(id -> {
                 clientVectorIndex.put(id, k.getAndAccumulate(1, Integer::sum));
             });
+            clientVectorIndex = Collections.unmodifiableMap(new HashMap<>(participantIDs.size()));
             return true;
         }
         return false;
