@@ -161,6 +161,9 @@ public class QueueThread implements QueueManager {
 
                 if (System.currentTimeMillis() - last > 1500) {
                     System.out.println("Outqueue size : " + nextMsg.size());
+                    nextMsg.stream().filter(
+                            m -> m instanceof AbstractOrderedMessage
+                    ).forEach(m -> System.out.println(((AbstractOrderedMessage) m).getTimestamp()));
                     last = System.currentTimeMillis();
                 }
 
