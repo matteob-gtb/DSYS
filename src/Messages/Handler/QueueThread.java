@@ -314,16 +314,16 @@ public class QueueThread implements QueueManager {
                             synchronized (roomsMap) {
                                 ChatRoom dedicatedRoom = roomsMap.get(rto.getRoomID());
 
-                                int[] newTimestamp = rto.getTimestamp().getRaw();
+//                                int[] newTimestamp = rto.getTimestamp().getRaw();
+//
+//                                int requestingClientIndex = dedicatedRoom.getClientIndex(rto.getSenderID());
+//
+//                                //go back to 0 w.r.t. to the requesting client's index so
+//                                newTimestamp[requestingClientIndex] = 0;
+//
+//                                VectorTimestamp toCompare = new VectorTimestamp(newTimestamp);
 
-                                int requestingClientIndex = dedicatedRoom.getClientIndex(rto.getSenderID());
-
-                                //go back to 0 w.r.t. to the requesting client's index so
-                                newTimestamp[requestingClientIndex] = 0;
-
-                                VectorTimestamp toCompare = new VectorTimestamp(newTimestamp);
-
-                                List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(toCompare);
+                                List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(rto.getTimestamp());
                                 toRetransmit.stream().map(
                                         m -> m.getTimestamp()
                                 ).forEach(System.out::println);
