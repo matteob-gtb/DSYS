@@ -222,7 +222,7 @@ public class ChatRoom {
 
     }
 
-    public boolean isRoomFinalized() {
+    public synchronized boolean isRoomFinalized() {
         return roomFinalized;
     }
 

@@ -130,9 +130,11 @@ public class ChatClient extends AbstractClient {
         AbstractEvent currentEvent = null;
         command = null;
         boolean waitingForInput = true;
+        boolean flushAfter = false;
+
         while (true) {
             waitingForInput = true;
-
+            flushAfter = false;
             //poll and get not needed to be atomic, only 1 consumer and 1 producer
             /*
              * Busy wait not optimal --> can't block on buffered reader and still accept events
@@ -172,24 +174,33 @@ public class ChatClient extends AbstractClient {
                 }
                 Thread.sleep(CLIENT_SLEEP_MS);
             }
+            flushConsole();
             switch (command.toLowerCase()) {
                 case "x":
                     break;
                 case "0":
                     print("Command 'List Commands' received.");
                     printAvailableCommands();
+                    flushAfter = false;
                     break;
                 case "1":
                     print("Command 'List Online Rooms' received.");
                     listRooms();
+                    flushAfter = false;
                     break;
                 case "2":
                     print("Command 'Join Room' received.");
                     int roomID = -1;
                     while (true) {
+                        listRooms();
+                        System.out.println();
                         print("Enter the room ID or q to exit this prompt");
+                        System.out.print("> ");
                         String nextLine = reader.readLine().trim();
-                        if (nextLine.contains("q")) break;
+                        if (nextLine.contains("q")) {
+                            printAvailableCommands();
+                            break;
+                        }
                         try {
                             roomID = Integer.parseInt(nextLine);
                             System.out.println("Asked to join room " + roomID);
@@ -198,26 +209,26 @@ public class ChatClient extends AbstractClient {
                         }
                         Optional<ChatRoom> room = queueManager.getChatRoom(roomID);
                         if (room.isEmpty())
-                            print("Room not found.");
+                            if (roomID == getDefaultRoom().getRoomId())
+                                System.out.println("The default room does not allow messages");
+                            else
+                                System.out.println("Room not found.");
                         else if (!room.get().isRoomFinalized()) {
                             System.out.println("Room has not been finalized yet, wait for" + (System.currentTimeMillis() - room.get().getCreationTimestamp()) + " more milliseconds");
                         } else {
                             joinRoom(room.get());
                             break;
                         }
-
+                        flushAfter = false;
                     }
-                    printAvailableCommands();
                     break;
                 case "3":
                     print("Command 'Create room' received.");
-                    boolean stopCreatingRoom = false;
                     int ID = -1;
                     while (ID == -1) {
                         System.out.println("Enter the room ID or q to exit this prompt >");
                         String nextLine = reader.readLine().trim();
                         if (nextLine.contains("q")) {
-                            stopCreatingRoom = true;
                             printAvailableCommands();
                             break;
                         } else {
@@ -238,18 +249,22 @@ public class ChatClient extends AbstractClient {
                             }
 
                         }
+                        Thread.sleep(1000);
+                        printAvailableCommands();
 
                     }
-
 
                     break;
                 case "4":
                     print("Command 'Delete room' received.");
+                    listRooms();
+                    System.out.println();
                     int deleteID = -1;
                     Optional<ChatRoom> toDelete = Optional.empty();
 
                     while (true) {
                         System.out.println("Enter the ID of the room you wish to delete,q to exit this prompt");
+                        System.out.print("> ");
                         String response = reader.readLine().trim();
                         if (response.contains("q"))
                             break;
@@ -260,7 +275,10 @@ public class ChatClient extends AbstractClient {
                         }
                         toDelete = queueManager.getChatRoom(deleteID);
                         if (toDelete.isEmpty())
-                            System.out.println("Room not found");
+                            if (deleteID == getDefaultRoom().getRoomId())
+                                System.out.println("Can't delete the default room");
+                            else
+                                System.out.println("Room not found");
                         else {
                             //delete room
                             ChatRoom room = toDelete.get();
@@ -271,27 +289,29 @@ public class ChatClient extends AbstractClient {
                             break;
                         }
                     }
-
                     printAvailableCommands();
                     break;
                 case "5":
                     print("Command 'List Online Peers' received.");
-                    flushConsole();
                     System.out.println(queueManager.getOnlineClients());
                     break;
                 case "6":
                     print("Command 'Discover online Peers' received.");
                     announceSelf();
                     print("Sent an HELLO in multicast, waiting for replies...");
+                    Thread.sleep(1000);
+                    printAvailableCommands();
                     break;
                 case "7":
                     System.exit(0);
                     break;
                 default:
+                    printAvailableCommands();
                     print("Invalid Command");
                     break;
             }
-            System.out.println(" >\t");
+
+            System.out.print("\n>\t");
         }
     }
 
@@ -313,8 +333,7 @@ public class ChatClient extends AbstractClient {
                 5. List Online Peers
                 6. Discover Online Peers
                 7. Quit Application
-                Enter a command:
-                >  """);
+                Enter a command:""");
         //Flush console
 
     }

@@ -75,9 +75,12 @@ public class QueueThread implements QueueManager {
      */
     @Override
     public Optional<ChatRoom> getChatRoom(int roomID) {
-        if (roomsMap.containsKey(roomID))
-            return Optional.of(roomsMap.get(roomID));
-        return Optional.empty();
+        if (roomID == commonMulticastChannel.getRoomId()) return Optional.empty();
+        synchronized (roomsMap) {
+            if (roomsMap.containsKey(roomID))
+                return Optional.of(roomsMap.get(roomID));
+            return Optional.empty();
+        }
     }
 
     public void registerRoom(ChatRoom chatRoom) {
@@ -90,7 +93,9 @@ public class QueueThread implements QueueManager {
 
     @Override
     public List<ChatRoom> getRooms() {
-        return new ArrayList<>(this.roomsMap.values());
+        synchronized (roomsMap) {
+            return new ArrayList<>(this.roomsMap.values());
+        }
     }
 
     public QueueThread(AbstractClient client, ChatRoom commonMulticastChannel) throws IOException {
