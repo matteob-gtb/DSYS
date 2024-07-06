@@ -109,7 +109,7 @@ public class MyMulticastSocketWrapper {
         if (!message.isUnicast()) {
             packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
         } else {
-            System.out.println("Sending unicast ack to " + ((AckMessage) message).getTimestamp() + " to " + message.getDestinationAddress().toString());
+           // System.out.println("Sending unicast ack to " + ((AckMessage) message).getTimestamp() + " to " + message.getDestinationAddress().toString());
             packet = new DatagramPacket(msg.getBytes(), msg.length(), message.getDestinationAddress(), GROUP_PORT);
         }
 
