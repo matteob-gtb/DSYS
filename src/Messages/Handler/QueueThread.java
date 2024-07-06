@@ -154,20 +154,22 @@ public class QueueThread implements QueueManager {
 
             if (currentRoom.isOnline()) {
                 //check if any queued messages can now be delivered
-                currentRoom.updateInQueue();
                 updateOnlineClients();
                 sendHeartBeat();
-
+                currentRoom.updateInQueue();
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
-                if (nextMsg.isEmpty()) {
+                if (System.currentTimeMillis() - last > 1500) {
+                    System.out.println("Outqueue size : " + nextMsg.size());
+                    last = System.currentTimeMillis();
+                }
+
+                if (currentRoom.isScheduledForDeletion() && nextMsg.isEmpty()) {
                     //all messages acked, delete the room
-                    if (currentRoom.isScheduledForDeletion()) {
-                        currentRoom.displayWarningMessage();
-                        currentRoom.cleanup();
-                        deleteRoom(currentRoom);
-                        continue;
-                    }
+                    currentRoom.displayWarningMessage();
+                    currentRoom.cleanup();
+                    deleteRoom(currentRoom);
+                    continue;
                 }
 
                 nextMsg.forEach(m -> {

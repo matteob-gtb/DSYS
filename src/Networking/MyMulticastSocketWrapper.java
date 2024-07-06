@@ -21,7 +21,6 @@ public class MyMulticastSocketWrapper {
     public static String hostAddress;
     private Long lastConnectionAttemptEpoch = -1L;
 
-
     public static void addUsedGroupName(String groupName) {
         usedGroupNames.add(groupName);
     }
