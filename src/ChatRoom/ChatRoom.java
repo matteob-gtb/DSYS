@@ -67,6 +67,7 @@ public class ChatRoom {
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
             RoomMulticastMessage message = iterator.next();
+            System.out.println("sender # " + message.getSenderID() + " - " + clientVectorIndex.get(message.getSenderID()));
             if (this.lastMessageTimestamp.canDeliver(message.getTimestamp(), clientVectorIndex.get(message.getSenderID()))) {
                 observedMessageOrder.add(message);
                 lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
@@ -161,6 +162,7 @@ public class ChatRoom {
         });
 
         this.clientVectorIndex = Collections.unmodifiableMap(this.clientVectorIndex);
+        System.out.println("Client indexes " + clientVectorIndex.toString());
 
     }
 
@@ -195,7 +197,8 @@ public class ChatRoom {
             participantIDs.forEach(id -> {
                 clientVectorIndex.put(id, k.getAndAccumulate(1, Integer::sum));
             });
-            clientVectorIndex = Collections.unmodifiableMap(new HashMap<>(participantIDs.size()));
+            clientVectorIndex = Collections.unmodifiableMap(this.clientVectorIndex);
+            System.out.println("Client indexes " + clientVectorIndex.toString());
             return true;
         }
         return false;
