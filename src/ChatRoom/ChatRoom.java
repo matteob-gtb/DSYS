@@ -67,8 +67,7 @@ public class ChatRoom {
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
             RoomMulticastMessage message = iterator.next();
-            System.out.println("sender # " + message.getSenderID() + " - " + clientVectorIndex.get(message.getSenderID()));
-            if (this.lastMessageTimestamp.canDeliver(message.getTimestamp(), clientVectorIndex.get(message.getSenderID()))) {
+             if (this.lastMessageTimestamp.canDeliver(message.getTimestamp(), clientVectorIndex.get(message.getSenderID()))) {
                 observedMessageOrder.add(message);
                 lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
                 iterator.remove();
