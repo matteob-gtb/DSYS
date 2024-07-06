@@ -276,11 +276,8 @@ public class ChatClient extends AbstractClient {
                     break;
                 case "5":
                     print("Command 'List Online Peers' received.");
-                    if (queueManager.getOnlineClients().isEmpty())
-                        print("No online peer detected yet");
-                    else {
-                        System.out.println(queueManager.getOnlineClients());
-                    }
+                    flushConsole();
+                    System.out.println(queueManager.getOnlineClients());
                     break;
                 case "6":
                     print("Command 'Discover online Peers' received.");
@@ -294,6 +291,7 @@ public class ChatClient extends AbstractClient {
                     print("Invalid Command");
                     break;
             }
+            System.out.println(" >\t");
         }
     }
 
