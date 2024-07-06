@@ -41,13 +41,13 @@ public class ChatRoom {
     private final Long creationTimestamp = System.currentTimeMillis();
     private final String groupName;
 
-    private final Set<RoomMulticastMessage> observedMessageOrder = Collections.synchronizedSet(new LinkedHashSet<>());
+    private final Set<RoomMulticastMessage> observedMessageOrder = new LinkedHashSet<>();
 
 
     //only accessed in READ
     private Set<Integer> participantIDs = new TreeSet<Integer>();
 
-    private Set<RoomMulticastMessage> incomingMessageQueue = Collections.synchronizedSet(new LinkedHashSet<>());
+    private Set<RoomMulticastMessage> incomingMessageQueue = new LinkedHashSet<>();
 
     //associate client id to positions in the vector (lookup is probably more efficient)
     private HashMap<Integer, Integer> clientVectorIndex;
@@ -57,10 +57,9 @@ public class ChatRoom {
     private MyMulticastSocketWrapper dedicatedRoomSocket = null;
     private final List<AbstractMessage> outGoingMessageQueue = Collections.synchronizedList(new ArrayList<>());
 
-    public static String writeCurrentTime() {
-        LocalTime currentTime = LocalTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        return (currentTime.format(formatter));
+
+    public synchronized int getClientIndex(int clientID) {
+        return clientVectorIndex.get(clientID);
     }
 
     public synchronized void updateInQueue() {
@@ -94,7 +93,6 @@ public class ChatRoom {
 
     //return them with ACKED equal to true, they don't have to be acked again, only one client lost the message
     public synchronized List<RoomMulticastMessage> getObservedMessagesFrom(VectorTimestamp timestamp) {
-
         return observedMessageOrder.stream().
                 filter(message -> message.getTimestamp().greaterThanOrEqual(timestamp)).
                 map(RoomMulticastMessage::new).
@@ -124,22 +122,22 @@ public class ChatRoom {
     }
 
     //it's just reading it can be not synchronized, temporary discrepancies are ok
-    public String getMessages() {
+    public synchronized String getMessages() {
         System.out.println("Chat room #" + this.chatID + " - Owner #" + this.ownerID);
         StringBuilder sb = new StringBuilder(observedMessageOrder.size() * 10);
-        synchronized (observedMessageOrder) {
-            observedMessageOrder.forEach(msg -> sb.append("\t \t").append(msg.toChatString()).append("\n"));
-        }
+
+        observedMessageOrder.forEach(msg -> sb.append("\t \t").append(msg.toChatString()).append("\n"));
+
         sb.append("Current Timestamp ").append(this.lastMessageTimestamp);
         return sb.toString();
     }
 
-    public void sendRawMessageNoQueue(AbstractMessage message) {
+    public synchronized void sendRawMessageNoQueue(AbstractMessage message) {
         this.dedicatedRoomSocket.sendPacket(message);
     }
 
 
-    public void forceFinalizeRoom(Set<Integer> participantIDs) {
+    public synchronized void forceFinalizeRoom(Set<Integer> participantIDs) {
         if (roomFinalized) {
             return;
         }
@@ -173,7 +171,7 @@ public class ChatRoom {
         }
     }
 
-    public boolean finalizeRoom() {
+    public synchronized boolean finalizeRoom() {
         if (!roomFinalized && System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MS) {
             roomFinalized = true;
             lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
@@ -190,9 +188,9 @@ public class ChatRoom {
         return false;
     }
 
-    public Set<Integer> getParticipantIDs() {
+    public synchronized Set<Integer> getParticipantIDs() {
         if (!roomFinalized) {
-            throw new RuntimeException("Room not finalized yet");
+            return new HashSet<>();
         }
         return participantIDs;
     }
@@ -206,7 +204,7 @@ public class ChatRoom {
     }
 
 
-    public void getBackOnline() {
+    public synchronized void getBackOnline() {
         if (System.currentTimeMillis() - this.lastReconnectAttempt < MIN_SOCKET_RECONNECT_DELAY_MS) {
             return;
         }

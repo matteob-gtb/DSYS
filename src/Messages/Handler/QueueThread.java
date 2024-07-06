@@ -14,6 +14,7 @@ import Messages.CommonMulticastMessages.Room.RoomMulticastMessage;
 import Peer.AbstractClient;
 import Events.ReplyToRoomRequestEvent;
 import Peer.ChatClient;
+import VectorTimestamp.VectorTimestamp;
 import com.google.gson.*;
 
 import java.util.*;
@@ -313,7 +314,16 @@ public class QueueThread implements QueueManager {
                             synchronized (roomsMap) {
                                 ChatRoom dedicatedRoom = roomsMap.get(rto.getRoomID());
 
-                                List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(rto.getTimestamp());
+                                int[] newTimestamp = rto.getTimestamp().getRaw();
+
+                                int requestingClientIndex = dedicatedRoom.getClientIndex(rto.getSenderID());
+
+                                //go back to 0 w.r.t. to the requesting client's index so
+                                newTimestamp[requestingClientIndex] = 0;
+
+                                VectorTimestamp toCompare = new VectorTimestamp(newTimestamp);
+
+                                List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(toCompare);
                                 toRetransmit.stream().map(
                                         m -> m.getTimestamp()
                                 ).forEach(System.out::println);

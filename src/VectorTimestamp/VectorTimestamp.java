@@ -140,6 +140,10 @@ public class VectorTimestamp implements Timestamp {
         return Arrays.toString(this.rawTimestamp);
     }
 
+    public int[] getRaw() {
+        return Arrays.copyOf(this.rawTimestamp, this.rawTimestamp.length);
+    }
+
 
     public int hashCode() {
         return Arrays.hashCode(this.rawTimestamp);
