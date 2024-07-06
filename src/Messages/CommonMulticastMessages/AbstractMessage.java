@@ -7,6 +7,7 @@ import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 
 import java.lang.reflect.Type;
+import java.net.InetAddress;
 
 import static utils.Constants.*;
 
@@ -152,4 +153,12 @@ public abstract class AbstractMessage implements MessageInterface {
     public String toChatString() {
         return toJSONString();
     }
+
+    public boolean isUnicast() {
+        return false;
+    }
+    public InetAddress getDestinationAddress() {
+        throw new UnsupportedOperationException("Not a unicast message");
+    }
+
 }

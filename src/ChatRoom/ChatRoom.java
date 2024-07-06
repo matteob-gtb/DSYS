@@ -42,9 +42,12 @@ public class ChatRoom {
     private final String groupName;
 
     private final Set<RoomMulticastMessage> observedMessageOrder = Collections.synchronizedSet(new LinkedHashSet<>());
+
+
+    //only accessed in READ
     private Set<Integer> participantIDs = new TreeSet<Integer>();
 
-    private Set<RoomMulticastMessage> incomingMessageQueue = new LinkedHashSet<>();
+    private Set<RoomMulticastMessage> incomingMessageQueue = Collections.synchronizedSet(new LinkedHashSet<>());
 
     //associate client id to positions in the vector (lookup is probably more efficient)
     private HashMap<Integer, Integer> clientVectorIndex;
@@ -67,8 +70,8 @@ public class ChatRoom {
             RoomMulticastMessage message = iterator.next();
             if (this.lastMessageTimestamp.canDeliver(message.getTimestamp())) {
                 observedMessageOrder.add(message);
-                iterator.remove();
                 lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
+                iterator.remove();
             }
         }
         if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
@@ -137,6 +140,9 @@ public class ChatRoom {
 
 
     public void forceFinalizeRoom(Set<Integer> participantIDs) {
+        if (roomFinalized) {
+            return;
+        }
         System.out.println("Room " + this.chatID + " has been finalized");
         this.participantIDs = participantIDs;
         this.roomFinalized = true;
@@ -153,20 +159,18 @@ public class ChatRoom {
     public synchronized void ackMessage(AckMessage messageToAck) {
         if (this.chatID == DEFAULT_GROUP_ROOMID) return;
 
-
-        var toAckSameTimestamp = outGoingMessageQueue.stream().filter(
-                m -> m.getSenderID() == messageToAck.getRecipientID() && ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
-        ).toList();
-
+        List<AbstractMessage> toAckSameTimestamp = null;
+        synchronized (outGoingMessageQueue) {
+            toAckSameTimestamp = outGoingMessageQueue.stream().filter(
+                    m -> m.getSenderID() == messageToAck.getRecipientID() && ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
+            ).toList();
+        }
         AbstractOrderedMessage msg = null;
-        if (toAckSameTimestamp.size() != 1) {
-
-        } else {
+        if (toAckSameTimestamp.size() == 1) {
             msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
             msg.addAckedBy(messageToAck.getSenderID());
             msg.setAcked(msg.getAckedBySize() == this.participantIDs.size() - 1);
         }
-
     }
 
     public boolean finalizeRoom() {
@@ -181,7 +185,6 @@ public class ChatRoom {
                 clientVectorIndex.put(id, k.getAndAccumulate(1, Integer::sum));
                 System.out.println("Client " + id + " has been finalized : index " + k.get());
             });
-
             return true;
         }
         return false;

@@ -3,7 +3,10 @@ package Messages.CommonMulticastMessages.AnonymousMessages;
 import Messages.CommonMulticastMessages.AbstractMessage;
 import utils.Constants;
 
+import java.net.InetAddress;
+
 public class WelcomeMessage extends AbstractMessage {
+
 
     public WelcomeMessage(int clientID, String username) {
         this.senderID = clientID;

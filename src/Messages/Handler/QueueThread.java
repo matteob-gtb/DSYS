@@ -24,7 +24,10 @@ import static utils.Constants.*;
 public class QueueThread implements QueueManager {
 
     private final Map<Integer, Long> onlineClientsLastHeard = Collections.synchronizedMap(new HashMap<>());
+    private final Map<Integer, InetAddress> onlineClientsAddresses = Collections.synchronizedMap(new HashMap<>());
+
     private final AbstractClient client;
+
     private final Map<Integer, ChatRoom> roomsMap = Collections.synchronizedMap(new HashMap<>());
     private ChatRoom commonMulticastChannel;
     private ChatRoom currentRoom = null;
@@ -103,7 +106,9 @@ public class QueueThread implements QueueManager {
                     filter(entry -> System.currentTimeMillis() - entry.getValue() > MAX_HELLO_INTERVAL_MS).
                     map(Map.Entry::getKey).
                     toList();
-            idsToRemove.forEach(id -> onlineClientsLastHeard.remove(id));
+            idsToRemove.forEach(id -> {
+                onlineClientsLastHeard.remove(id);
+            });
         }
     }
 
@@ -192,6 +197,7 @@ public class QueueThread implements QueueManager {
                             client.addEvent(new GenericNotifyEvent("Received an hello from #" + sender + " replying with WELCOME"));
                             synchronized (onlineClientsLastHeard) {
                                 onlineClientsLastHeard.put(sender, System.currentTimeMillis());
+                                onlineClientsAddresses.put(sender, packet.getAddress());
                             }
                             AbstractMessage welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
                             commonMulticastChannel.addOutgoingMessage(welcome);
@@ -201,6 +207,7 @@ public class QueueThread implements QueueManager {
                             client.addEvent(new GenericNotifyEvent(prompt));
                             synchronized (onlineClientsLastHeard) {
                                 onlineClientsLastHeard.put(sender, System.currentTimeMillis());
+                                onlineClientsAddresses.put(sender, packet.getAddress());
                             }
                         }
                         case MESSAGE_TYPE_JOIN_ROOM_ACCEPT -> { //sent only to who created the room
@@ -245,7 +252,8 @@ public class QueueThread implements QueueManager {
                                         this.client.getID(),
                                         inbound.getSenderID(),
                                         ((RoomMulticastMessage) inbound).getTimestamp(),
-                                        dedicatedRoom.getRoomId()
+                                        dedicatedRoom.getRoomId(),
+                                        packet.getAddress()
                                 );
                                 dedicatedRoom.sendRawMessageNoQueue(ackMessage);
                             }
@@ -260,11 +268,15 @@ public class QueueThread implements QueueManager {
                         }
                         case MESSAGE_TYPE_DELETE_ROOM -> {
                             DeleteRoom message = (DeleteRoom) inbound;
+                            InetAddress ackUnicastDestination = null;
+                            synchronized (onlineClientsLastHeard) {
+                                ackUnicastDestination = onlineClientsAddresses.get(inbound.getSenderID());
+                            }
                             synchronized (roomsMap) {
                                 ChatRoom room = roomsMap.get(message.getRoomID());
                                 if (room != null) {
                                     room.scheduleDeletion(false);
-                                    AckMessage ackMessage = new AckMessage(ChatClient.ID, inbound.getSenderID(), message.getTimestamp(), room.getRoomId());
+                                    AckMessage ackMessage = new AckMessage(ChatClient.ID, inbound.getSenderID(), message.getTimestamp(), room.getRoomId(),ackUnicastDestination);
                                     room.sendRawMessageNoQueue(ackMessage);
                                 }
                             }

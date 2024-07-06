@@ -1,5 +1,7 @@
 package Messages.CommonMulticastMessages;
 
+import java.net.InetAddress;
+
 public interface MessageInterface {
     String toJSONString();
 
@@ -15,4 +17,8 @@ public interface MessageInterface {
     public boolean canDelete();
 
     public boolean shouldRetransmit();
+
+    public boolean isUnicast();
+
+    public InetAddress getDestinationAddress();
 }

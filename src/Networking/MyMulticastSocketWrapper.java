@@ -1,6 +1,7 @@
 package Networking;
 
 import Messages.CommonMulticastMessages.AbstractMessage;
+import Messages.CommonMulticastMessages.AnonymousMessages.AckMessage;
 import Messages.CommonMulticastMessages.AnonymousMessages.ProbeMessage;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class MyMulticastSocketWrapper {
     private MulticastSocket socket; //multicast or normal UDP
     private boolean connected = false;
     private static Set<String> usedGroupNames = new HashSet<>();
-     public static String hostAddress;
+    public static String hostAddress;
     private Long lastConnectionAttemptEpoch = -1L;
 
 
@@ -103,9 +104,15 @@ public class MyMulticastSocketWrapper {
 
     public boolean sendPacket(AbstractMessage message) {
         String msg = message.toJSONString();
+        DatagramPacket packet;
 
+        if (!message.isUnicast()) {
+            packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
+        } else {
+            System.out.println("Sending unicast ack to " + ((AckMessage) message).getTimestamp() + " to " + message.getDestinationAddress().toString());
+            packet = new DatagramPacket(msg.getBytes(), msg.length(), message.getDestinationAddress(), GROUP_PORT);
+        }
 
-        DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), this.roomGroup, GROUP_PORT);
         try {
             socket.send(packet);
         } catch (IOException e) {
@@ -152,15 +159,8 @@ public class MyMulticastSocketWrapper {
             while (!socketCreated) {
                 try {
 
-
-
-
-
-                    SocketAddress socketAddress = new InetSocketAddress(this.roomGroup, GROUP_PORT);
                     socket = new MulticastSocket(GROUP_PORT);
                     socket.setSoTimeout(SOCKET_DEFAULT_TIMEOUT_MS);
-
-                    //socket.joinGroup(socketAddress, networkInterface);
 
                     Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
                     while (interfaces.hasMoreElements()) {
