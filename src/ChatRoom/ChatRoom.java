@@ -229,9 +229,9 @@ public class ChatRoom {
         try {
             dedicatedRoomSocket.probeConnection();
         } catch (Exception e) {
-
             exceptionThrown = true;
         }
+        if(!exceptionThrown) System.out.println("Connection re-established");
         this.onlineStatus = !exceptionThrown;
 
     }

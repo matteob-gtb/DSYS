@@ -157,10 +157,10 @@ public class QueueThread implements QueueManager {
                 }
 
             }
+            updateOnlineClients();
 
             if (currentRoom.isOnline()) {
                 //check if any queued messages can now be delivered
-                updateOnlineClients();
                 sendHeartBeat();
                 currentRoom.updateInQueue();
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
