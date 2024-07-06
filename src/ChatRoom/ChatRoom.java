@@ -96,7 +96,7 @@ public class ChatRoom {
     public synchronized List<RoomMulticastMessage> getObservedMessagesFrom(VectorTimestamp timestamp) {
 
         return observedMessageOrder.stream().
-                filter(message -> timestamp.canDeliver(message.getTimestamp())).
+                filter(message -> message.getTimestamp().greaterThanOrEqual(timestamp)).
                 map(RoomMulticastMessage::new).
                 collect(Collectors.toList());
     }
@@ -308,7 +308,7 @@ public class ChatRoom {
         this.groupName = groupName;
     }
 
-    public boolean isScheduledForDeletion() {
+    public synchronized boolean isScheduledForDeletion() {
         return this.scheduledForDeletion;
     }
 
@@ -325,7 +325,7 @@ public class ChatRoom {
                 "This room has been deleted please exit the room by typing q"));
     }
 
-    public boolean addParticipant(Integer participantID) {
+    public synchronized boolean addParticipant(Integer participantID) {
         if (roomFinalized || System.currentTimeMillis() > creationTimestamp + MAX_ROOM_CREATION_WAIT_MS) //rooms are immutable
             return false;
         return participantIDs.add(participantID);

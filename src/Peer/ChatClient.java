@@ -216,6 +216,7 @@ public class ChatClient extends AbstractClient {
                             System.out.println("Room has not been finalized yet, wait for" + (System.currentTimeMillis() - room.get().getCreationTimestamp()) + " more milliseconds");
                         } else {
                             joinRoom(room.get());
+                            printAvailableCommands();
                             break;
                         }
                         flushAfter = false;
@@ -332,8 +333,7 @@ public class ChatClient extends AbstractClient {
                 5. List Online Peers
                 6. Discover Online Peers
                 7. Quit Application
-                Enter a command:""");
-        //Flush console
+                Enter a command:"""); 
 
     }
 
