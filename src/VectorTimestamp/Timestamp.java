@@ -10,7 +10,7 @@ public interface Timestamp {
     boolean greaterThanOrEqual(Timestamp other);
 
     //checks if it can be delivered given the current client's timestamp
-    boolean canDeliver(Timestamp other);
+    boolean canDeliver(Timestamp other,int index);
 
     boolean isConcurrent(Timestamp other);
 

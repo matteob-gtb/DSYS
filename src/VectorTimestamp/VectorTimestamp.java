@@ -100,11 +100,11 @@ public class VectorTimestamp implements Timestamp {
     }
 
     @Override
-    public boolean canDeliver(Timestamp other) {
+    public boolean canDeliver(Timestamp other, int senderIndex) {
         if (!(other instanceof VectorTimestamp)) throw new RuntimeException("Bad comparison");
         VectorTimestamp otherV = (VectorTimestamp) other;
         if (this.rawTimestamp.length != otherV.rawTimestamp.length)
-            throw new RuntimeException("Bad comparison, check room finalization");
+            throw new RuntimeException("Bad comparison");
         /*
          * Given client k (this) and client j (source of the message), check that the message
          * can be delivered to k's queue iff v_k[j] = v_j[j] - 1 e tutte le altre posizioni sono <=
@@ -115,10 +115,12 @@ public class VectorTimestamp implements Timestamp {
         var howManyPositionsPlusOne = IntStream.range(0, otherV.rawTimestamp.length).filter(
                 index -> otherV.rawTimestamp[index] - 1 == this.rawTimestamp[index]
         ).boxed().toList();
-        if (howManyPositionsPlusOne.size() != 1) return false;
+        if (howManyPositionsPlusOne.size() != 1 || senderIndex != howManyPositionsPlusOne.get(0)) return false;
+
+        int indexPlusOne = howManyPositionsPlusOne.get(0);
 
         return IntStream.range(0, otherV.rawTimestamp.length).
-                filter(index -> index != howManyPositionsPlusOne.get(0)).
+                filter(index -> index != indexPlusOne).
                 filter(index -> this.rawTimestamp[index] >= otherV.rawTimestamp[index]).
                 count() == this.rawTimestamp.length - 1;
 

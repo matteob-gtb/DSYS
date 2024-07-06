@@ -48,7 +48,7 @@ public class ChatRoom {
     private Set<RoomMulticastMessage> incomingMessageQueue = new LinkedHashSet<>();
 
     //associate client id to positions in the vector (lookup is probably more efficient)
-    private HashMap<Integer, Integer> clientVectorIndex;
+    private Map<Integer, Integer> clientVectorIndex;
 
     private boolean scheduledForDeletion = false;
     private boolean roomFinalized = false; //finalized 60 seconds after the initial room creation request was acked
@@ -62,10 +62,12 @@ public class ChatRoom {
 
     public synchronized void updateInQueue() {
         int queueSizeBefore = incomingMessageQueue.size();
+
+
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
             RoomMulticastMessage message = iterator.next();
-            if (this.lastMessageTimestamp.canDeliver(message.getTimestamp())) {
+            if (this.lastMessageTimestamp.canDeliver(message.getTimestamp(), clientVectorIndex.get(message.getSenderID()))) {
                 observedMessageOrder.add(message);
                 lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
                 iterator.remove();
@@ -157,6 +159,9 @@ public class ChatRoom {
         this.participantIDs.stream().sorted().forEach(participantID -> {
             clientVectorIndex.put(participantID, k.getAndAccumulate(1, Integer::sum));
         });
+
+        this.clientVectorIndex = Collections.unmodifiableMap(this.clientVectorIndex);
+
     }
 
 
