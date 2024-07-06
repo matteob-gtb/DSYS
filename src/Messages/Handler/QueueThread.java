@@ -59,10 +59,14 @@ public class QueueThread implements QueueManager {
 
 
     @Override
-    public Set<Integer> getOnlineClients() {
+    public String getOnlineClients() {
+        StringBuilder b = new StringBuilder(10 * onlineClientsAddresses.size());
         synchronized (onlineClientsLastHeard) {
-            return new HashSet<>(onlineClientsLastHeard.keySet());
+            onlineClientsLastHeard.entrySet().stream().forEach(
+                    entry -> b.append("\t\t").append(entry.getKey()).append(" -> Last Heard : ").append((System.currentTimeMillis() - entry.getValue()) / 1000).append(" seconds ago\n")
+            );
         }
+        return b.toString();
     }
 
     /**
@@ -97,7 +101,7 @@ public class QueueThread implements QueueManager {
         registerRoom(currentRoom);
     }
 
-    private final static Long MAX_HELLO_INTERVAL_MS = 3000L;
+    private final static Long MAX_HELLO_INTERVAL_MS = 10000L;
 
     private void updateOnlineClients() {
         synchronized (onlineClientsLastHeard) {
@@ -112,6 +116,18 @@ public class QueueThread implements QueueManager {
         }
     }
 
+    private Long lastHeartBeat = 0L;
+    private final static int HEARTBEAT_INTERVAL_MS = 3000;
+
+    public void sendHeartBeat() {
+        if (System.currentTimeMillis() - lastHeartBeat < HEARTBEAT_INTERVAL_MS) return;
+        lastHeartBeat = System.currentTimeMillis();
+        HeartbeatMessage hello = new HeartbeatMessage(
+                this.client.getID(),
+                commonMulticastChannel.getRoomId()
+        );
+        commonMulticastChannel.addOutgoingMessage(hello);
+    }
 
     /**
      * The thread takes care of the queue, waits for messages on the socket and is in charge
@@ -140,6 +156,8 @@ public class QueueThread implements QueueManager {
                 //check if any queued messages can now be delivered
                 currentRoom.updateInQueue();
                 updateOnlineClients();
+                sendHeartBeat();
+
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
                 if (nextMsg.isEmpty()) {
@@ -201,6 +219,12 @@ public class QueueThread implements QueueManager {
                             }
                             AbstractMessage welcome = new WelcomeMessage(this.client.getID(), this.client.getUserName());
                             commonMulticastChannel.addOutgoingMessage(welcome);
+                        }
+                        case MESSAGE_TYPE_HEARTBEAT -> {
+                            synchronized (onlineClientsLastHeard) {
+                                onlineClientsLastHeard.put(sender, System.currentTimeMillis());
+                                onlineClientsAddresses.put(sender, packet.getAddress());
+                            }
                         }
                         case MESSAGE_TYPE_WELCOME -> {
                             String prompt = "Received a WELCOME from #" + sender + "\nAdded client " + sender + " to the list of known clients";
@@ -276,7 +300,7 @@ public class QueueThread implements QueueManager {
                                 ChatRoom room = roomsMap.get(message.getRoomID());
                                 if (room != null) {
                                     room.scheduleDeletion(false);
-                                    AckMessage ackMessage = new AckMessage(ChatClient.ID, inbound.getSenderID(), message.getTimestamp(), room.getRoomId(),ackUnicastDestination);
+                                    AckMessage ackMessage = new AckMessage(ChatClient.ID, inbound.getSenderID(), message.getTimestamp(), room.getRoomId(), ackUnicastDestination);
                                     room.sendRawMessageNoQueue(ackMessage);
                                 }
                             }

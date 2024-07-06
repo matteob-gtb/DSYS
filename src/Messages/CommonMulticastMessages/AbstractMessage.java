@@ -144,6 +144,9 @@ public abstract class AbstractMessage implements MessageInterface {
                 case MESSAGE_TYPE_REQUEST_RTO -> {
                     return jsonDeserializationContext.deserialize(jsonElement, RequestRetransmission.class);
                 }
+                case MESSAGE_TYPE_HEARTBEAT -> {
+                    return jsonDeserializationContext.deserialize(jsonElement, HeartbeatMessage.class);
+                }
                 default -> throw new RuntimeException("Unknown message type, deserialization aborted");
             }
 

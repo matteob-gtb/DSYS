@@ -274,9 +274,7 @@ public class ChatClient extends AbstractClient {
                     if (queueManager.getOnlineClients().isEmpty())
                         print("No online peer detected yet");
                     else {
-                        queueManager.getOnlineClients().forEach(
-                                id -> System.out.println(" Client #" + id)
-                        );
+                        System.out.println(queueManager.getOnlineClients());
                     }
                     break;
                 case "6":

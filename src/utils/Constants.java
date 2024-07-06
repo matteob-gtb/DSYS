@@ -19,7 +19,7 @@ public class Constants {
     public static final int MESSAGE_TYPE_DELETE_ROOM = 1333;
     public final static int SOCKET_DEFAULT_TIMEOUT_MS = 10;
     public final static int MESSAGE_TYPE_REQUEST_RTO = 44;
-
+    public final static int  MESSAGE_TYPE_HEARTBEAT = 55;
     //it already waits for the socket timeout
     public static final int QUEUE_THREAD_SLEEP_MIN_MS = 1;
     public static final int CLIENT_SLEEP_MS = 15;

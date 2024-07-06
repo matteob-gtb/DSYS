@@ -13,7 +13,7 @@ public interface QueueManager extends Runnable {
 
     public List<ChatRoom> getRooms();
 
-    Set<Integer> getOnlineClients();
+    String getOnlineClients();
 
     Optional<ChatRoom> getChatRoom(int roomID);
 }
