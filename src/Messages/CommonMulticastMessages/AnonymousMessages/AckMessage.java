@@ -27,7 +27,7 @@ public class AckMessage extends AbstractOrderedMessage {
     }
 
     public boolean canDelete() {
-        return true; //acks are not stored
+        return sent; //acks are not stored
     }
 
     @Override
