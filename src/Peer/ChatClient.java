@@ -67,32 +67,34 @@ public class ChatClient extends AbstractClient {
 
     //block until received from all or timer expires
     public void announceSelf() throws IOException {
-        AbstractMessage welcomeMessage = new HelloMessage(
+        HelloMessage welcomeMessage = new HelloMessage(
                 this.CLIENT_ID,
                 DEFAULT_GROUP_ROOMID,
                 this.userName
         );
         //username only in HELLO messages
-        System.out.println("Sending HELLO in multicast...");
+        System.out.println("Sending HELLO over the default channel");
         currentRoom.addOutgoingMessage(welcomeMessage);
     }
 
     public void joinRoom(ChatRoom room) {
         currentRoom = room;
         print("Joining Chat #" + currentRoom.getRoomId());
-        room.getMessages();
         String response;
         while (true) {
             System.out.println("Client #" + this.CLIENT_ID);
             System.out.print("1) Type a message and press Enter to send it\n2) Press Enter without typing anything to refresh the chat\n3) q to quit\n>  ");
             try {
                 response = reader.readLine();
-                if (response.equals("q")) break;
-                if (response.length() != 0)
-                    currentRoom.sendInRoomMessage(response, this.CLIENT_ID);
+                if (response.equalsIgnoreCase("q")) break;
+                if (!response.isEmpty())
+                    currentRoom.sendCausallyOrderedMessage(response);
+
                 flushConsole();
+
                 if (room.isScheduledForDeletion()) {
                     System.out.println("This room is about to be deleted, exiting...");
+                    Thread.sleep(2000);
                     break;
                 }
                 System.out.println(room.getMessages());
@@ -104,24 +106,15 @@ public class ChatClient extends AbstractClient {
             } catch (IOException e) {
                 System.out.println("Unrecoverable I/O error,shutting down...");
                 System.exit(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
         currentRoom = this.commonMulticastChannel;
     }
 
     public void listRooms() {
-        queueManager.getRooms().forEach(
-                room -> {
-                    if (room.isRoomFinalized()) {
-                        System.out.println("Room #" + room.getRoomId() + " - Status [" + room.getStatusString() + "] - Owner = " + room.getOwnerID());
-                        room.getParticipantIDs().forEach(
-                                id -> System.out.println("      Participant #" + id));
-                    } else {
-                        System.out.println("Room #" + room.getRoomId() + " - Not Finalized Yet");
-                    }
-
-                }
-        );
+       System.out.println(queueManager.listRoomsStatus());
     }
 
     public void mainLoop() throws Exception {
@@ -333,7 +326,7 @@ public class ChatClient extends AbstractClient {
                 5. List Online Peers
                 6. Discover Online Peers
                 7. Quit Application
-                Enter a command:"""); 
+                Enter a command:""");
 
     }
 

@@ -11,7 +11,7 @@ public interface QueueManager extends Runnable {
 
     public void deleteRoom(ChatRoom room);
 
-    public List<ChatRoom> getRooms();
+    public String listRoomsStatus();
 
     String getOnlineClients();
 

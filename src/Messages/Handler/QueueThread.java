@@ -33,7 +33,8 @@ public class QueueThread implements QueueManager {
     private ChatRoom commonMulticastChannel;
     private ChatRoom currentRoom = null;
 
-    private List<Integer> roomIDs = Collections.synchronizedList(new ArrayList<>());
+    private List<Integer> roomIDs = Collections.synchronizedList(new ArrayList<>(15));
+
     private int currentIDIndex = 0;
 
     public void deleteRoom(ChatRoom room) {
@@ -93,10 +94,24 @@ public class QueueThread implements QueueManager {
     }
 
     @Override
-    public List<ChatRoom> getRooms() {
+    public String listRoomsStatus() {
+        StringBuilder sb = new StringBuilder("\n");
         synchronized (roomsMap) {
-            return new ArrayList<>(this.roomsMap.values());
+            roomsMap.values().forEach(
+                    room -> {
+                        sb.append("\t");
+                        if (room.isRoomFinalized()) {
+                            sb.append("Room #").append(room.getRoomId()).append(" Online : [").append(room.isOnline()).append("] ");
+                            synchronized (onlineClientsLastHeard) {
+                                room.getParticipantIDs().stream().filter(id -> id != ChatClient.ID).forEach(pid -> sb.append("Client #").append(pid).append(onlineClientsLastHeard.get(pid)));
+                            }
+                        } else sb.append("Room #").append(room.getRoomId()).append(" not finalized yet");
+                        sb.append("\n");
+                    }
+            );
         }
+        return sb.toString();
+
     }
 
     public QueueThread(AbstractClient client, ChatRoom commonMulticastChannel) throws IOException {
@@ -116,9 +131,7 @@ public class QueueThread implements QueueManager {
                     filter(entry -> System.currentTimeMillis() - entry.getValue() > MAX_HELLO_INTERVAL_MS).
                     map(Map.Entry::getKey).
                     toList();
-            idsToRemove.forEach(id -> {
-                onlineClientsLastHeard.remove(id);
-            });
+            idsToRemove.forEach(onlineClientsLastHeard::remove);
         }
     }
 
@@ -157,6 +170,7 @@ public class QueueThread implements QueueManager {
                 }
 
             }
+
             updateOnlineClients();
 
             if (currentRoom.isOnline()) {
@@ -164,7 +178,6 @@ public class QueueThread implements QueueManager {
                 sendHeartBeat();
                 currentRoom.updateInQueue();
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
-
 
                 if (currentRoom.isScheduledForDeletion() && nextMsg.isEmpty()) {
                     //all messages acked, delete the room
@@ -314,19 +327,8 @@ public class QueueThread implements QueueManager {
                             synchronized (roomsMap) {
                                 ChatRoom dedicatedRoom = roomsMap.get(rto.getRoomID());
 
-//                                int[] newTimestamp = rto.getTimestamp().getRaw();
-//
-//                                int requestingClientIndex = dedicatedRoom.getClientIndex(rto.getSenderID());
-//
-//                                //go back to 0 w.r.t. to the requesting client's index so
-//                                newTimestamp[requestingClientIndex] = 0;
-//
-//                                VectorTimestamp toCompare = new VectorTimestamp(newTimestamp);
-
                                 List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(rto.getTimestamp());
-//                                toRetransmit.stream().map(
-//                                        m -> m.getTimestamp()
-//                                ).forEach(System.out::println);
+
                                 toRetransmit.forEach(dedicatedRoom::addOutgoingMessage);
                             }
 

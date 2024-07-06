@@ -11,8 +11,6 @@ import Networking.MyMulticastSocketWrapper;
 import Peer.ChatClient;
 import VectorTimestamp.VectorTimestamp;
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -118,21 +116,11 @@ public class ChatRoom {
 
     public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
 
-        //check, for every queue that a message can be delivered
         if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
             return;
         }
 
         incomingMessageQueue.add(inbound);
-        Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
-        while (iterator.hasNext()) {
-            RoomMulticastMessage message = iterator.next();
-            if (this.lastMessageTimestamp.canDeliver(message.getTimestamp())) {
-                observedMessageOrder.add(message);
-                iterator.remove();
-                lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
-            }
-        }
 
 
     }
@@ -158,7 +146,9 @@ public class ChatRoom {
             return;
         }
         System.out.println("Room " + this.chatID + " has been finalized");
-        this.participantIDs = participantIDs;
+
+        this.participantIDs = Collections.unmodifiableSet(participantIDs);
+
         this.roomFinalized = true;
         this.clientVectorIndex = new HashMap<>(participantIDs.size());
         lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
@@ -170,19 +160,19 @@ public class ChatRoom {
     }
 
 
-    public synchronized void ackMessage(AckMessage messageToAck) {
+    public synchronized void ackMessage(AckMessage ack) {
         if (this.chatID == DEFAULT_GROUP_ROOMID) return;
 
         List<AbstractMessage> toAckSameTimestamp = null;
         synchronized (outGoingMessageQueue) {
             toAckSameTimestamp = outGoingMessageQueue.stream().filter(
-                    m -> m.getSenderID() == messageToAck.getRecipientID() && ((AbstractOrderedMessage) m).getTimestamp().equals(messageToAck.getTimestamp())
+                    m -> m.getSenderID() == ack.getRecipientID() && ((AbstractOrderedMessage) m).getTimestamp().equals(ack.getTimestamp())
             ).toList();
         }
         AbstractOrderedMessage msg = null;
         if (toAckSameTimestamp.size() == 1) {
             msg = (AbstractOrderedMessage) toAckSameTimestamp.get(0);
-            msg.addAckedBy(messageToAck.getSenderID());
+            msg.addAckedBy(ack.getSenderID());
             msg.setAcked(msg.getAckedBySize() == this.participantIDs.size() - 1);
         }
     }
@@ -193,11 +183,12 @@ public class ChatRoom {
             lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
             clientVectorIndex = new HashMap<>(participantIDs.size());
 
+            participantIDs = Collections.unmodifiableSet(participantIDs);
+
             final AtomicReference<Integer> k = new AtomicReference<>();
             k.set(0);
             participantIDs.forEach(id -> {
                 clientVectorIndex.put(id, k.getAndAccumulate(1, Integer::sum));
-                System.out.println("Client " + id + " has been finalized : index " + k.get());
             });
             return true;
         }
@@ -231,7 +222,9 @@ public class ChatRoom {
         } catch (Exception e) {
             exceptionThrown = true;
         }
-        if (!exceptionThrown) System.out.println("Connection re-established");
+        if (!exceptionThrown) {
+            System.out.println("Connection re-established in room #" + this.chatID);
+        }
         this.onlineStatus = !exceptionThrown;
 
     }
@@ -265,10 +258,10 @@ public class ChatRoom {
         defaultChannel.addOutgoingMessage(msg);
     }
 
-    public synchronized void sendInRoomMessage(String payload, int clientID) {
+    public synchronized void sendCausallyOrderedMessage(String payload) {
         //Client id mapping --> sort
         //E.G. clients 1231,456246,215 will have index 215 -> 0,1231 ->1,456246->3 in the vector timestamp array
-
+        int clientID = ChatClient.ID;
         if (scheduledForDeletion) {
             System.out.println("The room is scheduled for deletion, not accepting any more messages... ");
             return;
