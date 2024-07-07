@@ -12,7 +12,7 @@ public class RequestRetransmission extends AbstractOrderedMessage {
 
     //no need to ack rtos
     public boolean canDelete(){
-        return true;
+        return sent;
     }
 
 

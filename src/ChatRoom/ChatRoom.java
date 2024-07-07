@@ -60,6 +60,25 @@ public class ChatRoom {
         return clientVectorIndex.get(clientID);
     }
 
+    public synchronized VectorTimestamp getLastAckedTimestamp() {
+
+        int myIndexInVector = clientVectorIndex.get(ChatClient.ID);
+
+        //list of messages that I sent and that were acked by at least 1 peer
+        List<RoomMulticastMessage> timestamp = new ArrayList<>(observedMessageOrder.stream().filter(
+                message -> message.getSenderID() == ChatClient.ID
+                        && message.getAckedBySize() == this.participantIDs.size() - 1
+        ).toList());
+        //find the latest, i.e. the one that has the highest ts(m)[i] where i is my index
+        VectorTimestamp oldestTimestamp;
+        if (!timestamp.isEmpty()) {
+            timestamp.sort(Comparator.comparingInt(m -> m.getTimestamp().getValueAtPosition(myIndexInVector)));
+            oldestTimestamp = timestamp.get(timestamp.size() - 1).getTimestamp();
+        } else oldestTimestamp = new VectorTimestamp(new int[this.participantIDs.size()]);
+        return oldestTimestamp;
+    }
+
+
     public synchronized void updateInQueue() {
         int queueSizeBefore = incomingMessageQueue.size();
 
@@ -75,22 +94,8 @@ public class ChatRoom {
         }
         if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
             if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
-                System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
 
-                int myIndexInVector = clientVectorIndex.get(ChatClient.ID);
-
-                //list of messages that I sent and that were acked by at least 1 peer
-                List<RoomMulticastMessage> timestamp = new ArrayList<>(observedMessageOrder.stream().filter(
-                        message -> message.getSenderID() == ChatClient.ID
-                                && message.getAckedBySize() == this.participantIDs.size() - 1
-                ).toList());
-                //find the latest, i.e. the one that has the highest ts(m)[i] where i is my index
-                VectorTimestamp oldestTimestamp;
-                if (!timestamp.isEmpty()) {
-                    timestamp.sort(Comparator.comparingInt(m -> m.getTimestamp().getValueAtPosition(myIndexInVector)));
-                    oldestTimestamp = timestamp.get(timestamp.size() - 1).getTimestamp();
-                } else oldestTimestamp = new VectorTimestamp(new int[this.participantIDs.size()]);
-                //Fail to deliver, the sender MIGHT be dead --> request a retransmission
+                VectorTimestamp oldestTimestamp = getLastAckedTimestamp();
                 RequestRetransmission rto = new RequestRetransmission(
                         ChatClient.ID,
                         this.chatID,
@@ -217,9 +222,9 @@ public class ChatRoom {
     }
 
 
-    public synchronized void getBackOnline() {
+    public synchronized boolean getBackOnline() {
         if (System.currentTimeMillis() - this.lastReconnectAttempt < MIN_SOCKET_RECONNECT_DELAY_MS) {
-            return;
+            return this.onlineStatus;
         }
         this.lastReconnectAttempt = System.currentTimeMillis();
         boolean exceptionThrown = false;
@@ -232,7 +237,7 @@ public class ChatRoom {
             System.out.println("Connection re-established in room #" + this.chatID);
         }
         this.onlineStatus = !exceptionThrown;
-
+        return this.onlineStatus;
     }
 
     public synchronized boolean isRoomFinalized() {
