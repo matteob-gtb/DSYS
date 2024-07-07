@@ -43,7 +43,7 @@ public class AbstractOrderedMessage extends AbstractMessage {
         return !sent || (!acked && (sentHowManyTimes < retransmitTimeouts.length && System.currentTimeMillis() - milliTimestamp > retransmitTimeouts[sentHowManyTimes]));
     }
 
-    private   int sentHowManyTimes = 0;
+    private transient int sentHowManyTimes = 0;
 
     public boolean canDelete() {
         return sent && (acked || sentHowManyTimes >= retransmitTimeouts.length);
@@ -76,7 +76,6 @@ public class AbstractOrderedMessage extends AbstractMessage {
     public VectorTimestamp getTimestamp() {
         return this.vectorTimestamp;
     }
-
 
 
     public boolean equals(Object other) {
