@@ -312,9 +312,6 @@ public class QueueThread implements QueueManager {
 
                                 if (receivedMessage.isRetransmission()) continue;
 
-                                int senderIndex = currentRoom.getClientIndex(receivedMessage.getSenderID());
-                                int myIndex = currentRoom.getClientIndex(ChatClient.ID);
-
                                 int[] currRoomTimestamp = currentRoom.getCurrentTimestamp().getRaw();
                                 int[] modified = receivedMessage.getTimestamp().getRaw();
                                 //do not keep track of the sender's history in the comparison
@@ -384,7 +381,7 @@ public class QueueThread implements QueueManager {
 
                                 List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(rto.getTimestamp());
 
-                                toRetransmit.forEach(dedicatedRoom::addOutgoingMessage);
+                                toRetransmit.forEach(dedicatedRoom::sendRawMessageNoQueue);
                             }
 
                         }

@@ -7,8 +7,6 @@ import com.google.gson.annotations.Expose;
 import java.util.HashSet;
 import java.util.Set;
 
-import static utils.Constants.MIN_RETRANSMIT_WAIT_MS;
-
 
 public class AbstractOrderedMessage extends AbstractMessage {
 

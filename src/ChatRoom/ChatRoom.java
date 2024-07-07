@@ -91,6 +91,8 @@ public class ChatRoom {
                 observedMessageOrder.add(message);
                 lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
                 iterator.remove();
+            } else{
+                System.out.println("Can't deliver message");
             }
         }
         if (this.chatID != DEFAULT_GROUP_ROOMID && !incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {

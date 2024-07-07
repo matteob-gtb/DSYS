@@ -31,7 +31,6 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
     }
 
 
-
     public RoomMulticastMessage(int clientID, int roomID) {
         super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
         vectorTimestamp = null;
@@ -44,6 +43,7 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
         this.payload = toCopy.payload;
         this.acked = true;
         this.isRetransmission = true;
+        this.sent = true;
     }
 
 

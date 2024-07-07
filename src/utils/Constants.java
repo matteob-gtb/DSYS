@@ -27,8 +27,7 @@ public class Constants {
     public static final int CLIENT_SLEEP_MS = 15;
     public final static int MAX_ROOM_CREATION_WAIT_MS = 12 * 1000;
     public final static int MIN_SOCKET_RECONNECT_DELAY_MS = 300;
-    public final static int MIN_RETRANSMIT_WAIT_MS = 6 * 1000;
-    public final static int MIN_RTO_REQUEST_WAIT_MS = 10 * 1000;
+     public final static int MIN_RTO_REQUEST_WAIT_MS = 3 * 1000;
 
     public static final String COMMON_GROUPNAME = "224.0.0.1";
 
