@@ -53,7 +53,7 @@ public abstract class AbstractMessage implements MessageInterface {
     @Override
     public void setSent(boolean inbound) {
         //once set to true it can't be reverted
-        this.sent = this.sent || inbound;
+        this.sent |= inbound;
     }
 
     @Override
@@ -61,11 +61,8 @@ public abstract class AbstractMessage implements MessageInterface {
         return sent;
     }
 
-    protected boolean isRetransmission = false;
-
-
     public boolean isRetransmission() {
-        return sent || isRetransmission;
+        return sent ;
     }
 
 
