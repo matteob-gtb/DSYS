@@ -309,6 +309,9 @@ public class QueueThread implements QueueManager {
                                         packet.getAddress()
                                 );
                                 dedicatedRoom.sendRawMessageNoQueue(ackMessage);
+
+                                if(receivedMessage.isRetransmission()) continue;
+
                                 int senderIndex = currentRoom.getClientIndex(receivedMessage.getSenderID());
                                 int myIndex = currentRoom.getClientIndex(ChatClient.ID);
 

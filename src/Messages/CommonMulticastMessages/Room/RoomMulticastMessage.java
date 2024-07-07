@@ -30,6 +30,16 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
 
     }
 
+    private boolean isRetransmission = false;
+
+
+    public boolean setRetransmission(boolean RTX) {
+        this.isRetransmission = RTX;
+    }
+
+    public boolean isRetransmission() {
+        return isRetransmission;
+    }
 
     public RoomMulticastMessage(int clientID, int roomID) {
         super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
@@ -42,6 +52,7 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
         vectorTimestamp = new VectorTimestamp(toCopy.vectorTimestamp);
         this.payload = toCopy.payload;
         this.acked = true;
+        this.isRetransmission = true;
     }
 
 
