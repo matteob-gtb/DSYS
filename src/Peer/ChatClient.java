@@ -71,9 +71,7 @@ public class ChatClient extends AbstractClient {
                 this.CLIENT_ID,
                 DEFAULT_GROUP_ROOMID,
                 this.userName
-        );
-        //username only in HELLO messages
-        System.out.println("Sending HELLO over the default channel");
+        ); 
         currentRoom.addOutgoingMessage(welcomeMessage);
     }
 

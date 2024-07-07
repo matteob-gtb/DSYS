@@ -16,6 +16,7 @@ import Events.ReplyToRoomRequestEvent;
 import Peer.ChatClient;
 import VectorTimestamp.VectorTimestamp;
 import com.google.gson.*;
+import utils.Constants;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -142,11 +143,11 @@ public class QueueThread implements QueueManager {
         if (System.currentTimeMillis() - lastHeartBeat < HEARTBEAT_INTERVAL_MS
                 || !commonMulticastChannel.isOnline()) return;
         lastHeartBeat = System.currentTimeMillis();
-        HeartbeatMessage hello = new HeartbeatMessage(
+        HeartbeatMessage heartBeat = new HeartbeatMessage(
                 this.client.getID(),
                 commonMulticastChannel.getRoomId()
         );
-        commonMulticastChannel.addOutgoingMessage(hello);
+        commonMulticastChannel.addOutgoingMessage(heartBeat);
     }
 
     /**
@@ -248,6 +249,11 @@ public class QueueThread implements QueueManager {
                             commonMulticastChannel.addOutgoingMessage(welcome);
                         }
                         case MESSAGE_TYPE_HEARTBEAT -> {
+                            HeartbeatMessage heartBeat = (HeartbeatMessage) inbound;
+                            if(heartBeat.getAppVersion() != Constants.APP_VERSION) {
+                                System.out.println("You're not running the latest version, please update");
+                                System.exit(1);
+                            }
                             synchronized (onlineClientsLastHeard) {
                                 onlineClientsLastHeard.put(sender, System.currentTimeMillis());
                                 onlineClientsAddresses.put(sender, packet.getAddress());

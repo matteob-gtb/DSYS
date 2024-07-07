@@ -22,6 +22,9 @@ public class Constants {
     public final static int MESSAGE_TYPE_HEARTBEAT = 55;
     public final static int HEARTBEAT_INTERVAL_MS = 5000;
 
+    public final static int APP_VERSION = 378;
+
+
 
     //it already waits for the socket timeout
     public static final int CLIENT_SLEEP_MS = 15;
