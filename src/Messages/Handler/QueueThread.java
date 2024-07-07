@@ -180,11 +180,6 @@ public class QueueThread implements QueueManager {
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
 
-                if (System.currentTimeMillis() - last > 3000) {
-                    nextMsg.stream().filter(m -> !(m instanceof HeartbeatMessage)).
-                            forEach(m -> System.out.println(m.toJSONString()));
-                }
-
                 if (currentRoom.isScheduledForDeletion() && nextMsg.isEmpty()) {
                     //all messages acked, delete the room
                     currentRoom.displayWarningMessage();

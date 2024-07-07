@@ -228,9 +228,7 @@ public class ChatRoom {
         } catch (Exception e) {
             exceptionThrown = true;
         }
-        if (!exceptionThrown) {
-            System.out.println("Connection re-established in room #" + this.chatID);
-        }
+
         this.onlineStatus = !exceptionThrown;
         return this.onlineStatus;
     }
