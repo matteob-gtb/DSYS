@@ -327,10 +327,16 @@ public class QueueThread implements QueueManager {
 
                                 //READ repair -> i detected old messages
                                 if (
-                                        !receivedMessage.getTimestamp().equals(currentRoom.getCurrentTimestamp())
+                                        !senderHistoryAgnosticTimestamp.equals(currentRoom.getCurrentTimestamp())
                                                 &&
-                                                receivedMessage.getTimestamp().lessThanOrEqual(currentRoom.getCurrentTimestamp())
+                                                senderHistoryAgnosticTimestamp.lessThanOrEqual(currentRoom.getCurrentTimestamp())
                                 ) {
+
+                                    System.out.println(currentRoom.getCurrentTimestamp());
+                                    System.out.println(currentRoom.getCurrentTimestamp());
+
+
+
                                     System.out.println("Detected old state, re-sending messages");
                                     List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(senderHistoryAgnosticTimestamp);
                                     toRetransmit.forEach(
