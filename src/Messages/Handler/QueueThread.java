@@ -310,7 +310,7 @@ public class QueueThread implements QueueManager {
                                 );
                                 dedicatedRoom.sendRawMessageNoQueue(ackMessage);
 
-                                if(receivedMessage.isRetransmission()) continue;
+                                if (receivedMessage.isRetransmission()) continue;
 
                                 int senderIndex = currentRoom.getClientIndex(receivedMessage.getSenderID());
                                 int myIndex = currentRoom.getClientIndex(ChatClient.ID);
@@ -333,6 +333,9 @@ public class QueueThread implements QueueManager {
                                 ) {
                                     System.out.println("Detected old state, re-sending messages");
                                     List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(senderHistoryAgnosticTimestamp);
+                                    toRetransmit.forEach(
+                                            m -> System.out.println(m.toJSONString())
+                                    );
                                     toRetransmit.forEach(dedicatedRoom::addOutgoingMessage);
                                 }
 

@@ -33,7 +33,7 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
     private boolean isRetransmission = false;
 
 
-    public boolean setRetransmission(boolean RTX) {
+    public void setRetransmission(boolean RTX) {
         this.isRetransmission = RTX;
     }
 
