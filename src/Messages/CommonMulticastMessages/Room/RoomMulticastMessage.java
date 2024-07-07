@@ -34,7 +34,7 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
 
 
     public boolean isRetransmission() {
-        return sent;
+        return sent || isRetransmission;
     }
 
     public RoomMulticastMessage(int clientID, int roomID) {
@@ -57,6 +57,7 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
         super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);
         this.payload = payload;
         this.vectorTimestamp = vectorTimestamp;
+        this.isRetransmission = false;
     }
 
 
