@@ -36,20 +36,25 @@ public class AbstractOrderedMessage extends AbstractMessage {
         this.acked = acked;
     }
 
+    private static final long MS = 1000;
+    private static final transient long[] retransmitTimeouts = {MS
+            , 2 * MS, 5 * MS, 10 * MS, 12 * MS, 15 * MS, 17 * MS};
+
     public boolean shouldRetransmit() {
         //if acked is false wait at least MIN_RETR
-        return !sent || !acked && (System.currentTimeMillis() - milliTimestamp > MIN_RETRANSMIT_WAIT_MS);
+        return !sent || !acked && (sentHowManyTimes < retransmitTimeouts.length && System.currentTimeMillis() - milliTimestamp > retransmitTimeouts[sentHowManyTimes]);
     }
 
     private transient int sentHowManyTimes = 0;
 
     public boolean canDelete() {
-        return sent && (acked || sentHowManyTimes < 5);
+        return sent && (acked || sentHowManyTimes < retransmitTimeouts.length);
     }
 
     public void setSent(boolean sent) {
         this.sent = sent;
         this.sentHowManyTimes++;
+        this.milliTimestamp = System.currentTimeMillis();
     }
 
     public Integer getAckedBySize() {

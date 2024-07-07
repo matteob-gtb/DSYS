@@ -281,7 +281,6 @@ public class ChatRoom {
                 this.lastMessageTimestamp,
                 payload
         );
-        out.setMilliTimestamp(System.currentTimeMillis());
         observedMessageOrder.add(out);
         outGoingMessageQueue.add(out);
     }
