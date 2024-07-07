@@ -179,6 +179,11 @@ public class QueueThread implements QueueManager {
                 currentRoom.updateInQueue();
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
+
+                if(System.currentTimeMillis() - last > 3000) {
+                    nextMsg.forEach(System.out::println);
+                }
+
                 if (currentRoom.isScheduledForDeletion() && nextMsg.isEmpty()) {
                     //all messages acked, delete the room
                     currentRoom.displayWarningMessage();
