@@ -67,7 +67,7 @@ public class ChatRoom {
         Iterator<RoomMulticastMessage> iterator = incomingMessageQueue.iterator();
         while (iterator.hasNext()) {
             RoomMulticastMessage message = iterator.next();
-             if (this.lastMessageTimestamp.canDeliver(message.getTimestamp(), clientVectorIndex.get(message.getSenderID()))) {
+            if (this.lastMessageTimestamp.canDeliver(message.getTimestamp(), clientVectorIndex.get(message.getSenderID()))) {
                 observedMessageOrder.add(message);
                 lastMessageTimestamp = VectorTimestamp.merge(lastMessageTimestamp, message.getTimestamp());
                 iterator.remove();
@@ -77,19 +77,17 @@ public class ChatRoom {
             if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
                 System.out.println("Asking for a retransmission request " + incomingMessageQueue.size() + " - " + queueSizeBefore);
 
-                //send the last acked timestamp
-
                 int myIndexInVector = clientVectorIndex.get(ChatClient.ID);
 
                 //list of messages that I sent and that were acked by at least 1 peer
                 List<RoomMulticastMessage> timestamp = new ArrayList<>(observedMessageOrder.stream().filter(
                         message -> message.getSenderID() == ChatClient.ID
-                                && message.getAckedBySize() > 0
+                                && message.getAckedBySize() == this.participantIDs.size() - 1
                 ).toList());
                 //find the latest, i.e. the one that has the highest ts(m)[i] where i is my index
-                timestamp.sort(Comparator.comparingInt(m -> m.getTimestamp().getValueAtPosition(myIndexInVector)));
                 VectorTimestamp oldestTimestamp;
                 if (!timestamp.isEmpty()) {
+                    timestamp.sort(Comparator.comparingInt(m -> m.getTimestamp().getValueAtPosition(myIndexInVector)));
                     oldestTimestamp = timestamp.get(timestamp.size() - 1).getTimestamp();
                 } else oldestTimestamp = new VectorTimestamp(new int[this.participantIDs.size()]);
                 //Fail to deliver, the sender MIGHT be dead --> request a retransmission

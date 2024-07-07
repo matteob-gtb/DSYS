@@ -18,7 +18,7 @@ public class AbstractOrderedMessage extends AbstractMessage {
     @Expose(serialize = false, deserialize = false)
     protected transient boolean acked = false;
     @Expose(serialize = false, deserialize = false)
-    private  transient Set<Integer> ackedBy = new HashSet<>();
+    private transient Set<Integer> ackedBy = new HashSet<>();
 
 
     protected VectorTimestamp vectorTimestamp;
@@ -41,10 +41,16 @@ public class AbstractOrderedMessage extends AbstractMessage {
         return !sent || !acked && (System.currentTimeMillis() - milliTimestamp > MIN_RETRANSMIT_WAIT_MS);
     }
 
+    private transient int sentHowManyTimes = 0;
+
     public boolean canDelete() {
-        return sent && acked;
+        return sent && (acked || sentHowManyTimes < 5);
     }
 
+    public void setSent(boolean sent) {
+        this.sent = sent;
+        this.sentHowManyTimes++;
+    }
 
     public Integer getAckedBySize() {
         return ackedBy.size();
