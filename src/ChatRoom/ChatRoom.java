@@ -61,7 +61,7 @@ public class ChatRoom {
     }
 
     public synchronized VectorTimestamp getLastAckedTimestamp() {
-
+        System.out.println("My vector index " + clientVectorIndex.toString());
         int myIndexInVector = clientVectorIndex.get(ChatClient.ID);
 
         //list of messages that I sent and that were acked by at least 1 peer

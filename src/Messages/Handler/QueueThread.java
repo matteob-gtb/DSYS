@@ -103,7 +103,7 @@ public class QueueThread implements QueueManager {
                         if (room.isRoomFinalized()) {
                             sb.append("Room #").append(room.getRoomId()).append(" Online : [").append(room.isOnline()).append("] \n");
                             synchronized (onlineClientsLastHeard) {
-                                room.getParticipantIDs().stream().filter(id -> id != ChatClient.ID).forEach(pid -> sb.append("\t\tClient #").append(pid).append(" - Index -> [").append(room.getClientIndex(pid)).append("]\n"));
+                                room.getParticipantIDs().forEach(pid -> sb.append("\t\tClient #").append(pid).append(" - Index -> [").append(room.getClientIndex(pid)).append("]\n"));
                             }
                         } else sb.append("Room #").append(room.getRoomId()).append(" not finalized yet");
                         sb.append("\n");
