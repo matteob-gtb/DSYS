@@ -45,7 +45,7 @@ public class AbstractOrderedMessage extends AbstractMessage {
         return !sent || !acked && (sentHowManyTimes < retransmitTimeouts.length && System.currentTimeMillis() - milliTimestamp > retransmitTimeouts[sentHowManyTimes]);
     }
 
-    private transient int sentHowManyTimes = 0;
+    private   int sentHowManyTimes = 0;
 
     public boolean canDelete() {
         return sent && (acked || sentHowManyTimes < retransmitTimeouts.length);

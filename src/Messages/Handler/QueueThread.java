@@ -181,7 +181,7 @@ public class QueueThread implements QueueManager {
 
 
                 if(System.currentTimeMillis() - last > 3000) {
-                    nextMsg.forEach(System.out::println);
+                    nextMsg.forEach(m-> System.out.println(m.toJSONString()));
                 }
 
                 if (currentRoom.isScheduledForDeletion() && nextMsg.isEmpty()) {
