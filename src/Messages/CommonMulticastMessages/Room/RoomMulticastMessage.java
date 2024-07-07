@@ -30,12 +30,7 @@ public class RoomMulticastMessage extends AbstractOrderedMessage {
 
     }
 
-    private boolean isRetransmission = false;
 
-
-    public boolean isRetransmission() {
-        return sent || isRetransmission;
-    }
 
     public RoomMulticastMessage(int clientID, int roomID) {
         super(clientID, MESSAGE_TYPE_ROOM_MESSAGE, roomID);

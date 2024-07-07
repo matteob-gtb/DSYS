@@ -51,8 +51,21 @@ public abstract class AbstractMessage implements MessageInterface {
 
 
     @Override
-    public void setSent(boolean sent) {
-        this.sent = sent;
+    public void setSent(boolean inbound) {
+        //once set to true it can't be reverted
+        this.sent = this.sent || inbound;
+    }
+
+    @Override
+    public boolean getSent() {
+        return sent;
+    }
+
+    protected boolean isRetransmission = false;
+
+
+    public boolean isRetransmission() {
+        return sent || isRetransmission;
     }
 
 
@@ -160,6 +173,7 @@ public abstract class AbstractMessage implements MessageInterface {
     public boolean isUnicast() {
         return false;
     }
+
     public InetAddress getDestinationAddress() {
         throw new UnsupportedOperationException("Not a unicast message");
     }

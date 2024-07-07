@@ -80,6 +80,7 @@ public class AbstractOrderedMessage extends AbstractMessage {
     }
 
 
+
     public boolean equals(Object other) {
         if (other == null) return false;
         if (!(other instanceof AbstractOrderedMessage)) return false;

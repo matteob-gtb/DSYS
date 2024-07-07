@@ -109,10 +109,12 @@ public class MyMulticastSocketWrapper {
             socket.send(packet);
         } catch (IOException e) {
             this.connected = false;
-            message.setSent(false);
+            if (!message.isRetransmission())
+                message.setSent(false);
             return false;
         }
-        message.setSent(true);
+        if (!message.isRetransmission()) //do not reset the state of retransmissions
+            message.setSent(true);
         return true;
     }
 

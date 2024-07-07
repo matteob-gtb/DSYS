@@ -12,6 +12,8 @@ public interface MessageInterface {
 
     public String getUsername();
 
+    boolean getSent();
+
     public int getMessageType();
 
     public boolean canDelete();
