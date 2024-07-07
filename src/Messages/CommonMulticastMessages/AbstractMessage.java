@@ -16,11 +16,11 @@ public abstract class AbstractMessage implements MessageInterface {
     protected int messageType = -1;
     protected int senderID;
     protected String username = null;
-    @Expose(serialize = false, deserialize = false)
-    protected transient boolean sent = false;
+
+
+    protected  boolean sent = false;
 
     protected int roomID;
-
 
     public boolean shouldRetransmit() {
         return !sent;
