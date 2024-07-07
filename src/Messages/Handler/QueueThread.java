@@ -251,7 +251,7 @@ public class QueueThread implements QueueManager {
                         case MESSAGE_TYPE_HEARTBEAT -> {
                             HeartbeatMessage heartBeat = (HeartbeatMessage) inbound;
                             if(heartBeat.getAppVersion() != Constants.APP_VERSION) {
-                                System.out.println("You're not running the latest version, please update");
+                                System.out.println("One of the clients is not running the latest version, please update to run the application");
                                 System.exit(1);
                             }
                             synchronized (onlineClientsLastHeard) {
