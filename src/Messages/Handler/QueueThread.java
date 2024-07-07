@@ -19,6 +19,7 @@ import com.google.gson.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static utils.Constants.*;
 
@@ -179,7 +180,6 @@ public class QueueThread implements QueueManager {
                 currentRoom.updateInQueue();
                 List<AbstractMessage> nextMsg = currentRoom.getOutgoingMessages();
 
-
                 if (currentRoom.isScheduledForDeletion() && nextMsg.isEmpty()) {
                     //all messages acked, delete the room
                     currentRoom.displayWarningMessage();
@@ -298,15 +298,41 @@ public class QueueThread implements QueueManager {
                                 ChatRoom dedicatedRoom = roomsMap.get(roomID);
                                 if (!(inbound instanceof RoomMulticastMessage))
                                     throw new RuntimeException("Illegal Message Type");
-                                dedicatedRoom.addIncomingMessage((RoomMulticastMessage) inbound);
+                                RoomMulticastMessage receivedMessage = (RoomMulticastMessage) inbound;
+
+                                dedicatedRoom.addIncomingMessage(receivedMessage);
                                 AckMessage ackMessage = new AckMessage(
                                         this.client.getID(),
                                         inbound.getSenderID(),
-                                        ((RoomMulticastMessage) inbound).getTimestamp(),
+                                        receivedMessage.getTimestamp(),
                                         dedicatedRoom.getRoomId(),
                                         packet.getAddress()
                                 );
                                 dedicatedRoom.sendRawMessageNoQueue(ackMessage);
+                                int senderIndex = currentRoom.getClientIndex(receivedMessage.getSenderID());
+                                int myIndex = currentRoom.getClientIndex(ChatClient.ID);
+
+                                int[] currRoomTimestamp = currentRoom.getCurrentTimestamp().getRaw();
+                                int[] modified = receivedMessage.getTimestamp().getRaw();
+                                //do not keep track of the sender's history in the comparison
+
+                                IntStream.range(0, modified.length).forEach(
+                                        i -> modified[i] = Math.min(modified[i], currRoomTimestamp[i])
+                                );
+
+                                VectorTimestamp senderHistoryAgnosticTimestamp = new VectorTimestamp(modified);
+
+                                //READ repair -> i detected old messages
+                                if (
+                                        !receivedMessage.getTimestamp().equals(currentRoom.getCurrentTimestamp())
+                                                &&
+                                                receivedMessage.getTimestamp().lessThanOrEqual(currentRoom.getCurrentTimestamp())
+                                ) {
+                                    System.out.println("Detected old state, re-sending messages");
+                                    List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(senderHistoryAgnosticTimestamp);
+                                    toRetransmit.forEach(dedicatedRoom::addOutgoingMessage);
+                                }
+
                             }
                         }
                         case MESSAGE_TYPE_ACK -> {

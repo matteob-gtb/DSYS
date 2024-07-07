@@ -61,7 +61,7 @@ public class ChatRoom {
     }
 
     public synchronized VectorTimestamp getLastAckedTimestamp() {
-        if(this.chatID == DEFAULT_GROUP_ROOMID) throw new UnsupportedOperationException();
+        if (this.chatID == DEFAULT_GROUP_ROOMID) throw new UnsupportedOperationException();
         System.out.println("My vector index " + clientVectorIndex.toString());
         int myIndexInVector = clientVectorIndex.get(ChatClient.ID);
 
@@ -214,6 +214,10 @@ public class ChatRoom {
 
     public String getStatusString() {
         return this.onlineStatus ? "online" : "offline";
+    }
+
+    public synchronized VectorTimestamp getCurrentTimestamp() {
+        return new VectorTimestamp(lastMessageTimestamp);
     }
 
 
