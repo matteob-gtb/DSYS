@@ -42,13 +42,13 @@ public class AbstractOrderedMessage extends AbstractMessage {
 
     public boolean shouldRetransmit() {
         //if acked is false wait at least MIN_RETR
-        return !sent || !acked && (sentHowManyTimes < retransmitTimeouts.length && System.currentTimeMillis() - milliTimestamp > retransmitTimeouts[sentHowManyTimes]);
+        return !sent || (!acked && (sentHowManyTimes < retransmitTimeouts.length && System.currentTimeMillis() - milliTimestamp > retransmitTimeouts[sentHowManyTimes]));
     }
 
     private   int sentHowManyTimes = 0;
 
     public boolean canDelete() {
-        return sent && (acked || sentHowManyTimes < retransmitTimeouts.length);
+        return sent && (acked || sentHowManyTimes >= retransmitTimeouts.length);
     }
 
     public void setSent(boolean sent) {
