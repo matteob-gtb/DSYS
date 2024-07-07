@@ -61,6 +61,7 @@ public class ChatRoom {
     }
 
     public synchronized VectorTimestamp getLastAckedTimestamp() {
+        if(this.chatID == DEFAULT_GROUP_ROOMID) throw new UnsupportedOperationException();
         System.out.println("My vector index " + clientVectorIndex.toString());
         int myIndexInVector = clientVectorIndex.get(ChatClient.ID);
 
@@ -92,9 +93,9 @@ public class ChatRoom {
                 iterator.remove();
             }
         }
-        if (!incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
-            if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
+        if (this.chatID != DEFAULT_GROUP_ROOMID && !incomingMessageQueue.isEmpty() && incomingMessageQueue.size() == queueSizeBefore) {
 
+            if (System.currentTimeMillis() - lastRTORequest > MIN_RTO_REQUEST_WAIT_MS) {
                 VectorTimestamp oldestTimestamp = getLastAckedTimestamp();
                 RequestRetransmission rto = new RequestRetransmission(
                         ChatClient.ID,
@@ -153,19 +154,14 @@ public class ChatRoom {
         System.out.println("Room " + this.chatID + " has been finalized");
 
         this.participantIDs = Collections.unmodifiableSet(participantIDs);
-
         this.roomFinalized = true;
         this.clientVectorIndex = new HashMap<>(participantIDs.size());
         lastMessageTimestamp = new VectorTimestamp(new int[participantIDs.size()]);
-
         final AtomicReference<Integer> k = new AtomicReference<>(0);
         this.participantIDs.stream().sorted().forEach(participantID -> {
             clientVectorIndex.put(participantID, k.getAndAccumulate(1, Integer::sum));
         });
-
         this.clientVectorIndex = Collections.unmodifiableMap(this.clientVectorIndex);
-        System.out.println("Client indexes " + clientVectorIndex.toString());
-
     }
 
 
@@ -200,7 +196,6 @@ public class ChatRoom {
                 clientVectorIndex.put(id, k.getAndAccumulate(1, Integer::sum));
             });
             clientVectorIndex = Collections.unmodifiableMap(this.clientVectorIndex);
-            System.out.println("Client indexes " + clientVectorIndex.toString());
             return true;
         }
         return false;

@@ -209,7 +209,7 @@ public class QueueThread implements QueueManager {
                 //now attempt to receive
                 packetReceived = currentRoom.getDedicatedRoomSocket().receive(packet);
             } else {
-                if (currentRoom.getBackOnline()) {
+                if (currentRoom.getBackOnline() && currentRoom.getRoomId() != DEFAULT_GROUP_ROOMID) {
                     //don't wait for potential retransmission that might never happen
                     System.out.println("Room #" + currentRoom.getRoomId() + " back online, asking for RTO");
                     RequestRetransmission antiEntropy = new RequestRetransmission(
