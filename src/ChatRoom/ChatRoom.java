@@ -128,7 +128,6 @@ public class ChatRoom {
 
         incomingMessageQueue.add(inbound);
 
-
     }
 
     //it's just reading it can be not synchronized, temporary discrepancies are ok

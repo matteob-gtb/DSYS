@@ -331,16 +331,17 @@ public class QueueThread implements QueueManager {
                                                 &&
                                                 senderHistoryAgnosticTimestamp.lessThanOrEqual(currentRoom.getCurrentTimestamp())
                                 ) {
+                                    System.out.println(receivedMessage.toJSONString());
+
                                     System.out.println(receivedMessage.isRetransmission());
                                     System.out.println(senderHistoryAgnosticTimestamp);
                                     System.out.println(currentRoom.getCurrentTimestamp());
-
                                     System.out.println("Detected old state, re-sending messages");
                                     List<RoomMulticastMessage> toRetransmit = dedicatedRoom.getObservedMessagesFrom(senderHistoryAgnosticTimestamp);
                                     toRetransmit.forEach(
                                             m -> System.out.println(m.toJSONString())
                                     );
-                                    toRetransmit.forEach(dedicatedRoom::addOutgoingMessage);
+                                    toRetransmit.forEach(dedicatedRoom::sendRawMessageNoQueue);
                                 }
 
                             }
