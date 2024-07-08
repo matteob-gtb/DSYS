@@ -50,9 +50,9 @@ public class QueueThread implements QueueManager {
 
     private void cycleRooms() {
         synchronized (roomsMap) {
-            currentIDIndex = currentIDIndex + 1 == roomIDs.size() ? 0 : currentIDIndex + 1;
+            currentIDIndex = currentIDIndex + 1 >= roomIDs.size() ? 0 : currentIDIndex + 1;
             currentRoom = roomsMap.get(roomIDs.get(currentIDIndex));
-         }
+        }
     }
 
     public void addParticipantToRoom(int roomID, int senderID) {
