@@ -343,7 +343,7 @@ public class ChatRoom {
         return participantIDs.add(participantID);
     }
 
-    public boolean canDelete(int participantID) {
+    public synchronized boolean canDelete(int participantID) {
         return this.getOwnerID() == participantID;
     }
 
