@@ -250,7 +250,7 @@ public class QueueThread implements QueueManager {
                         }
                         case MESSAGE_TYPE_HEARTBEAT -> {
                             HeartbeatMessage heartBeat = (HeartbeatMessage) inbound;
-                            if(heartBeat.getAppVersion() != Constants.APP_VERSION) {
+                            if (heartBeat.getAppVersion() != Constants.APP_VERSION) {
                                 System.out.println("One of the clients is not running the latest version, please update to run the application");
                                 System.exit(1);
                             }
@@ -316,12 +316,43 @@ public class QueueThread implements QueueManager {
                                 );
                                 dedicatedRoom.sendRawMessageNoQueue(ackMessage);
 
-                                if (receivedMessage.isRetransmission()) continue;
+                                if (receivedMessage.isRetransmission()) {
+                                    //we might receive a RTO from someone that isn't the original sender, so
+                                    //we need to send an ack to the original sender (it might be offline)
+                                    //if we haven't already done so
+                                    // if (!currentRoom.messageReceived(receivedMessage))
+                                    synchronized (onlineClientsLastHeard) {
+                                        if (onlineClientsLastHeard.containsKey(receivedMessage.getSenderID())) {
+                                            if (System.currentTimeMillis() - onlineClientsLastHeard.get(receivedMessage.getSenderID()) > 15 * 1000) {
+                                                //When a packet is retransmitted it's not altered, it still shows the original true sender
+
+                                                //last known address
+                                                if (onlineClientsAddresses.containsKey(receivedMessage.getSenderID())) {
+
+                                                    InetAddress destination = onlineClientsAddresses.get(receivedMessage.getSenderID());
+
+                                                    ackMessage = new AckMessage(
+                                                            this.client.getID(),
+                                                            receivedMessage.getSenderID(),
+                                                            receivedMessage.getTimestamp(),
+                                                            dedicatedRoom.getRoomId(),
+                                                            destination
+                                                    );
+                                                    dedicatedRoom.sendRawMessageNoQueue(ackMessage);
+                                                }
+                                            }
+                                        }
+
+                                    }
+
+                                    continue;
+                                }
 
                                 int[] currRoomTimestamp = currentRoom.getCurrentTimestamp().getRaw();
                                 int[] modified = receivedMessage.getTimestamp().getRaw();
                                 //do not keep track of the sender's history in the comparison
-
+                                //it might be greater than ours due to partitions in some indexes
+                                //ideally consider old if it's v[i] = v[j] + k with k > 1
                                 IntStream.range(0, modified.length).forEach(
                                         i -> modified[i] = Math.min(modified[i], currRoomTimestamp[i])
                                 );

@@ -79,6 +79,10 @@ public class ChatRoom {
         return oldestTimestamp;
     }
 
+    public synchronized boolean messageReceived(RoomMulticastMessage inbound) {
+        return incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound);
+    }
+
 
     public synchronized void updateInQueue() {
         int queueSizeBefore = incomingMessageQueue.size();
@@ -103,7 +107,7 @@ public class ChatRoom {
                         oldestTimestamp
                 );
                 addOutgoingMessage(rto);
-                System.out.println("Failing to deliver messages, asking for a RTO from " + oldestTimestamp.toString());
+                System.out.println("Failing to deliver messages, asking for a RTO from");
                 lastRTORequest = System.currentTimeMillis();
             }
 
@@ -121,13 +125,8 @@ public class ChatRoom {
 
 
     public synchronized void addIncomingMessage(RoomMulticastMessage inbound) {
-
-        if (incomingMessageQueue.contains(inbound) || observedMessageOrder.contains(inbound)) {
-            return;
-        }
-
+        if (messageReceived(inbound)) return;
         incomingMessageQueue.add(inbound);
-
     }
 
     //it's just reading it can be not synchronized, temporary discrepancies are ok
